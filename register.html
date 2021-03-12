@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="css/stylesheet.css" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="js/main.js"></script>
+        <title>Phobos</title>
+    </head>
+    <body>
+        <a class="basic-back" href=".">< Indietro</a>
+        <form class="basic-form" onsubmit="return register();">
+            <h2 class="basic-form-header">Registrati</h2>
+            <p id="result"></p>
+            <p>
+                <label for="username">Nome Utente</label>
+                <input id="username" name="username" type="text">
+            </p>
+            <p>
+                <label for="email">Email</label>
+                <input id="email" name="email" type="text">
+            </p>
+            <p>
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password">
+            </p>
+            <p>
+                <label for="confirm">Conferma Password</label>
+                <input id="confirm" name="confirm" type="password">
+            </p>
+            <p>
+                <input class="basic-button" type="submit" value="Registrati" id="submit">
+            </p>
+        </form>
+    </body>
+</html>

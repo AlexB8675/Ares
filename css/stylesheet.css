@@ -1,0 +1,247 @@
+/* ----------- General/Global Style --------- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    position: relative;
+    margin-left: 50px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(24, 25, 28, .6);
+    border-radius: 6px;
+}
+
+html, body {
+    background: rgb(54, 57, 63);
+    font-family: sans-serif;
+    position: absolute;
+    font-size: 10px;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+}
+
+a {
+    text-decoration: none;
+}
+
+.basic-button {
+    box-shadow: 0 3px 0 0 rgba(62, 62, 62, 0.7);
+    box-sizing: border-box;
+    border-radius: 12px;
+    border: none;
+    color: rgb(221, 221, 221);
+    background: rgb(98, 98, 98);
+    cursor: pointer;
+    display: block;
+    text-align: center;
+    font-size: 2em;
+    line-height: 1.6em;
+    margin: 1em 0 1em 0;
+    outline: none;
+    width: 100%;
+    padding: 0.8em 0;
+    text-shadow: 0 1px 3px rgba(115, 115, 115, 0.7);
+}
+
+.basic-form-header {
+    margin: 0 0 20px 0;
+    padding: 10px 0 15px 0;
+    text-align: center;
+    font-size: 30px;
+    color: rgb(190, 190, 190);
+    border-bottom: solid 1px rgb(229, 229, 229);
+}
+
+.basic-back {
+    position: relative;
+    display: inline-block;
+    color: rgb(128, 128, 128);
+    font-size: 24px;
+    margin: 10px 0 0 10px;
+}
+
+/* ----------- Basic Registration/Login Form --------- */
+.basic-form {
+    background: #454141;
+    padding: 4em 4em 2em;
+    max-width: 400px;
+    margin: 50px auto 0;
+    box-shadow: 0 0 3em rgb(34, 34, 34);
+    border-radius: 8px;
+}
+
+.basic-form p {
+    margin: 0 0 3em 0;
+    position: relative;
+}
+
+.basic-form p[id="result"] {
+    margin: -10px 0 20px 0;
+    display: block;
+    text-align: center;
+    font-size: 16px;
+}
+
+.basic-form input {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    outline: none;
+    margin: 0;
+}
+
+.basic-form input[type="text"],
+.basic-form input[type="password"] {
+    background: rgb(255, 255, 255);
+    border: 1px solid rgb(219, 219, 219);
+    font-size: 1.6em;
+    padding: 0.8em 0.5em;
+    border-radius: 8px;
+}
+
+.basic-form label {
+    position: relative;
+    color: rgb(153, 153, 153);
+    top: 30px;
+    user-select: none;
+    font-size: 14px;
+    display: inline-block;
+    padding: 0 0 0 10px;
+    margin: -4px 0 0 0;
+    font-weight: 400;
+    background-color: rgba(255, 255, 255, 0);
+    transition: top 200ms;
+}
+
+/* Basic Central Application Containers */
+.basic-hamburger-wrapper {
+    width: 60px;
+    height: 45px;
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    cursor: pointer;
+}
+
+.basic-hamburger {
+    transform: rotate(0deg);
+}
+
+.basic-hamburger span {
+    position: absolute;
+    display: block;
+    height: 9px;
+    width: 100%;
+    background: rgb(53, 52, 52);
+    border-radius: 8px;
+    opacity: 1;
+    left: 0;
+    transition: 250ms ease-in-out;
+}
+
+.basic-hamburger span:nth-child(1) {
+    top: 0;
+}
+
+.basic-hamburger span:nth-child(2),
+.basic-hamburger span:nth-child(3) {
+    top: 18px;
+}
+
+.basic-hamburger span:nth-child(4) {
+    top: 36px;
+}
+
+.basic-hamburger.open span:nth-child(1) {
+    top: 18px;
+    width: 0;
+    left: 50%;
+}
+
+.basic-hamburger.open span:nth-child(2) {
+    transform: rotate(45deg);
+}
+
+.basic-hamburger.open span:nth-child(3) {
+    transform: rotate(-45deg);
+}
+
+.basic-hamburger.open span:nth-child(4) {
+    top: 18px;
+    width: 0;
+    left: 50%;
+}
+
+.basic-app-container {
+    position: absolute;
+    resize: none;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background: black;
+}
+
+.basic-app-sidebar {
+    position: relative;
+    width: 110px;
+    float: left;
+    height: inherit;
+    background: rgb(32, 34, 37);
+    display: flex;
+    transition: 250ms;
+}
+
+.basic-app-sidebar.open {
+    width: 240px;
+}
+
+.basic-app-header {
+    position: relative;
+    height: 80px;
+    background: rgb(54, 57, 63);
+    box-shadow: 0 4px 2px -2px rgba(35, 40, 41, 0.67);
+    display: flex;
+}
+
+.basic-message-container {
+    position: relative;
+    height: calc(100% - 80px);
+    background: rgb(54, 57, 63);
+    display: flex;
+}
+
+.basic-message-wrapper {
+    position: absolute;
+    width: calc(100% - 100px);
+    display: block;
+    left: 50%;
+    transform: translate(-50%, 0);
+    bottom: 30px;
+    overflow: hidden;
+    background: rgb(64, 68, 75);
+    border-radius: 10px;
+}
+
+.basic-message-sender {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-height: 294px;
+    background: inherit;
+}
+
+.basic-message-textbox {
+    position: relative;
+    width: 88%;
+    background: inherit;
+    max-height: 250px;
+    overflow: hidden;
+    resize: none;
+    display: block;
+    font-size: 18px;
+    margin: 14px auto;
+    outline: none;
+    color: white;
+}
