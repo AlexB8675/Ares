@@ -14,7 +14,7 @@
     height: 6px;
     border: 4px solid rgba(0, 0, 0, 0);
     background-clip: padding-box;
-    border-radius: 20px;
+    border-radius: 16px;
     background-color: rgba(0, 0, 0, 0.35);
 }
 
@@ -131,8 +131,8 @@ a {
     transition: top 200ms;
 }
 
-/* Basic Central Application Containers */
-.basic-app-container {
+/* Basic Main Application Styles */
+.basic-master-container {
     position: absolute;
     resize: none;
     height: 100vh;
@@ -141,8 +141,9 @@ a {
     background: black;
 }
 
+/* Basic Hamburger Style */
 .basic-hamburger-content {
-    position: relative;
+    position: absolute;
     width: inherit;
     height: 80px;
     z-index: 1;
@@ -154,7 +155,7 @@ a {
     height: 40px;
     position: relative;
     float: right;
-    margin: 20px 20px auto auto;
+    margin: 20px 20px 0 0;
     cursor: pointer;
 }
 
@@ -206,11 +207,12 @@ a {
     left: 50%;
 }
 
+/* Basic Sidebar Style */
 .basic-sidebar {
     position: relative;
     width: 90px;
+    height: 100%;
     float: left;
-    height: inherit;
     background: rgb(47, 49, 54);
     transition: 350ms;
 }
@@ -220,39 +222,49 @@ a {
 }
 
 .basic-sidebar-scroller {
-    position: relative;
-    height: 100%;
-    display: flex;
-    width: 100%;
-    float: left;
-    overflow-y: auto;
-    flex-direction: column;
+    position: absolute;
+    top: 80px;
+    height: calc(100% - 160px);
+    width: inherit;
+    overflow: hidden auto;
     background: rgb(47, 49, 54);
+}
+
+.basic-sidebar-footer {
+    position: absolute;
+    height: 80px;
+    width: inherit;
+    bottom: 0;
+    background: rgb(41, 43, 47);
+    box-shadow: 0 -3px 2px rgba(29, 32, 33, 0.67);
+    z-index: 1;
 }
 
 .basic-sidebar-content {
     position: relative;
-    height: inherit;
-    width: 90px;
+    padding-top: 15px;
+    width: inherit;
     float: left;
     overflow: visible;
 }
 
-.basic-guild-icon {
+/* Basic Icon Style */
+.basic-icon {
     position: relative;
     width: 50px;
     height: 50px;
     background: white;
     border-radius: 50%;
-    margin: 20px auto 0 20px;
+    margin: 0 auto 15px 20px;
     transition: 250ms;
 }
 
-.basic-guild-icon:hover {
+.basic-icon:hover {
     border-radius: 33%;
 }
 
-.basic-app-header {
+/* Basic Header Style */
+.basic-header {
     position: relative;
     height: 80px;
     background: rgb(54, 57, 63);
@@ -261,6 +273,7 @@ a {
     z-index: 1;
 }
 
+/* Basic Message Box Style */
 .basic-message-container {
     position: relative;
     height: calc(100% - 80px);
@@ -268,23 +281,26 @@ a {
     display: flex;
 }
 
-.basic-message-wrapper {
+.basic-message-sender {
     position: absolute;
+    width: 100%;
+    bottom: 0;
+}
+
+.basic-message-wrapper {
+    position: relative;
     width: calc(100% - 100px);
-    display: block;
     max-height: 259px;
     padding: 14px 0;
     overflow-y: auto;
-    left: 50%;
-    transform: translate(-50%, 0);
-    bottom: 30px;
+    margin: auto auto 30px auto;
     background: rgb(64, 68, 75);
     border-radius: 10px;
 }
 
 .basic-message-textbox {
     position: relative;
-    width: 85%;
+    width: calc(100% - 100px);
     background: inherit;
     margin: 0 auto;
     resize: none;
