@@ -1,8 +1,8 @@
 <?php
     include_once 'connect.php';
     $connection = connect_database();
-    $username   = hash('sha512', $_POST['username']);
-    $email      = hash('sha512', $_POST['email']);
+    $username   = $_POST['username'];
+    $email      = $_POST['email'];
     $password   = hash('sha512', $_POST['password']);
     if (!$connection->query(
         "insert into User value (default, '$username', '$email', '$password')"

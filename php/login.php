@@ -1,7 +1,7 @@
 <?php
     include_once 'connect.php';
     $connection = connect_database();
-    $username = hash('sha512', $_POST['username']);
+    $username = $_POST['username'];
     $password = hash('sha512', $_POST['password']);
     $exists =
         "select * 

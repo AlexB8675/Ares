@@ -1,26 +1,27 @@
 $(function () {
     $('#result').hide();
-    $('input').on('focusin', function () {
-        $(`label[for=${$(this).attr('id')}]`)
-            .css('top', '-5px');
-    }).on('focusout', function () {
-        if ($(this).val() === "") {
+    $('input')
+        .on('focusin', function () {
             $(`label[for=${$(this).attr('id')}]`)
-                .css('top', '30px');
-        }
-    });
-    $('#message-textbox').on('keydown', function () {
-        $(`.${$(this).attr('class')}`)
-            .css({
-                'overflow': `${
-                    $(this).height() >= parseInt($(this).css('max-height')) ? 'auto' : 'hidden'
-                }`
-            });
-    });
-    $('.basic-hamburger-wrapper').on('click', function () {
-        $('#hamburger').toggleClass('open');
-        $('#app-sidebar').toggleClass('open');
-    });
+                .css('top', '-5px');
+        })
+        .on('focusout', function () {
+            if ($(this).val() === "") {
+                $(`label[for=${$(this).attr('id')}]`)
+                    .css('top', '30px');
+            }
+        });
+    $('#message-textbox')
+        .on('keydown', function (event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+            }
+        });
+    $('.basic-hamburger-wrapper')
+        .on('click', function () {
+            $('#hamburger').toggleClass('open');
+            $('#app-sidebar').toggleClass('open');
+        });
 });
 
 function register() {
@@ -68,7 +69,6 @@ function register() {
                 username: username,
                 email: email,
                 password: password,
-                confirm: confirm
             },
             cache: false,
             success: (response) => {
@@ -88,10 +88,7 @@ function register() {
                     } break;
 
                     default: {
-                        result
-                            .text('la registrazione è avvenuta con successo!')
-                            .css('color', '#50d61c')
-                            .show();
+                        result.hide();
                         window.location.replace('login.html');
                     } break;
                 }
@@ -134,10 +131,7 @@ function login() {
                     } break;
 
                     default: {
-                        result
-                            .text('l\'accesso è avvenuto con successo!')
-                            .css('color', '#50d61c')
-                            .show();
+                        result.hide();
                         window.location.replace('app.html');
                     } break;
                 }

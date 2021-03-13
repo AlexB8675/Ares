@@ -1,14 +1,21 @@
+/* ----------------- Debug ------------------ */
+/** {
+    box-sizing: border-box;
+    border: 1px solid white;
+}*/
+
 /* ----------- General/Global Style --------- */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-    position: relative;
-    margin-left: 50px;
+    width: 12px;
+    height: 16px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: rgba(24, 25, 28, .6);
-    border-radius: 6px;
+    height: 6px;
+    border: 4px solid rgba(0, 0, 0, 0);
+    background-clip: padding-box;
+    border-radius: 20px;
+    background-color: rgba(0, 0, 0, 0.35);
 }
 
 html, body {
@@ -24,6 +31,14 @@ html, body {
 
 a {
     text-decoration: none;
+}
+
+.basic-hover {
+    background: rgb(54, 57, 63);
+}
+
+.basic-hover:hover {
+    background: rgb(50, 53, 59);
 }
 
 .basic-button {
@@ -70,6 +85,7 @@ a {
     margin: 50px auto 0;
     box-shadow: 0 0 3em rgb(34, 34, 34);
     border-radius: 8px;
+    z-index: 1
 }
 
 .basic-form p {
@@ -116,12 +132,29 @@ a {
 }
 
 /* Basic Central Application Containers */
-.basic-hamburger-wrapper {
-    width: 60px;
-    height: 45px;
+.basic-app-container {
     position: absolute;
-    top: 15px;
-    right: 25px;
+    resize: none;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background: black;
+}
+
+.basic-hamburger-content {
+    position: relative;
+    width: inherit;
+    height: 80px;
+    z-index: 1;
+    box-shadow: 0 4px 2px -2px rgba(29, 32, 33, 0.67);
+}
+
+.basic-hamburger-wrapper {
+    width: 50px;
+    height: 40px;
+    position: relative;
+    float: right;
+    margin: 20px 20px auto auto;
     cursor: pointer;
 }
 
@@ -131,10 +164,9 @@ a {
 
 .basic-hamburger span {
     position: absolute;
-    display: block;
-    height: 9px;
+    height: 8px;
     width: 100%;
-    background: rgb(53, 52, 52);
+    background: rgb(64, 68, 75);
     border-radius: 8px;
     opacity: 1;
     left: 0;
@@ -147,15 +179,15 @@ a {
 
 .basic-hamburger span:nth-child(2),
 .basic-hamburger span:nth-child(3) {
-    top: 18px;
+    top: 15px;
 }
 
 .basic-hamburger span:nth-child(4) {
-    top: 36px;
+    top: 30px;
 }
 
 .basic-hamburger.open span:nth-child(1) {
-    top: 18px;
+    top: 16px;
     width: 0;
     left: 50%;
 }
@@ -169,40 +201,64 @@ a {
 }
 
 .basic-hamburger.open span:nth-child(4) {
-    top: 18px;
+    top: 16px;
     width: 0;
     left: 50%;
 }
 
-.basic-app-container {
-    position: absolute;
-    resize: none;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    background: black;
-}
-
-.basic-app-sidebar {
+.basic-sidebar {
     position: relative;
-    width: 110px;
+    width: 90px;
     float: left;
     height: inherit;
-    background: rgb(32, 34, 37);
+    background: rgb(47, 49, 54);
+    transition: 350ms;
+}
+
+.basic-sidebar.open {
+    width: 180px;
+}
+
+.basic-sidebar-scroller {
+    position: relative;
+    height: 100%;
     display: flex;
+    width: 100%;
+    float: left;
+    overflow-y: auto;
+    flex-direction: column;
+    background: rgb(47, 49, 54);
+}
+
+.basic-sidebar-content {
+    position: relative;
+    height: inherit;
+    width: 90px;
+    float: left;
+    overflow: visible;
+}
+
+.basic-guild-icon {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 50%;
+    margin: 20px auto 0 20px;
     transition: 250ms;
 }
 
-.basic-app-sidebar.open {
-    width: 240px;
+.basic-guild-icon:hover {
+    border-radius: 33%;
 }
 
 .basic-app-header {
     position: relative;
     height: 80px;
     background: rgb(54, 57, 63);
-    box-shadow: 0 4px 2px -2px rgba(35, 40, 41, 0.67);
+    box-shadow: 0 4px 2px -2px rgba(29, 32, 33, 0.67);
     display: flex;
+    z-index: 1;
 }
 
 .basic-message-container {
@@ -216,32 +272,23 @@ a {
     position: absolute;
     width: calc(100% - 100px);
     display: block;
+    max-height: 259px;
+    padding: 14px 0;
+    overflow-y: auto;
     left: 50%;
     transform: translate(-50%, 0);
     bottom: 30px;
-    overflow: hidden;
     background: rgb(64, 68, 75);
     border-radius: 10px;
 }
 
-.basic-message-sender {
-    position: relative;
-    display: block;
-    width: 100%;
-    max-height: 294px;
-    background: inherit;
-}
-
 .basic-message-textbox {
     position: relative;
-    width: 88%;
+    width: 85%;
     background: inherit;
-    max-height: 250px;
-    overflow: hidden;
+    margin: 0 auto;
     resize: none;
-    display: block;
     font-size: 18px;
-    margin: 14px auto;
     outline: none;
-    color: white;
+    color: rgb(220, 221, 222);
 }

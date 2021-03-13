@@ -1,0 +1,5 @@
+.idea
+.idea/*
+doc/*
+!doc/proposal.pdf
+!doc/proposal.tex
