@@ -13,3 +13,4 @@
     if (session_start()) {
         $_SESSION['username'] = $username;
     }
+    $connection->close();

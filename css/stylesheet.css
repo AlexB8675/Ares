@@ -20,7 +20,7 @@
 
 html, body {
     background: rgb(54, 57, 63);
-    font-family: sans-serif;
+    font-family: Whitney,Helvetica,sans-serif;
     position: absolute;
     font-size: 10px;
     margin: 0;
@@ -33,21 +33,21 @@ a {
     text-decoration: none;
 }
 
-.basic-hover {
-    background: rgb(54, 57, 63);
+.red-color {
+    color: rgb(240, 63, 59) !important;
 }
 
-.basic-hover:hover {
-    background: rgb(50, 53, 59);
+.red-color:hover {
+    background: rgb(66, 51, 55) !important;
 }
 
-.basic-button {
+.basic-form-button {
     box-shadow: 0 3px 0 0 rgba(62, 62, 62, 0.7);
     box-sizing: border-box;
     border-radius: 12px;
     border: none;
     color: rgb(221, 221, 221);
-    background: rgb(98, 98, 98);
+    background: rgb(103, 123, 196);
     cursor: pointer;
     display: block;
     text-align: center;
@@ -69,17 +69,9 @@ a {
     border-bottom: solid 1px rgb(229, 229, 229);
 }
 
-.basic-back {
-    position: relative;
-    display: inline-block;
-    color: rgb(128, 128, 128);
-    font-size: 24px;
-    margin: 10px 0 0 10px;
-}
-
 /* ----------- Basic Registration/Login Form --------- */
 .basic-form {
-    background: #454141;
+    background: rgb(54, 57, 63);
     padding: 4em 4em 2em;
     max-width: 400px;
     margin: 50px auto 0;
@@ -138,9 +130,19 @@ a {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    background: black;
+    background: rgb(54, 57, 63);
 }
 
+.basic-app-container {
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    overflow: hidden;
+    resize: none;
+    opacity: 1;
+    z-index: 1;
+    transition: opacity 250ms linear;
+}
 /* Basic Hamburger Style */
 .basic-hamburger-content {
     position: absolute;
@@ -171,7 +173,11 @@ a {
     border-radius: 8px;
     opacity: 1;
     left: 0;
-    transition: 250ms ease-in-out;
+    transition:
+        top 250ms ease-in-out,
+        left 250ms ease-in-out,
+        width 250ms ease-in-out,
+        transform 250ms ease-in-out;
 }
 
 .basic-hamburger span:nth-child(1) {
@@ -214,7 +220,7 @@ a {
     height: 100%;
     float: left;
     background: rgb(47, 49, 54);
-    transition: 350ms;
+    transition: width 350ms;
 }
 
 .basic-sidebar.open {
@@ -250,10 +256,24 @@ a {
 }
 
 .basic-username {
-    position: relative;
-    margin: 25px auto auto 90px;
+    position: absolute;
+    margin: 32px auto auto 90px;
     font-size: 11pt;
+    user-select: none;
     color: white;
+}
+
+.basic-settings-icon {
+    position: absolute;
+    height: 24px;
+    width: 24px;
+    margin: 28px auto auto 240px;
+    transition: transform 450ms;
+}
+
+.basic-settings-icon:hover {
+    transform: rotate(85deg);
+    cursor: pointer;
 }
 
 /* Basic Icon Style */
@@ -324,4 +344,80 @@ a {
     font-size: 18px;
     outline: none;
     color: rgb(220, 221, 222);
+}
+
+/* Basic Settings Style */
+.basic-settings-container {
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    overflow: hidden;
+    resize: none;
+    opacity: 0;
+    transition: opacity 250ms linear;
+}
+
+.basic-settings-sidebar {
+    position: relative;
+    height: 100%;
+    width: 280px;
+    float: left;
+    background: rgb(47, 49, 54);
+}
+
+.basic-settings-sidebar-content {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+}
+
+.basic-sidebar-line {
+    position: absolute;
+    height: 100%;
+    width: 220px;
+    right: 0;
+    padding: 50px 30px 0 0;
+    overflow: hidden auto;
+}
+
+.basic-sidebar-button {
+    position: relative;
+    width: 80%;
+    font-size: 12pt;
+    float: right;
+    padding: 10px;
+    text-align: left;
+    color: rgb(215, 221, 217);
+    border-radius: 10px;
+    transition: background 250ms ease-in-out;
+}
+
+.basic-sidebar-button:hover {
+    cursor: pointer;
+}
+
+.basic-settings-main {
+    position: relative;
+    height: 100%;
+    display: flex;
+    background: rgb(54, 57, 63);
+}
+
+.basic-close-button {
+    position: absolute;
+    height: 36px;
+    width: 36px;
+    top: 32px;
+    right: 32px;
+    background: transparent;
+    padding: 12px 0 0 12px;
+    border: 2px solid rgb(99, 102, 110);
+    transition: background 250ms ease-in-out;
+    border-radius: 50%;
+}
+
+.basic-close-button:hover {
+    background: rgb(72, 76, 82);
+    cursor: pointer;
 }

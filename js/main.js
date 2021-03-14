@@ -12,6 +12,32 @@ $(async function () {
             $('#app-sidebar').toggleClass('open');
         });
     $('div[class="basic-username"]').html(await retrieve_username());
+    $('div[class="basic-settings-icon"]')
+        .on('click', function () {
+            $('.basic-app-container')
+                .css({
+                    'z-index': '-1',
+                    'opacity': '0',
+                });
+            $('.basic-settings-container')
+                .css({
+                    'z-index': '0',
+                    'opacity': '1',
+                });
+        });
+    $('div[class="basic-close-button"]')
+        .on('click', function () {
+            $('.basic-app-container')
+                .css({
+                    'z-index': '-1',
+                    'opacity': '0',
+                });
+            $('.basic-settings-container')
+                .css({
+                    'z-index': '0',
+                    'opacity': '1',
+                });
+        });
 });
 
 let retrieve_username = (function () {

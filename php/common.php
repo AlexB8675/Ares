@@ -22,7 +22,7 @@
                 default   => die('query_error')
             };
         }
-        if (strlen($types) !== 0) {
+        if (strlen($types) > 0) {
             $statement->bind_param($types, ...$args);
         }
         if (!$statement->execute()) {
