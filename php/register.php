@@ -1,16 +1,17 @@
 <?php
-    include_once 'connect.php';
+    include_once 'common.php';
     $connection = connect_database();
     $username   = $_POST['username'];
     $email      = $_POST['email'];
     $password   = hash('sha512', $_POST['password']);
-    if (!$connection->query(
-        "insert into User value (default, '$username', '$email', '$password')"
-    )) {
-        if ($connection->query("select username from User where username = '$username'")->num_rows != 0) {
+    $query      = 'insert into User value (default, ?, ?, ?)';
+    if (!safe_query($connection, $query, $username, $email, $password)) {
+        $query = "select username from User where username = ?";
+        if (safe_query($connection, $query, $username)->num_rows != 0) {
             die('duplicate_username');
         }
-        if ($connection->query("select email from User where email = '$email'")->num_rows != 0) {
+        $query = "select email from User where email = ?";
+        if (safe_query($connection, $query, $username)->num_rows != 0) {
             die('duplicate_email');
         }
         die('unknown_error');
