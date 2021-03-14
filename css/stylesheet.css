@@ -138,11 +138,11 @@ a {
     width: inherit;
     height: inherit;
     overflow: hidden;
-    visibility: visible;
+    z-index: 0;
     resize: none;
     opacity: 1;
     transition:
-        visibility 350ms ease-out,
+        z-index 350ms ease-out,
         opacity 350ms ease-out;
 }
 /* Basic Hamburger Style */
@@ -354,11 +354,11 @@ a {
     width: inherit;
     height: inherit;
     overflow: hidden;
-    visibility: hidden;
+    z-index: -1;
     resize: none;
     opacity: 0;
     transition:
-        visibility 350ms ease-out,
+        z-index 350ms ease-out,
         opacity 350ms ease-out;
 }
 

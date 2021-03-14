@@ -16,12 +16,12 @@ $(async function () {
         .on('click', function () {
             $('.basic-settings-container')
                 .css({
-                    'visibility': 'visible',
+                    'z-index': '0',
                     'opacity': '1',
                 });
             $('.basic-app-container')
                 .css({
-                    'visibility': 'hidden',
+                    'z-index': '-1',
                     'opacity': '0',
                 });
         });
@@ -29,12 +29,12 @@ $(async function () {
         .on('click', function () {
             $('.basic-settings-container')
                 .css({
-                    'visibility': 'hidden',
+                    'z-index': '-1',
                     'opacity': '0',
                 });
             $('.basic-app-container')
                 .css({
-                    'visibility': 'visible',
+                    'z-index': '0',
                     'opacity': '1',
                 });
         });
