@@ -138,10 +138,12 @@ a {
     width: inherit;
     height: inherit;
     overflow: hidden;
+    visibility: visible;
     resize: none;
     opacity: 1;
-    z-index: 0;
-    transition: opacity 250ms linear;
+    transition:
+        visibility 350ms ease-out,
+        opacity 350ms ease-out;
 }
 /* Basic Hamburger Style */
 .basic-hamburger-content {
@@ -305,7 +307,7 @@ a {
     position: relative;
     height: 80px;
     background: rgb(54, 57, 63);
-    box-shadow: 0 -2px 0 0 rgba(29, 32, 33, 0.67);
+    box-shadow: 0 4px 2px -2px rgba(29, 32, 33, 0.67);
     display: flex;
     z-index: 1;
 }
@@ -352,10 +354,12 @@ a {
     width: inherit;
     height: inherit;
     overflow: hidden;
+    visibility: hidden;
     resize: none;
     opacity: 0;
-    z-index: -1;
-    transition: opacity 250ms linear;
+    transition:
+        visibility 350ms ease-out,
+        opacity 350ms ease-out;
 }
 
 .basic-settings-sidebar {

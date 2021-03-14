@@ -9,8 +9,11 @@
         where username = ? and
               password = ?
         limit 1';
-    safe_query($connection, $exists, $username, $password) == 1 or die('not_found');
-    if (session_start()) {
-        $_SESSION['username'] = $username;
+    safe_query($connection, $exists, $username, $password)->num_rows == 1 or die('not_found');
+    if (!session_start()) {
+        die('session_failure');
     }
+    $_SESSION = [
+        'username' => $username
+    ];
     $connection->close();

@@ -16,28 +16,39 @@ $(async function () {
         .on('click', function () {
             $('.basic-settings-container')
                 .css({
-                    'z-index': '0',
+                    'visibility': 'visible',
                     'opacity': '1',
                 });
             $('.basic-app-container')
                 .css({
-                    'z-index': '-1',
+                    'visibility': 'hidden',
                     'opacity': '0',
                 });
         });
     $('div[class="basic-settings-close-button"]')
         .on('click', function () {
-            $('.basic-app-container')
-                .css({
-                    'z-index': '0',
-                    'opacity': '1',
-
-                });
             $('.basic-settings-container')
                 .css({
-                    'z-index': '-1',
+                    'visibility': 'hidden',
                     'opacity': '0',
                 });
+            $('.basic-app-container')
+                .css({
+                    'visibility': 'visible',
+                    'opacity': '1',
+                });
+        });
+    $('#button-logout')
+        .on('click', function () {
+            $.ajax({
+                url: 'php/logout.php',
+                type: 'POST',
+                data: {},
+                cache: false,
+                success: (_) => {
+                    window.location.replace('index.html');
+                }
+            })
         });
 });
 
@@ -60,6 +71,7 @@ let retrieve_username = (function () {
 
                         case 'unknown_session': {
                             console.log('not logged in.');
+                            window.location.replace('login.html');
                         } break;
                     }
                 }

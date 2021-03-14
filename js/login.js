@@ -61,26 +61,29 @@ function register() {
             },
             cache: false,
             success: (response) => {
-                console.log(response);
-                switch (response) {
-                    case 'duplicate_username': {
-                        result
-                            .text('il nome utente inserito già è stato registrato')
-                            .css('color', '#d71d48')
-                            .show();
-                    } break;
+                if (response.length === 0) {
+                    result.hide();
+                    window.location.replace('login.html');
+                } else {
+                    switch (response) {
+                        case 'duplicate_username': {
+                            result
+                                .text('il nome utente inserito già è stato registrato')
+                                .css('color', '#d71d48')
+                                .show();
+                        } break;
 
-                    case 'duplicate_email': {
-                        result
-                            .text('l\'email inserita già è stata registrata')
-                            .css('color', '#d71d48')
-                            .show();
-                    } break;
+                        case 'duplicate_email': {
+                            result
+                                .text('l\'email inserita già è stata registrata')
+                                .css('color', '#d71d48')
+                                .show();
+                        } break;
 
-                    default: {
-                        result.hide();
-                        window.location.replace('login.html');
-                    } break;
+                        default: {
+                            console.log(response);
+                        } break;
+                    }
                 }
             }
         });
@@ -112,19 +115,22 @@ function login() {
             },
             cache: false,
             success: (response) => {
-                console.log(response);
-                switch (response) {
-                    case 'not_found': {
-                        result
-                            .text('nome utente o password errati')
-                            .css('color', '#d71d48')
-                            .show();
-                    } break;
+                if (response.length === 0) {
+                    result.hide();
+                    window.location.replace('app.html');
+                } else {
+                    switch (response) {
+                        case 'not_found': {
+                            result
+                                .text('nome utente o password errati')
+                                .css('color', '#d71d48')
+                                .show();
+                        } break;
 
-                    default: {
-                        result.hide();
-                        window.location.replace('app.html');
-                    } break;
+                        default: {
+                            console.log(response);
+                        } break;
+                    }
                 }
             }
         });
