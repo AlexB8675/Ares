@@ -12,7 +12,7 @@
         }
         $query = "select email from User where email = ?";
         if (safe_query($connection, $query, $username)->num_rows != 0) {
-            die('duplicate_email');
+            die('duplicate_email'); 
         }
         die('unknown_error');
     }

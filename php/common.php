@@ -8,7 +8,7 @@
         return $connection;
     }
 
-    function safe_query(mysqli $connection, string $query, &...$args): mysqli_stmt|false {
+    function safe_query(mysqli $connection, string $query, &...$args): mysqli_result|false {
         $statement = $connection->prepare($query);
         $types = '';
         if (substr_count($query, '?') != count(...$args)) {
@@ -28,5 +28,5 @@
         if (!$statement->execute()) {
             return false;
         }
-        return $statement;
+        return $statement->get_result();
     }

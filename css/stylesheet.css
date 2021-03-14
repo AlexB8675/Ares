@@ -130,7 +130,7 @@ a {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    background: rgb(54, 57, 63);
+    background: inherit;
 }
 
 .basic-app-container {
@@ -140,7 +140,7 @@ a {
     overflow: hidden;
     resize: none;
     opacity: 1;
-    z-index: 1;
+    z-index: 0;
     transition: opacity 250ms linear;
 }
 /* Basic Hamburger Style */
@@ -354,6 +354,7 @@ a {
     overflow: hidden;
     resize: none;
     opacity: 0;
+    z-index: -1;
     transition: opacity 250ms linear;
 }
 
@@ -372,7 +373,7 @@ a {
     display: flex;
 }
 
-.basic-sidebar-line {
+.basic-settings-sidebar-line {
     position: absolute;
     height: 100%;
     width: 220px;
@@ -381,7 +382,7 @@ a {
     overflow: hidden auto;
 }
 
-.basic-sidebar-button {
+.basic-settings-sidebar-button {
     position: relative;
     width: 80%;
     font-size: 12pt;
@@ -393,7 +394,7 @@ a {
     transition: background 250ms ease-in-out;
 }
 
-.basic-sidebar-button:hover {
+.basic-settings-sidebar-button:hover {
     cursor: pointer;
 }
 
@@ -404,7 +405,7 @@ a {
     background: rgb(54, 57, 63);
 }
 
-.basic-close-button {
+.basic-settings-close-button {
     position: absolute;
     height: 36px;
     width: 36px;
@@ -417,7 +418,7 @@ a {
     border-radius: 50%;
 }
 
-.basic-close-button:hover {
+.basic-settings-close-button:hover {
     background: rgb(72, 76, 82);
     cursor: pointer;
 }

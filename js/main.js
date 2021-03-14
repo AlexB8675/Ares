@@ -14,28 +14,29 @@ $(async function () {
     $('div[class="basic-username"]').html(await retrieve_username());
     $('div[class="basic-settings-icon"]')
         .on('click', function () {
-            $('.basic-app-container')
-                .css({
-                    'z-index': '-1',
-                    'opacity': '0',
-                });
             $('.basic-settings-container')
                 .css({
                     'z-index': '0',
                     'opacity': '1',
                 });
+            $('.basic-app-container')
+                .css({
+                    'z-index': '-1',
+                    'opacity': '0',
+                });
         });
-    $('div[class="basic-close-button"]')
+    $('div[class="basic-settings-close-button"]')
         .on('click', function () {
             $('.basic-app-container')
                 .css({
-                    'z-index': '-1',
-                    'opacity': '0',
+                    'z-index': '0',
+                    'opacity': '1',
+
                 });
             $('.basic-settings-container')
                 .css({
-                    'z-index': '0',
-                    'opacity': '1',
+                    'z-index': '-1',
+                    'opacity': '0',
                 });
         });
 });
