@@ -18,25 +18,23 @@ $(async function () {
                 .css({
                     'z-index': '0',
                     'opacity': '1',
-                });
+                })
+                .focus();
             $('.basic-app-container')
                 .css({
                     'z-index': '-1',
                     'opacity': '0',
                 });
         });
+    $('div[class="basic-settings-container"]')
+        .on('keydown', function (event) {
+            if (event.key === 'Escape') {
+                close_settings();
+            }
+        });
     $('div[class="basic-settings-close-button"]')
-        .on('click', function () {
-            $('.basic-settings-container')
-                .css({
-                    'z-index': '-1',
-                    'opacity': '0',
-                });
-            $('.basic-app-container')
-                .css({
-                    'z-index': '0',
-                    'opacity': '1',
-                });
+        .on('click', () => {
+            close_settings();
         });
     $('#button-logout')
         .on('click', function () {
@@ -51,6 +49,20 @@ $(async function () {
             })
         });
 });
+
+function close_settings() {
+    $('.basic-settings-container')
+        .css({
+            'z-index': '-1',
+            'opacity': '0',
+        });
+    $('.basic-app-container')
+        .css({
+            'z-index': '0',
+            'opacity': '1',
+        })
+        .focus();
+}
 
 let retrieve_username = (function () {
     let username = '';

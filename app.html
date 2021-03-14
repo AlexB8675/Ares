@@ -4,9 +4,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <link href="css/stylesheet.css" rel="stylesheet">
-        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="js/jquery-3.5.1.js"></script>
         <script src="js/main.js"></script>
-        <script></script>
         <title>Phobos</title>
     </head>
     <body>
@@ -30,8 +29,10 @@
                     <div class="basic-sidebar-footer">
                         <div class="basic-user-icon"></div>
                         <div class="basic-username"></div>
-                        <div class="basic-settings-icon">
-                            <img src="assets/icons/settings.ico" alt>
+                        <div class="basic-settings-icon-wrapper">
+                            <div class="basic-settings-icon">
+                                <img src="assets/icons/settings.ico" alt>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -45,11 +46,13 @@
                 </div>
             </div>
             <!-- Settings Main Container -->
-            <div class="basic-settings-container">
+            <div class="basic-settings-container" tabindex="0">
                 <div class="basic-settings-sidebar">
                     <div class="basic-settings-sidebar-content">
                         <div class="basic-settings-sidebar-line">
-                            <div class="basic-settings-sidebar-button red-color" id="button-logout">Log Out</div>
+                            <div class="basic-settings-sidebar-button">My Account</div>
+                            <div class="basic-separator"></div>
+                            <div class="basic-settings-sidebar-button color-red" id="button-logout">Log Out</div>
                         </div>
                     </div>
                 </div>

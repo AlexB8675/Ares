@@ -4,7 +4,7 @@
     }
 
     $kind = $_POST['kind'];
-    echo match ($kind) {
+    print match ($kind) {
         'username' => $_SESSION['username'],
         default     => die('unknown_kind')
     };
