@@ -1,7 +1,6 @@
 /* ----------------- Debug ------------------ */
 /** {
-    box-sizing: border-box;
-    border: 1px solid white;
+    outline: 1px solid white;
 }*/
 
 /* ----------- General/Global Style --------- */
@@ -45,12 +44,18 @@ a {
     background: rgb(66, 51, 55) !important;
 }
 
+.basic-active {
+    background: rgb(57, 60, 67);
+    cursor: pointer;
+}
+
 .basic-separator {
-    margin: 8px 10px;
-    height: 1px;
+    width: 95%;
+    height: 2px;
     padding: 0;
-    background: rgb(59, 61, 66);
     border: 0;
+    margin: 8px 0 8px 3px;
+    background: rgb(59, 61, 66);
     vertical-align: baseline;
 }
 
@@ -260,7 +265,9 @@ a {
     flex-direction: row;
     display: flex;
     background: rgb(41, 43, 47);
-    box-shadow: 0 -3px 0 0 rgba(29, 32, 33, 0.67);
+    box-shadow:
+        0  3px 2px rgba(29, 32, 33, 0.67),
+        0 -3px 2px rgba(29, 32, 33, 0.67);
     z-index: 1;
 }
 
@@ -275,7 +282,8 @@ a {
 .basic-username {
     position: relative;
     font-size: 11pt;
-    margin: auto 0;
+    flex: 0;
+    margin: auto 1px;
     color: white;
 }
 
@@ -285,6 +293,7 @@ a {
     align-items: center;
     display: flex;
     margin: auto 0 auto 0;
+    flex-direction: row;
     flex: 1 0 32px;
 }
 
@@ -297,7 +306,7 @@ a {
 }
 
 .basic-settings-icon:hover {
-    transform: rotate(85deg);
+    transform: rotate(90deg);
     cursor: pointer;
 }
 
@@ -347,23 +356,34 @@ a {
     position: relative;
     height: 100%;
     width: 100%;
+    display: flex;
     flex: auto;
+    flex-direction: column;
     background: rgb(54, 57, 63);
 }
 
-.basic-message-sender {
-    position: absolute;
+.basic-message-scroller {
+    position: relative;
     width: 100%;
-    bottom: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
 }
 
-.basic-message-wrapper {
+.basic-message-sender {
+    position: relative;
+    flex: 0 0 auto;
+    min-height: 80px;
+    width: 100%;
+}
+
+.basic-textbox-wrapper {
     position: relative;
     width: calc(100% - 100px);
     max-height: 259px;
+    margin: 0 auto 30px;
     padding: 14px 0;
     overflow-y: auto;
-    margin: auto auto 30px auto;
     background: rgb(64, 68, 75);
     border-radius: 10px;
 }
@@ -428,13 +448,14 @@ a {
     padding: 10px;
     margin: 0 0 0 10px;
     text-align: left;
+    outline: none;
     color: rgb(215, 221, 217);
     border-radius: 10px;
     transition: background 250ms ease-in-out;
 }
 
 .basic-settings-sidebar-button:hover {
-    background: rgb(52, 55, 60);
+    background: rgb(57, 60, 67);
     cursor: pointer;
 }
 

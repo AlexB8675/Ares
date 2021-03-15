@@ -11,7 +11,7 @@ $(async function () {
             $('#hamburger').toggleClass('open');
             $('#app-sidebar').toggleClass('open');
         });
-    $('div[class="basic-username"]').html(await retrieve_username());
+    $('div[class="basic-username"]').html(await fetch_username());
     $('div[class="basic-settings-icon"]')
         .on('click', function () {
             $('.basic-settings-container')
@@ -36,6 +36,18 @@ $(async function () {
         .on('click', () => {
             close_settings();
         });
+    $('div.basic-settings-sidebar-button').each(function () {
+        const current = $(this);
+        current.on('click', function () {
+            $('div.basic-settings-sidebar-button')
+                .each(function () {
+                    if (current !== $(this)) {
+                        $(this).removeClass('basic-active');
+                    }
+                });
+            $(this).addClass('basic-active');
+        });
+    });
     $('#button-logout')
         .on('click', function () {
             $.ajax({
@@ -64,12 +76,12 @@ function close_settings() {
         .focus();
 }
 
-let retrieve_username = (function () {
+let fetch_username = (function () {
     let username = '';
     return async function () {
         if (username === '') {
             await $.ajax({
-                url: 'php/retrieve.php',
+                url: 'php/fetch.php',
                 type: 'POST',
                 data: {
                     kind: 'username'

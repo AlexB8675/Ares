@@ -15,22 +15,24 @@
 
     function safe_query(mysqli $connection, string $query, &...$args): mysqli_stmt|false {
         $statement = mysqli_prepare($connection, $query);
+        $params = [...$args];
         $types = '';
-        foreach ([...$args] as $arg) {
-            $types .= match (gettype($arg)) {
-                'string'  => 's',
-                'double'  => 'd',
-                'integer' => 'i',
-                default   => die('query_error')
-            };
+
+        if (substr_count($query, '?') != count($params)) {
+            die('argument_count_mismatch');
         }
-        if (substr_count($query, '?') != strlen($types)) {
-            die('arguments_mismatch');
+        foreach ($params as $arg) {
+            $type = gettype($arg);
+            $types .= match ($type) {
+                'string',
+                'double',
+                'integer' => $type[0],
+                default   => die('type_error')
+            };
         }
         if (strlen($types) > 0) {
             $statement->bind_param($types, ...$args);
         }
-
         if (!$statement->execute()) {
             return false;
         }
