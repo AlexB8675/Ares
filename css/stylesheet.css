@@ -154,14 +154,14 @@ a {
     resize: none;
     opacity: 1;
     transition:
-        z-index 350ms ease-out,
-        opacity 350ms ease-out;
+        z-index 450ms ease-out,
+        opacity 450ms ease-out;
 }
 /* Basic Hamburger Style */
 .basic-hamburger-content {
-    position: absolute;
+    position: relative;
     width: inherit;
-    height: 80px;
+    flex: 0 0 80px;
     z-index: 1;
     box-shadow: 0 4px 2px -2px rgba(29, 32, 33, 0.67);
 }
@@ -231,6 +231,9 @@ a {
 .basic-sidebar {
     position: relative;
     width: 90px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     height: 100%;
     float: left;
     background: rgb(47, 49, 54);
@@ -242,20 +245,20 @@ a {
 }
 
 .basic-sidebar-scroller {
-    position: absolute;
-    top: 80px;
-    height: calc(100% - 160px);
+    position: relative;
+    flex: 0 1 100%;
     width: inherit;
     overflow: hidden auto;
     background: rgb(47, 49, 54);
 }
 
 .basic-sidebar-footer {
-    position: absolute;
-    height: 80px;
+    position: relative;
     width: inherit;
     overflow: hidden;
-    bottom: 0;
+    flex: 1 0 80px;
+    flex-direction: row;
+    display: flex;
     background: rgb(41, 43, 47);
     box-shadow: 0 -3px 0 0 rgba(29, 32, 33, 0.67);
     z-index: 1;
@@ -270,32 +273,24 @@ a {
 }
 
 .basic-username {
-    position: absolute;
-    top: 32px;
-    left: 92px;
+    position: relative;
     font-size: 11pt;
+    margin: auto 0;
     color: white;
 }
 
-.basic-settings-icon-wrapper {
-    position: absolute;
+.basic-user-settings {
+    position: relative;
     border-radius: 4px;
     align-items: center;
-    height: 32px;
     display: flex;
-    width: 32px;
-    justify-content: center;
-    top: 24px;
-    left: 224px;
-    transition: background 250ms;
-}
-
-.basic-settings-icon-wrapper:hover {
-    background: rgb(72, 76, 82);
+    margin: auto 0 auto 0;
+    flex: 1 0 32px;
 }
 
 .basic-settings-icon {
-    position: absolute;
+    position: relative;
+    margin: 0 12px 0 80px;
     width: 24px;
     height: 24px;
     transition: transform 450ms;
@@ -322,30 +317,38 @@ a {
 }
 
 .basic-user-icon {
-    position: absolute;
-    width: 40px;
-    height: 40px;
+    position: relative;
+    flex: 0 0 40px;
     background: white;
     border-radius: 50%;
     margin: 20px 25px;
 }
 
 /* Basic Header Style */
+.basic-master-app {
+    position: relative;
+    flex-direction: column;
+    display: flex;
+    height: 100%;
+    flex: 1;
+}
+
 .basic-header {
     position: relative;
-    height: 80px;
+    width: 100%;
+    flex: 0 0 80px;
     background: rgb(54, 57, 63);
     box-shadow: 0 4px 2px -2px rgba(29, 32, 33, 0.67);
-    display: flex;
     z-index: 1;
 }
 
 /* Basic Message Box Style */
 .basic-message-container {
     position: relative;
-    height: calc(100% - 80px);
+    height: 100%;
+    width: 100%;
+    flex: auto;
     background: rgb(54, 57, 63);
-    display: flex;
 }
 
 .basic-message-sender {
@@ -386,8 +389,8 @@ a {
     resize: none;
     opacity: 0;
     transition:
-        z-index 350ms ease-out,
-        opacity 350ms ease-out;
+        z-index 450ms ease-out,
+        opacity 450ms ease-out;
 }
 
 .basic-settings-sidebar {

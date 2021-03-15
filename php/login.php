@@ -18,4 +18,4 @@
     $_SESSION = [
         'username' => $username
     ];
-    $connection->close();
+    mysqli_close($connection);

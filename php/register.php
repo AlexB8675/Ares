@@ -20,4 +20,4 @@
 
     $query = 'insert into User value (default, ?, ?, ?)';
     safe_query($connection, $query, $username, $email, $password);
-    $connection->close();
+    mysqli_close($connection);
