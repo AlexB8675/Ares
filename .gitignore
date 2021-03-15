@@ -1,5 +1,7 @@
 .idea
 .idea/*
+wss/idea
+wss/idea/*
 doc/*
 !doc/proposal.pdf
 !doc/proposal.tex
