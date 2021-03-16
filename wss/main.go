@@ -46,11 +46,11 @@ func main() {
         var event Event
         _ = json.Unmarshal(msg, &event)
         switch event.Type {
-			case "message_create": {
-				println("event message_create:" + string(msg))
-				_ = wss.BroadcastOthers(msg, s)
-				break
-			}
+            case "message_create": {
+                println("event message_create:" + string(msg))
+                _ = wss.BroadcastOthers(msg, s)
+                break
+            }
         }
     })
 
