@@ -4,18 +4,31 @@ use Phobos;
 
 create table User (
     id       int                 not null auto_increment,
-    username varchar(128) unique not null,
+    avatar   varchar(128),
     email    varchar(128) unique not null,
+    username varchar(128) unique not null,
     password char(128)           not null,
 
     primary key (id)
 );
 
 create table Guild (
-    id   int         not null auto_increment,
-    name varchar(32) not null,
+    id   int          not null auto_increment,
+    name varchar(128) not null,
 
     primary key (id)
+);
+
+create table Channel (
+    id    int          not null auto_increment,
+    guild int          not null,
+    name  varchar(128) not null,
+
+    primary key (id),
+    foreign key (guild)
+        references Guild(id)
+            on delete cascade
+            on update cascade
 );
 
 create table UserGuild (
@@ -34,18 +47,19 @@ create table UserGuild (
 );
 
 create table Message (
-    id      int  not null auto_increment,
-    author  int  not null,
-    guild   int  not null,
-    content text not null,
+    id        int  not null auto_increment,
+    author    int  not null,
+    channel   int  not null,
+    content   text not null,
+    timestamp int  not null,
 
     primary key (id),
     foreign key (author)
         references User(id)
             on delete cascade
             on update cascade,
-    foreign key (guild)
-        references Guild(id)
+    foreign key (channel)
+        references Channel(id)
             on delete cascade
             on update cascade
 );

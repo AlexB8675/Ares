@@ -1,9 +1,21 @@
 // Initialization
 $(async function () {
     $('#message-textbox')
-        .on('keydown', function (event) {
+        .on('keydown', async function (event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
+                const content = $(this).text().trim();
+                if (content !== '') {
+                    dispatch_event({
+                        op: "1",
+                        type: "message_create",
+                        payload: {
+                            author: `${await fetch_username()}`,
+                            content: `${content}`
+                        }
+                    });
+                    $(this).html('');
+                }
             }
         });
     $('.basic-hamburger-wrapper')
@@ -58,8 +70,9 @@ $(async function () {
                 success: (_) => {
                     window.location.replace('index.html');
                 }
-            })
+            });
         });
+    get_websocket(); // Initializes the websocket connection
 });
 
 function close_settings() {
@@ -76,6 +89,39 @@ function close_settings() {
         .focus();
 }
 
+function insert_message(payload, grouped) {
+    const author  = payload['author'].replaceAll('"', '');
+    const content = payload['content'].replaceAll('"', '');
+    let html;
+    if (!grouped) {
+        html = `
+            <div class="basic-message-group basic-group-start">
+                <div class="basic-chat-message">
+                    <div class="basic-message-avatar"></div>
+                    <div class="basic-message-text">
+                        <div class="basic-message-username">${author}</div>
+                        <div class="basic-message-content">${content}</div>
+                    </div>
+                </div>
+            </div>`;
+    } else {
+        html = `
+            <div class="basic-message-group">
+                <div class="basic-message-content">${content}</div>
+            </div>`;
+    }
+    $('div[class="basic-message-wrapper"]').append(html);
+}
+
+function dispatch_event(payload) {
+    switch (payload['type']) {
+        case 'message_create': {
+            get_websocket().send(JSON.stringify(payload));
+            insert_message(payload['payload'], false);
+        } break;
+    }
+}
+
 let fetch_username = (function () {
     let username = '';
     return async function () {
@@ -88,13 +134,13 @@ let fetch_username = (function () {
                 },
                 cache: false,
                 success: (response) => {
-                    switch (response) { // TODO: Error handling.
+                    switch (response) {
                         default: {
                             username = response;
                         } break;
 
                         case 'unknown_session': {
-                            console.log('not logged in.');
+                            console.log('[Err] not logged in.');
                             window.location.replace('login.html');
                         } break;
                     }
@@ -103,4 +149,25 @@ let fetch_username = (function () {
         }
         return username;
     };
+})();
+
+let get_websocket = (function () {
+    let wss = null;
+    return function () {
+        if (wss === null) {
+            wss = new WebSocket('ws://93.41.228.90:9000');
+            wss.onopen = (_) => {
+                console.log('[Info]: connection successful');
+            };
+            wss.onmessage = async (payload) => {
+                console.log(`[Info]: received message: ${payload.data}`);
+                const event = JSON.parse(payload.data);
+                insert_message(event['payload'], false);
+            };
+            wss.onclose = () => {
+                wss = new WebSocket('ws://93.41.228.90:9000');
+            }
+        }
+        return wss;
+    }
 })();

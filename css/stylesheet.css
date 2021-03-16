@@ -60,6 +60,7 @@ a {
 }
 
 .basic-group-start {
+    padding: 2px 64px !important;
     margin-top: 1rem;
     min-height: 2.75rem;
 }
@@ -287,7 +288,11 @@ a {
 .basic-username {
     position: relative;
     font-size: 11pt;
-    flex: 0;
+    width: 140px;
+    flex: 1 0 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     margin: auto 1px;
     color: white;
 }
@@ -297,14 +302,14 @@ a {
     border-radius: 4px;
     align-items: center;
     display: flex;
-    margin: auto 0 auto 0;
+    margin: auto 0;
     flex-direction: row;
-    flex: 1 0 32px;
+    flex: 0 1 auto;
 }
 
 .basic-settings-icon {
     position: relative;
-    margin: 0 12px 0 80px;
+    margin: 0 12px 0 12px;
     width: 24px;
     height: 24px;
     transition: transform 450ms;
@@ -371,7 +376,9 @@ a {
     position: relative;
     width: 100%;
     height: 100%;
+    display: flex;
     flex: 1 1 0;
+    flex-direction: column-reverse;
     overflow: hidden auto;
 }
 
@@ -384,15 +391,25 @@ a {
     padding: 0 0 16px 0;
 }
 
+/* Basic Chat Message Group Style */
 .basic-message-group {
     position: relative;
     height: inherit;
     flex: 1 0 auto;
-    padding: 10px 64px;
+    padding: 2px 64px 2px 128px;
 }
 
 .basic-message-group:hover {
     background: rgb(50, 53, 59);
+}
+
+/* Basic Chat Message Style */
+.basic-chat-message {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    margin: 0 0 0 8px;
+    text-indent: 0;
 }
 
 .basic-message-avatar {
@@ -404,14 +421,6 @@ a {
     background: white;
     overflow: hidden;
     margin: calc(4px - .125rem) 0 0 0;
-}
-
-.basic-chat-message {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    margin: 0 0 0 8px;
-    text-indent: 0;
 }
 
 .basic-message-text {
@@ -448,6 +457,7 @@ a {
     color: rgb(171, 172, 177);
 }
 
+/* Basic Message Textbox Style */
 .basic-message-sender {
     position: relative;
     flex: 0 0 auto;
