@@ -59,6 +59,11 @@ a {
     vertical-align: baseline;
 }
 
+.basic-group-start {
+    margin-top: 1rem;
+    min-height: 2.75rem;
+}
+
 .basic-form-button {
     box-shadow: 0 3px 0 0 rgba(62, 62, 62, 0.7);
     box-sizing: border-box;
@@ -365,15 +370,87 @@ a {
 .basic-message-scroller {
     position: relative;
     width: 100%;
-    flex: 1 1 auto;
+    height: 100%;
+    flex: 1 1 0;
+    overflow: hidden auto;
+}
+
+.basic-message-wrapper {
+    position: relative;
+    width: inherit;
+    flex-direction: column;
+    display: flex;
+    overflow: hidden visible;
+    padding: 0 0 16px 0;
+}
+
+.basic-message-group {
+    position: relative;
+    height: inherit;
+    flex: 1 0 auto;
+    padding: 10px 64px;
+}
+
+.basic-message-group:hover {
+    background: rgb(50, 53, 59);
+}
+
+.basic-message-avatar {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: white;
+    overflow: hidden;
+    margin: calc(4px - .125rem) 0 0 0;
+}
+
+.basic-chat-message {
+    position: relative;
     display: flex;
     flex-direction: row;
+    margin: 0 0 0 8px;
+    text-indent: 0;
+}
+
+.basic-message-text {
+    position: relative;
+    font-size: 11pt;
+    display: flex;
+    margin: 0 0 0 16px;
+    flex: 1 0 auto;
+    flex-direction: column;
+    color: rgb(150, 151, 155);
+}
+
+.basic-message-username {
+    position: relative;
+    flex: 1 1 auto;
+    display: flex;
+    user-select: text;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+    font-size: 12pt;
+}
+
+.basic-message-content {
+    position: relative;
+    font-size: 12pt;
+    white-space: break-spaces;
+    display: flex;
+    user-select: text;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+    flex: 1 1 auto;
+    color: rgb(171, 172, 177);
 }
 
 .basic-message-sender {
     position: relative;
     flex: 0 0 auto;
-    min-height: 80px;
     width: 100%;
 }
 
@@ -381,7 +458,7 @@ a {
     position: relative;
     width: calc(100% - 100px);
     max-height: 259px;
-    margin: 0 auto 30px;
+    margin: 0 auto 31px;
     padding: 14px 0;
     overflow-y: auto;
     background: rgb(64, 68, 75);
