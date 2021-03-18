@@ -347,6 +347,7 @@ a {
     position: relative;
     flex: 0 0 40px;
     border-radius: 50%;
+    background: white;
     margin: 20px 25px;
 }
 
@@ -649,6 +650,7 @@ a {
 .account-avatar {
     position: relative;
     width: 80px;
+    background: white;
     height: 80px;
     border-radius: 50%;
 }

@@ -36,10 +36,12 @@ $(async function () {
                 close_settings();
             }
         });
-    $('div[class="basic-user-icon"]')
-        .css('background', `url(${avatar}/avatar40.png)`);
-    $('div[class="account-avatar"]')
-        .css('background', `url(${avatar}/avatar80.png)`);
+    if (avatar !== '') {
+        $('div[class="basic-user-icon"]')
+            .css('background', `url(${avatar}/avatar40.png)`);
+        $('div[class="account-avatar"]')
+            .css('background', `url(${avatar}/avatar80.png)`);
+    }
     $('div[class="basic-settings-close-button"]')
         .on('click', () => {
             close_settings();
@@ -103,15 +105,14 @@ async function insert_message(payload) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['content']).html();
     const avatar  = await avatar_from_author(author);
+    const path    = avatar === '' ? 'white' : `url(${avatar}/avatar40.png")`;
     const grouped = $('div[class="basic-message-username"]').last().text() === author;
     let html;
     if (!grouped) {
         html = `
             <div class="basic-message-group basic-group-start">
                 <div class="basic-chat-message">
-                    <div class="basic-message-avatar">
-                        <img src="${avatar}/avatar40.png" alt/>
-                    </div>
+                    <div class="basic-message-avatar" style="background: ${path}"></div>
                     <div class="basic-message-text">
                         <div class="basic-message-username">${author}</div>
                         <div class="basic-message-content">${content}</div>
@@ -127,7 +128,7 @@ async function insert_message(payload) {
     $('div[class="basic-message-wrapper"]').append(html);
 }
 
-function dispatch_event(payload) {
+async function dispatch_event(payload) {
     const bytes = JSON.stringify(payload);
     console.log('dispatch_event: ', bytes);
     switch (payload['type']) {
@@ -137,7 +138,7 @@ function dispatch_event(payload) {
             } catch (e) {
                 console.log(e);
             }
-            insert_message(payload['payload']);
+            await insert_message(payload['payload']);
         } break;
     }
 }
@@ -196,12 +197,12 @@ let get_websocket = (function () {
             wss.onopen = (_) => {
                 console.log('[Info]: connection successful');
             };
-            wss.onmessage = (payload) => {
+            wss.onmessage = async (payload) => {
                 console.log('[Info]: received message: ', payload.data);
                 const event = JSON.parse(payload.data);
                 switch (event['type']) {
                     case 'message_create': {
-                        insert_message(event['payload']);
+                        await insert_message(event['payload']);
                     } break;
                 }
             };
@@ -213,7 +214,12 @@ let get_websocket = (function () {
 let avatar_from_author = (function () {
     let cached = {};
     return async function (author) {
-        if (!Object.keys(cached).includes(author)) {
+        if (cached[author] === undefined) {
+            cached[author] = '';
+        }
+        const has_author = !Object.keys(cached).includes(author);
+        const is_default = cached[author] === '';
+        if (!has_author && is_default) {
             await $.ajax({
                 url: 'php/fetch.php',
                 type: 'POST',

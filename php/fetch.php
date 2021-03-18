@@ -7,8 +7,8 @@
             die('unknown_user');
         }
         $result = $result->fetch_object();
-        if ($result->avatar === null) {
-            return 'assets/avatars/default.png';
+        if (is_null($result->avatar)) {
+            return '';
         }
         return $result->avatar;
     }
