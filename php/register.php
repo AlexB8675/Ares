@@ -18,6 +18,6 @@
         die('duplicate_email');
     }
 
-    $query = 'insert into User value (default, ?, ?, ?)';
+    $query = 'insert into User (id, username, email, password) value (default, ?, ?, ?)';
     safe_query($connection, $query, $username, $email, $password);
     mysqli_close($connection);

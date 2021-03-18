@@ -4,9 +4,9 @@ use Phobos;
 
 create table User (
     id       int                 not null auto_increment,
-    avatar   varchar(128),
     email    varchar(128) unique not null,
     username varchar(128) unique not null,
+    avatar   varchar(128),
     password char(128)           not null,
 
     primary key (id)

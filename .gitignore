@@ -2,6 +2,10 @@
 .idea/*
 wss/idea
 wss/idea/*
+wss/ext
+wss/ext/*
+wss/cmake-build-debug
+wss/cmake-build-debug/*
 doc/*
 !doc/proposal.pdf
 !doc/proposal.tex

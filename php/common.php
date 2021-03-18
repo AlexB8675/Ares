@@ -13,7 +13,7 @@
         return $connection;
     }
 
-    function safe_query(mysqli $connection, string $query, &...$args): mysqli_stmt|false {
+    function safe_query(mysqli $connection, string $query, ...$args): mysqli_stmt|false {
         $statement = mysqli_prepare($connection, $query);
         $params = [...$args];
         $types = '';
@@ -24,10 +24,8 @@
         foreach ($params as $arg) {
             $type = gettype($arg);
             $types .= match ($type) {
-                'string',
-                'double',
-                'integer' => $type[0],
-                default   => die('type_error')
+                'string', 'double', 'integer' => $type[0],
+                default                        => die('type_error')
             };
         }
         if (strlen($types) > 0) {
@@ -37,4 +35,10 @@
             return false;
         }
         return $statement;
+    }
+
+    function start_session() {
+        if (!session_start() || count($_SESSION) === 0) {
+            die('unknown_session');
+        }
     }

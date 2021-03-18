@@ -7,15 +7,18 @@
         select * 
         from User
         where username = ? and
-              password = ?
-        limit 1';
-    safe_query($connection, $exists, $username, $password)
-        ->get_result()
-        ->num_rows == 1 or die('not_found');
+              password = ?';
+    $found = safe_query($connection, $exists, $username, $password)->get_result();
+    if ($found->num_rows === 0) {
+        die('not_found');
+    }
     if (!session_start()) {
         die('session_failure');
     }
+
+    $found = $found->fetch_object();
     $_SESSION = [
-        'username' => $username
+        'username' => $found->username,
+        'email'    => $found->email
     ];
     mysqli_close($connection);

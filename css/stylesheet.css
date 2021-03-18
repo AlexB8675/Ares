@@ -49,6 +49,16 @@ a {
     cursor: pointer;
 }
 
+.basic-visible {
+    z-index: 0 !important;
+    opacity: 1 !important;
+}
+
+.basic-hidden {
+    z-index: -1 !important;
+    opacity: 0 !important;
+}
+
 .basic-separator {
     width: 95%;
     height: 2px;
@@ -60,9 +70,8 @@ a {
 }
 
 .basic-group-start {
-    padding: 2px 64px !important;
-    margin-top: 1rem;
-    min-height: 2.75rem;
+    padding: 0.125rem 64px !important;
+    margin: 1rem 0 0 0;
 }
 
 .basic-form-button {
@@ -165,8 +174,8 @@ a {
     resize: none;
     opacity: 1;
     transition:
-        z-index 450ms ease-out,
-        opacity 450ms ease-out;
+            z-index 450ms ease-out,
+            opacity 450ms ease-out;
 }
 /* Basic Hamburger Style */
 .basic-hamburger-content {
@@ -199,10 +208,10 @@ a {
     opacity: 1;
     left: 0;
     transition:
-        top 250ms ease-in-out,
-        left 250ms ease-in-out,
-        width 250ms ease-in-out,
-        transform 250ms ease-in-out;
+            top 250ms ease-in-out,
+            left 250ms ease-in-out,
+            width 250ms ease-in-out,
+            transform 250ms ease-in-out;
 }
 
 .basic-hamburger span:nth-child(1) {
@@ -272,8 +281,8 @@ a {
     display: flex;
     background: rgb(41, 43, 47);
     box-shadow:
-        0  3px 2px rgba(29, 32, 33, 0.67),
-        0 -3px 2px rgba(29, 32, 33, 0.67);
+            0  3px 2px rgba(29, 32, 33, 0.67),
+            0 -3px 2px rgba(29, 32, 33, 0.67);
     z-index: 1;
 }
 
@@ -309,7 +318,7 @@ a {
 
 .basic-settings-icon {
     position: relative;
-    margin: 0 12px 0 12px;
+    margin: 0 24px 0 0;
     width: 24px;
     height: 24px;
     transition: transform 450ms;
@@ -325,7 +334,6 @@ a {
     position: relative;
     width: 48px;
     height: 48px;
-    background: white;
     border-radius: 50%;
     margin: 0 0 12px 21px;
     transition: border-radius 250ms;
@@ -338,7 +346,6 @@ a {
 .basic-user-icon {
     position: relative;
     flex: 0 0 40px;
-    background: white;
     border-radius: 50%;
     margin: 20px 25px;
 }
@@ -395,8 +402,10 @@ a {
 .basic-message-group {
     position: relative;
     height: inherit;
-    flex: 1 0 auto;
-    padding: 2px 64px 2px 128px;
+    flex: 0 0 auto;
+    line-height: 22px;
+    min-height: 22px;
+    padding: 0.125rem 64px 0.125rem 128px;
 }
 
 .basic-message-group:hover {
@@ -418,7 +427,6 @@ a {
     height: 40px;
     flex: 0 0 auto;
     border-radius: 50%;
-    background: white;
     overflow: hidden;
     margin: calc(4px - .125rem) 0 0 0;
 }
@@ -428,7 +436,8 @@ a {
     font-size: 11pt;
     display: flex;
     margin: 0 0 0 16px;
-    flex: 1 0 auto;
+    max-width: 100%;
+    flex: 0 1 auto;
     flex-direction: column;
     color: rgb(150, 151, 155);
 }
@@ -438,18 +447,24 @@ a {
     flex: 1 1 auto;
     display: flex;
     user-select: text;
+    overflow-wrap: break-word;
+    line-height: 22px;
+    min-height: 22px;
     justify-content: center;
     align-content: center;
     flex-direction: column;
-    font-size: 12pt;
+    font-size: 13pt;
 }
 
 .basic-message-content {
     position: relative;
-    font-size: 12pt;
-    white-space: break-spaces;
     display: flex;
     user-select: text;
+    line-height: 22px;
+    min-height: 22px;
+    font-size: 12pt;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
     justify-content: center;
     align-content: center;
     flex-direction: column;
@@ -482,6 +497,8 @@ a {
     margin: 0 auto;
     resize: none;
     font-size: 18px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
     outline: none;
     color: rgb(220, 221, 222);
 }
@@ -496,8 +513,8 @@ a {
     resize: none;
     opacity: 0;
     transition:
-        z-index 450ms ease-out,
-        opacity 450ms ease-out;
+            z-index 450ms ease-out,
+            opacity 450ms ease-out;
 }
 
 .basic-settings-sidebar {
@@ -548,25 +565,120 @@ a {
 
 .basic-settings-main {
     position: relative;
+    align-items: flex-start;
     height: 100%;
     display: flex;
+    flex-direction: row;
     background: rgb(54, 57, 63);
 }
 
+.basic-settings-scroller {
+    position: relative;
+    height: inherit;
+    display: flex;
+    flex: 1 0 auto;
+    overflow: auto;
+    justify-content: center;
+}
+
+.basic-settings-content {
+    position: relative;
+    display: flex;
+    background: inherit;
+    flex-direction: column;
+    overflow: visible;
+    padding: 60px 40px 80px;
+    flex: 1 1 auto;
+    max-width: 750px;
+    min-width: 750px;
+}
+
+.basic-settings-header {
+    position: relative;
+    font-size: 13pt;
+    text-align: left;
+    display: flex;
+    flex: 0 1 auto;
+    line-height: 20px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    margin: 0 0 0.85em 0;
+}
+
 .basic-settings-close-button {
-    position: absolute;
-    height: 36px;
-    width: 36px;
-    top: 32px;
-    right: 32px;
-    background: transparent;
-    padding: 12px 0 0 12px;
-    border: 2px solid rgb(99, 102, 110);
-    transition: background 250ms ease-in-out;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 0 auto;
     border-radius: 50%;
+    border: 1px solid rgb(114, 118, 125);
+    width: 48px;
+    height: 48px;
+    margin: 48px 48px 0 16px;
+    cursor: pointer;
 }
 
 .basic-settings-close-button:hover {
     background: rgb(72, 76, 82);
     cursor: pointer;
+}
+
+/* Specialized Style */
+.account-container {
+    position: relative;
+    display: flex;
+    flex: 0 0 auto;
+    background: rgb(47, 49, 54);
+    border-radius: 8px;
+    padding: 16px;
+    flex-direction: column;
+    outline: 0;
+    opacity: 0;
+    z-index: -1;
+}
+
+.account-profile {
+    position: relative;
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: row;
+}
+
+.account-avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+
+.account-details {
+    position: relative;
+    flex: 1 1 auto;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.account-details div[id="username"], div[id="email"] {
+    position: relative;
+    flex: 0 0 auto;
+    font-size: 13pt;
+    margin: 0 0 0 16px;
+    color: rgb(249, 255, 249);
+    text-overflow: ellipsis;
+}
+
+.account-avatar-change {
+    position: relative;
+    background: rgb(104, 114, 127);
+    flex: 0 0 auto;
+    align-self: center;
+    font-size: 13pt;
+    padding: 6px 12px;
+    left: 0;
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
 }
