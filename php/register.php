@@ -1,6 +1,7 @@
 <?php
     include_once 'common.php';
     $connection = connect_database();
+    $id         = $_POST['id'];
     $username   = $_POST['username'];
     $email      = $_POST['email'];
     $password   = hash('sha512', $_POST['password']);
@@ -18,6 +19,6 @@
         die('duplicate_email');
     }
 
-    $query = 'insert into User (id, username, email, password) value (default, ?, ?, ?)';
-    safe_query($connection, $query, $username, $email, $password);
+    $query = 'insert into User (id, username, email, password) value (?, ?, ?, ?)';
+    safe_query($connection, $query, intval($id), $username, $email, $password);
     mysqli_close($connection);

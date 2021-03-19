@@ -1,6 +1,6 @@
 <?php
     include_once 'common.php';
-    function insert_avatar(mysqli $connection, string $author, string $path) {
+    function insert_avatar(mysqli $connection, int $author, string $path) {
         $image    = imagecreatefromstring(file_get_contents($path));
         $scale_40 = imagescale($image , 40, 40);
         $scale_80 = imagescale($image , 80, 80);
@@ -12,19 +12,18 @@
         $query = "
             update User
             set avatar = ?
-            where username = ?";
+            where id = ?";
         safe_query($connection, $query, "assets/avatars/$author", $author);
-
     }
 
     start_session();
     $connection = connect_database();
     $kind       = $_POST['kind'];
-    $author     = $_POST['author'];
+    $id         = $_POST['id'];
 
     switch ($kind) {
         case 'avatar': {
-            insert_avatar($connection, $author, $_FILES['avatar']['tmp_name']);
+            insert_avatar($connection, intval($id), $_FILES['avatar']['tmp_name']);
         } break;
 
         default: {

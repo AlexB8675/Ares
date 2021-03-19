@@ -3,25 +3,25 @@ create database Phobos;
 use Phobos;
 
 create table User (
-    id       int                 not null auto_increment,
+    id       bigint              not null,
     email    varchar(128) unique not null,
     username varchar(128) unique not null,
-    avatar   varchar(128),
     password char(128)           not null,
+    avatar   varchar(128),
 
     primary key (id)
 );
 
 create table Guild (
-    id   int          not null auto_increment,
+    id   bigint       not null,
     name varchar(128) not null,
 
     primary key (id)
 );
 
 create table Channel (
-    id    int          not null auto_increment,
-    guild int          not null,
+    id    bigint       not null,
+    guild bigint       not null,
     name  varchar(128) not null,
 
     primary key (id),
@@ -32,8 +32,8 @@ create table Channel (
 );
 
 create table UserGuild (
-    user_id  int not null,
-    guild_id int not null,
+    user_id  bigint not null,
+    guild_id bigint not null,
 
     primary key (user_id, guild_id),
     foreign key (user_id)
@@ -47,11 +47,11 @@ create table UserGuild (
 );
 
 create table Message (
-    id        int  not null auto_increment,
-    author    int  not null,
-    channel   int  not null,
-    content   text not null,
-    timestamp int  not null,
+    id        bigint  not null,
+    author    bigint  not null,
+    channel   bigint  not null,
+    content   text    not null,
+    timestamp bigint  not null,
 
     primary key (id),
     foreign key (author)

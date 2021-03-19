@@ -1,6 +1,6 @@
 // Initialization
 $(async function () {
-    const avatar = await avatar_from_author(await fetch('username'));
+    const avatar = await avatar_from_id(await fetch('id'));
     $('#message-textbox')
         .on('keydown', async function (event) {
             if (event.key === 'Enter' && !event.shiftKey) {
@@ -11,6 +11,7 @@ $(async function () {
                         op: "1",
                         type: "message_create",
                         payload: {
+                            id: `${await fetch('id')}`,
                             author: `${await fetch('username')}`,
                             content: `${content}`
                         }
@@ -90,7 +91,7 @@ $(async function () {
                 .attr('type', 'file')
                 .trigger('click')
                 .on('change', async function (event) {
-                    insert_avatar(await fetch('username'), event.target.files[0]);
+                    insert_avatar(await fetch('id'), event.target.files[0]);
                 });
         });
     get_websocket(); // Initializes websocket connection.
@@ -104,7 +105,7 @@ function close_settings() {
 async function insert_message(payload) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['content']).html();
-    const avatar  = await avatar_from_author(author);
+    const avatar  = await avatar_from_id(payload['id']);
     const path    = avatar === '' ? 'white' : `url(${avatar}/avatar40.png")`;
     const grouped = $('div[class="basic-message-username"]').last().text() === author;
     let html;
@@ -143,11 +144,11 @@ async function dispatch_event(payload) {
     }
 }
 
-function insert_avatar(author, file) {
+function insert_avatar(id, file) {
     let data = new FormData();
-    data.append('avatar', file);
-    data.append('author', author);
     data.append('kind', 'avatar');
+    data.append('avatar', file);
+    data.append('id', id);
     $.ajax({
         url: 'php/insert.php',
         type: 'POST',
@@ -211,32 +212,32 @@ let get_websocket = (function () {
     }
 })();
 
-let avatar_from_author = (function () {
+let avatar_from_id = (function () {
     let cached = {};
-    return async function (author) {
-        if (cached[author] === undefined) {
-            cached[author] = '';
+    return async function (id) {
+        if (cached[id] === undefined) {
+            cached[id] = '';
         }
-        const has_author = !Object.keys(cached).includes(author);
-        const is_default = cached[author] === '';
+        const has_author = !Object.keys(cached).includes(id);
+        const is_default = cached[id] === '';
         if (!has_author && is_default) {
             await $.ajax({
                 url: 'php/fetch.php',
                 type: 'POST',
                 data: {
                     kind: 'avatar',
-                    author: author,
+                    id: id,
                 },
                 cache: false,
                 success: (response) => {
                     switch (response) { // TODO: Error handling.
                         default: {
-                            cached[author] = response;
+                            cached[id] = response;
                         } break;
                     }
                 }
             });
         }
-        return cached[author];
+        return cached[id];
     }
 })();

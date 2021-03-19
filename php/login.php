@@ -19,6 +19,7 @@
     $found = $found->fetch_object();
     $_SESSION = [
         'username' => $found->username,
-        'email'    => $found->email
+        'email'    => $found->email,
+        'id'       => $found->id
     ];
     mysqli_close($connection);

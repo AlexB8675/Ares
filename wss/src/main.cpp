@@ -118,7 +118,8 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             rjs::Document document;
             document.Parse(payload.c_str());
             const std::string type   = document["type"].Get<const char*>();
-            const std::string author = document["payload"]["author"].Get<const char*>();
+            const std::string author = document["payload"]["id"].Get<const char*>();
+            const std::string id     = document["payload"]["author"].Get<const char*>();
             std::string content      = document["payload"]["content"].Get<const char*>();
             content = std::regex_replace(content, std::regex("\""), "\\\"");
             if (type == "message_create") {
@@ -127,6 +128,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     "  \"op\": 1,\n"
                     "  \"type\": \"message_create\",\n"
                     "  \"payload\": {\n"
+                    "    \"id\": " + id + ",\n"
                     "    \"content\": \"" + content + "\",\n"
                     "    \"author\": \"" + author + "\"\n"
                     "  }\n"

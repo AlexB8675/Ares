@@ -55,6 +55,7 @@ function register() {
             url: 'php/register.php',
             type: 'POST',
             data: {
+                id: next_id(),
                 username: username,
                 email: email,
                 password: password,
