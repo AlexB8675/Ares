@@ -7,7 +7,7 @@ $(async function () {
                 event.preventDefault();
                 const content = $(this).text().trim();
                 if (content !== '') {
-                    dispatch_event({
+                    await dispatch_event({
                         op: "1",
                         type: "message_create",
                         payload: {
@@ -25,7 +25,7 @@ $(async function () {
             $('#app-sidebar').toggleClass('open');
         });
     $('div[class="basic-username"]').html(await fetch('username'));
-    $('div[class="basic-settings-icon"]')
+    $('div[class="basic-settings-icon"]:last-child')
         .on('click', function () {
             $('.basic-settings-container').toggleClass('basic-visible');
             $('.basic-app-container').toggleClass('basic-hidden');

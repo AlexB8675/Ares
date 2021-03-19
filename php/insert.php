@@ -7,8 +7,8 @@
         $target   = "../assets/avatars/$author";
 
         mkdir($target);
-        imagepng($scale_40, $target.'/avatar40.png');
-        imagepng($scale_80, $target.'/avatar80.png');
+        imagepng($scale_40, $target.'/avatar40.png', 0, PNG_ALL_FILTERS);
+        imagepng($scale_80, $target.'/avatar80.png', 0, PNG_ALL_FILTERS);
         $query = "
             update User
             set avatar = ?

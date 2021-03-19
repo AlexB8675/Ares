@@ -30,8 +30,7 @@ namespace http      = beast::http;
 namespace ip        = asio::ip;
 namespace rjs       = rapidjson;
 
-using ushort = unsigned short;
-using uchar  = unsigned char;
+using payload_data_t = std::vector<unsigned char>;
 
 static std::string timestamp() noexcept {
     const auto time = std::time(nullptr);
@@ -55,7 +54,7 @@ public:
     }
 
     template <typename... Args>
-    void send(const std::vector<uchar>& data, Args&&... args) noexcept {
+    void send(const payload_data_t& data, Args&&... args) noexcept {
         const auto excluded = std::set<websocket_session_t*>{ args... };
 
         std::vector<std::weak_ptr<websocket_session_t>> session_refs; {
@@ -79,11 +78,11 @@ public:
 class websocket_session_t : public std::enable_shared_from_this<websocket_session_t> {
     websocket::stream<beast::tcp_stream> _ws;
     std::shared_ptr<shared_state_t> _state;
-    std::queue<std::vector<uchar>> _payloads;
+    std::queue<payload_data_t> _payloads;
     ip::tcp::endpoint _endpoint;
     beast::flat_buffer _buffer;
 
-    void on_send(const std::vector<uchar>& payload) noexcept {
+    void on_send(const payload_data_t& payload) noexcept {
         _payloads.push(payload);
         if (_payloads.size() > 1) {
             return;
@@ -183,10 +182,10 @@ public:
             });
     }
 
-    void send(const std::vector<uchar>& payload) noexcept {
+    void send(const payload_data_t& payload) noexcept {
         asio::post(
             _ws.get_executor(),
-            [payload, self = shared_from_this()]() mutable {
+            [payload, self = shared_from_this()]() noexcept {
                 self->on_send(payload);
             });
     }
@@ -197,9 +196,9 @@ class listener_t : public std::enable_shared_from_this<listener_t> {
     ip::tcp::acceptor _acceptor;
     asio::io_context& _context;
 
-    void accept(ip::tcp::socket&& cumsock) noexcept {
-        auto endpoint = cumsock.remote_endpoint();
-        std::make_shared<websocket_session_t>(std::move(cumsock), std::move(endpoint), _state)->run();
+    void accept(ip::tcp::socket&& sock) noexcept {
+        auto endpoint = sock.remote_endpoint();
+        std::make_shared<websocket_session_t>(std::move(sock), std::move(endpoint), _state)->run();
         _acceptor.async_accept(
             asio::make_strand(_context),
             [self = shared_from_this()](beast::error_code, ip::tcp::socket sock) noexcept {

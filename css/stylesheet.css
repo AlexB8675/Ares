@@ -290,15 +290,14 @@ a {
     position: relative;
     padding-top: 15px;
     width: inherit;
-    float: left;
+    float: right;
     overflow: visible;
 }
 
 .basic-username {
     position: relative;
     font-size: 11pt;
-    width: 140px;
-    flex: 1 0 auto;
+    flex: 0 0 96px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -311,22 +310,71 @@ a {
     border-radius: 4px;
     align-items: center;
     display: flex;
+    padding: 0 12px 0 0;
     margin: auto 0;
     flex-direction: row;
-    flex: 0 1 auto;
+    flex: 1 1 auto;
 }
 
 .basic-settings-icon {
     position: relative;
-    margin: 0 24px 0 0;
-    width: 24px;
-    height: 24px;
-    transition: transform 450ms;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin: 0 0 0 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.basic-settings-icon img {
+    width: 20px;
+    height: 20px;
 }
 
 .basic-settings-icon:hover {
-    transform: rotate(90deg);
+    background: rgb(53, 56, 62);
     cursor: pointer;
+}
+
+.basic-settings-icon:hover > .basic-settings-icon-note {
+    z-index: 2;
+    visibility: visible;
+}
+
+.basic-settings-icon:last-child > img {
+    transition: 450ms;
+}
+
+.basic-settings-icon:last-child:hover > img {
+    transform: rotate(90deg);
+}
+
+.basic-settings-icon-note {
+    position: fixed;
+    font-size: 11pt;
+    display: flex;
+    bottom: 64px;
+    padding: 8px 12px;
+    color: white;
+    background: rgb(24, 25, 28);
+    border-radius: 6px;
+    z-index: -1;
+    visibility: hidden;
+}
+
+.basic-settings-icon-note::after {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-right: solid 6px transparent;
+    border-left: solid 6px transparent;
+    border-top: solid 6px rgb(24, 25, 28);
+    transform: translateX(-50%);
+    content: '';
+    top: 100%;
+    left: 50%;
 }
 
 /* Basic Icon Style */
@@ -334,9 +382,14 @@ a {
     position: relative;
     width: 48px;
     height: 48px;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
+    background: rgb(68, 69, 72);
     margin: 0 0 12px 21px;
-    transition: border-radius 250ms;
+    transition: border-radius 350ms;
 }
 
 .basic-sidebar-icon:hover {
@@ -568,6 +621,7 @@ a {
     position: relative;
     align-items: flex-start;
     height: 100%;
+    overflow: auto;
     display: flex;
     flex-direction: row;
     background: rgb(54, 57, 63);
@@ -578,7 +632,7 @@ a {
     height: inherit;
     display: flex;
     flex: 1 0 auto;
-    overflow: auto;
+    overflow: visible;
     justify-content: center;
 }
 
@@ -587,7 +641,6 @@ a {
     display: flex;
     background: inherit;
     flex-direction: column;
-    overflow: visible;
     padding: 60px 40px 80px;
     flex: 1 1 auto;
     max-width: 750px;
