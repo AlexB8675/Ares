@@ -4,8 +4,8 @@ use Phobos;
 
 create table User (
     id       bigint              not null,
-    email    varchar(128) unique not null,
     username varchar(128) unique not null,
+    email    varchar(128) unique not null,
     password char(128)           not null,
     avatar   varchar(128),
 

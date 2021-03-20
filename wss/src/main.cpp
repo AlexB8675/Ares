@@ -30,7 +30,7 @@ namespace http      = beast::http;
 namespace ip        = asio::ip;
 namespace rjs       = rapidjson;
 
-using payload_data_t = std::vector<unsigned char>;
+using payload_data_t = std::vector<char8_t>;
 
 static std::string timestamp() noexcept {
     const auto time = std::time(nullptr);
@@ -112,11 +112,13 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
         }
 
         if (_buffer.size() > 0) {
-            std::string payload(asio::buffer_cast<const char*>(_buffer.cdata()), _buffer.size());
-            _buffer.consume(_buffer.size());
-            std::cout << timestamp() << payload << '\n';
             rjs::Document document;
-            document.Parse(payload.c_str());
+            rjs::StringBuffer buffer;
+            document.Parse(static_cast<const char*>(_buffer.cdata().data()), _buffer.size());
+            rjs::Writer<rjs::StringBuffer> writer(buffer);
+            document.Accept(writer);
+            std::cout << timestamp() << buffer.GetString() << '\n';
+            _buffer.consume(_buffer.size());
             const std::string type   = document["type"].Get<const char*>();
             const std::string author = document["payload"]["id"].Get<const char*>();
             const std::string id     = document["payload"]["author"].Get<const char*>();
@@ -128,9 +130,9 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     "  \"op\": 1,\n"
                     "  \"type\": \"message_create\",\n"
                     "  \"payload\": {\n"
-                    "    \"id\": " + id + ",\n"
-                    "    \"content\": \"" + content + "\",\n"
-                    "    \"author\": \"" + author + "\"\n"
+                    "    \"id\": \"" + id + "\",\n"
+                    "    \"author\": \"" + author + "\",\n"
+                    "    \"content\": \"" + content + "\"\n"
                     "  }\n"
                     "}";
                 _state->send({ response.begin(), response.end() }, this);

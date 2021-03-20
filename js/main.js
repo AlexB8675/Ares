@@ -26,16 +26,41 @@ $(async function () {
             $('#app-sidebar').toggleClass('open');
         });
     $('div[class="basic-username"]').html(await fetch('username'));
-    $('div[class="basic-settings-icon"]:last-child')
+    $('#user-settings')
         .on('click', function () {
-            $('.basic-settings-container').toggleClass('basic-visible');
-            $('.basic-app-container').toggleClass('basic-hidden');
+            toggle_settings();
         });
-    $('div[class="basic-settings-container"]')
-        .on('keydown', function (event) {
-            if (event.key === 'Escape') {
-                close_settings();
+    $('#add-server')
+        .on('click', function (event) {
+            $('.create-server-container')
+                .addClass('visible')
+                .removeClass('hidden')
+                .css({
+                    'background': 'rgba(0, 0, 0, 0.8)',
+                    'z-index': '2'
+                });
+            $('.create-server-main')
+                .css({
+                    'height': '600px'
+                });
+            event.stopPropagation();
+        });
+    $('.create-server-container')
+        .on('click', function (event) {
+            if (event.target === this) {
+                $(this)
+                    .addClass('hidden')
+                    .removeClass('visible')
+                    .css({
+                        'background': 'rgba(0, 0, 0, 0.0)',
+                        'z-index':    '-1'
+                    });
+                $('.create-server-main')
+                    .css({
+                        'height': '0'
+                    });
             }
+            event.stopPropagation();
         });
     if (avatar !== '') {
         $('div[class="basic-user-icon"]')
@@ -43,24 +68,24 @@ $(async function () {
         $('div[class="account-avatar"]')
             .css('background', `url(${avatar}/avatar80.png)`);
     }
-    $('div[class="basic-settings-close-button"]')
-        .on('click', () => {
-            close_settings();
+    $('div[class="settings-close-button"]')
+        .on('click', function () {
+            toggle_settings();
         });
-    $('div[class="basic-settings-sidebar-button"]')
+    $('div[class="settings-sidebar-button"]')
         .each(function (index) {
             const current = $(this);
             current.on('click', function () {
-                $('div[class="basic-settings-sidebar-button"]')
+                $('div[class="settings-sidebar-button"]')
                     .each(function () {
-                        $(this).removeClass('basic-active');
+                        $(this).removeClass('active');
                     });
-                current.addClass('basic-active');
-                $('div[class="basic-settings-content"]')
+                current.addClass('active');
+                $('div[class="settings-content"]')
                     .each(function () {
                         $(this).removeClass('basic-visible');
                     });
-                $(`div[class="basic-settings-content"][tabindex="${index}"]`)
+                $(`div[class="settings-content"][tabindex="${index}"]`)
                     .addClass('basic-visible');
             });
         });
@@ -97,8 +122,8 @@ $(async function () {
     get_websocket(); // Initializes websocket connection.
 });
 
-function close_settings() {
-    $('.basic-settings-container').toggleClass('basic-visible');
+function toggle_settings() {
+    $('.settings-container').toggleClass('basic-visible');
     $('.basic-app-container').toggleClass('basic-hidden');
 }
 
@@ -108,6 +133,7 @@ async function insert_message(payload) {
     const avatar  = await avatar_from_id(payload['id']);
     const path    = avatar === '' ? 'white' : `url(${avatar}/avatar40.png")`;
     const grouped = $('div[class="basic-message-username"]').last().text() === author;
+
     let html;
     if (!grouped) {
         html = `
@@ -123,7 +149,9 @@ async function insert_message(payload) {
     } else {
         html = `
             <div class="basic-message-group">
-                <div class="basic-message-content">${content}</div>
+                <div class="basic-chat-message">
+                    <div class="basic-message-content">${content}</div> 
+                </div>
             </div>`;
     }
     $('div[class="basic-message-wrapper"]').append(html);
@@ -199,8 +227,8 @@ let get_websocket = (function () {
                 console.log('[Info]: connection successful');
             };
             wss.onmessage = async (payload) => {
-                console.log('[Info]: received message: ', payload.data);
                 const event = JSON.parse(payload.data);
+                console.log('[Info]: received message: ', event);
                 switch (event['type']) {
                     case 'message_create': {
                         await insert_message(event['payload']);

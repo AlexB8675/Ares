@@ -36,8 +36,8 @@ let next_id = (function () {
         }
 
         last = current;
-        return BigInt(current) << BigInt(node_bits + seq_bits) |
-            BigInt(node) << BigInt(seq_bits) |
-            BigInt(seq);
+        return (BigInt(current) << BigInt(node_bits + seq_bits) |
+                BigInt(node)    << BigInt(seq_bits) |
+                BigInt(seq)).toString();
     }
 })();
