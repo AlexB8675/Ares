@@ -1,6 +1,6 @@
 /* ----------------- Debug ------------------ */
 /** {
-    outline: 1px solid white;
+    outline: 1px solid white !important;
 }*/
 
 /* ----------- General/Global Style --------- */
@@ -32,10 +32,6 @@ html, body {
     width: 100vw;
 }
 
-img {
-    image-rendering: high-quality;
-}
-
 a {
     text-decoration: none;
 }
@@ -56,6 +52,38 @@ a {
 .basic-hidden {
     z-index: -1 !important;
     opacity: 0 !important;
+}
+
+.basic-arrow {
+    position: relative;
+    display: flex;
+    align-self: center;
+    border: solid rgb(79, 86, 96);
+    border-width: 0px 4px 4px 0;
+    flex: 0;
+    padding: 3px;
+}
+
+.right {
+    transform: rotate(-45deg);
+}
+
+.left {
+    transform: rotate(135deg);
+}
+
+.up {
+    transform: rotate(-135deg);
+}
+
+.down {
+    transform: rotate(45deg);
+}
+
+.basic-text {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
 }
 
 .basic-separator {
@@ -745,7 +773,7 @@ a {
 }
 
 /* Create Server Styles */
-.create-server-container {
+.add-server-container {
     position: fixed;
     display: flex;
     width: 100vw;
@@ -754,20 +782,21 @@ a {
     z-index: -1;
 }
 
-.create-server-container.hidden {
+.add-server-container.hidden {
     transition:
         background 300ms,
         z-index    0s ease 200ms;
 }
 
-.create-server-container.visible {
+.add-server-container.visible {
     transition: background 300ms;
 }
 
-.create-server-main {
+.add-server-wrapper {
     position: relative;
     display: flex;
-    width: 500px;
+    overflow: hidden;
+    width: 440px;
     height: 0;
     flex: 0 1 auto;
     align-self: center;
@@ -778,13 +807,83 @@ a {
     transition: height 300ms ease 300ms;
 }
 
-.create-server-header {
+.add-server-wrapper > .close {
+    position: absolute;
+    right: 20px;
+    top: 12px;
+    opacity: 1.0;
+    transition: opacity 250ms;
+}
+
+.add-server-wrapper > .close:hover {
+    cursor: pointer;
+}
+
+.add-server-wrapper > .close::before,
+.add-server-wrapper > .close::after {
+    position: absolute;
+    content: '';
+    height: 20px;
+    width: 2px;
+    background: rgb(108, 108, 110);
+}
+
+.add-server-wrapper > .close::before {
+    transform: rotate(-45deg);
+}
+
+.add-server-wrapper > .close::after {
+    transform: rotate(45deg);
+}
+
+.add-server-main {
+    position: absolute;
+    backface-visibility: hidden;
+    width: 440px;
+    display: flex;
+    flex-direction: column;
+    height: inherit;
+    transform: translate(0px, -50%) scale(1, 1);
+    top: 50%;
+    left: 0;
+    right: 0;
+    transition: 350ms left;
+}
+
+.add-server-header {
     position: relative;
-    font-size: 14pt;
+    font-size: 21pt;
     font-weight: bold;
     display: flex;
+    width: fit-content;
     flex: 0 1 auto;
-    margin: 0 auto;
-    padding: 8px 0;
-    color: white;
+    margin: 0 auto 32px auto;
+    padding: 32px 0 0 0;
+    color: rgb(220, 221, 222);
+}
+
+.add-server-body {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    padding: 0 0 24px;
+}
+
+.add-server-button {
+    position: relative;
+    margin: 12px 24px;
+    padding: 12px 18px;
+    font-size: 15pt;
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: row;
+    color: rgb(220, 221, 222);
+    border: 1px solid rgb(66, 69, 74);
+    border-radius: 8px;
+}
+
+.add-server-button:hover {
+    background: rgb(58, 62, 68);
+    cursor: pointer;
 }

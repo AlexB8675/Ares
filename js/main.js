@@ -31,36 +31,28 @@ $(async function () {
             toggle_settings();
         });
     $('#add-server')
-        .on('click', function (event) {
-            $('.create-server-container')
+        .on('click', function () {
+            $('.add-server-container')
                 .addClass('visible')
                 .removeClass('hidden')
                 .css({
-                    'background': 'rgba(0, 0, 0, 0.8)',
+                    'background': 'rgba(0, 0, 0, 0.6)',
                     'z-index': '2'
                 });
-            $('.create-server-main')
+            $('.add-server-wrapper')
                 .css({
-                    'height': '600px'
+                    'height': '300px'
                 });
-            event.stopPropagation();
         });
-    $('.create-server-container')
+    $('.add-server-wrapper .close')
+        .on('click', function () {
+            close_add_server($('.add-server-container'));
+        })
+    $('.add-server-container')
         .on('click', function (event) {
             if (event.target === this) {
-                $(this)
-                    .addClass('hidden')
-                    .removeClass('visible')
-                    .css({
-                        'background': 'rgba(0, 0, 0, 0.0)',
-                        'z-index':    '-1'
-                    });
-                $('.create-server-main')
-                    .css({
-                        'height': '0'
-                    });
+                close_add_server($(this));
             }
-            event.stopPropagation();
         });
     if (avatar !== '') {
         $('div[class="basic-user-icon"]')
@@ -127,6 +119,20 @@ function toggle_settings() {
     $('.basic-app-container').toggleClass('basic-hidden');
 }
 
+function close_add_server(that) {
+    that
+        .addClass('hidden')
+        .removeClass('visible')
+        .css({
+            'background': 'rgba(0, 0, 0, 0.0)',
+            'z-index':    '-1'
+        });
+    $('.add-server-wrapper')
+        .css({
+            'height': '0'
+        });
+}
+
 async function insert_message(payload) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['content']).html();
@@ -176,7 +182,6 @@ function insert_avatar(id, file) {
     let data = new FormData();
     data.append('kind', 'avatar');
     data.append('avatar', file);
-    data.append('id', id);
     $.ajax({
         url: 'php/insert.php',
         type: 'POST',
@@ -227,11 +232,11 @@ let get_websocket = (function () {
                 console.log('[Info]: connection successful');
             };
             wss.onmessage = async (payload) => {
-                const event = JSON.parse(payload.data);
-                console.log('[Info]: received message: ', event);
-                switch (event['type']) {
+                const data = JSON.parse(payload.data);
+                console.log('[Info]: received message: ', data);
+                switch (data['type']) {
                     case 'message_create': {
-                        await insert_message(event['payload']);
+                        await insert_message(data['payload']);
                     } break;
                 }
             };

@@ -5,8 +5,8 @@ function random(min, max) {
 let next_id = (function () {
     const node_bits = 10;
     const seq_bits  = 12;
-    const max_node  = Math.pow(2, node_bits) - 1;
-    const max_seq   = Math.pow(2, seq_bits) - 1;
+    const max_node  = (2 ** node_bits) - 1;
+    const max_seq   = (2 ** seq_bits) - 1;
     const epoch     = 1609459200000;
 
     let last = -1;

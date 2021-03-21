@@ -120,8 +120,8 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             std::cout << timestamp() << buffer.GetString() << '\n';
             _buffer.consume(_buffer.size());
             const std::string type   = document["type"].Get<const char*>();
-            const std::string author = document["payload"]["id"].Get<const char*>();
-            const std::string id     = document["payload"]["author"].Get<const char*>();
+            const std::string id     = document["payload"]["id"].Get<const char*>();
+            const std::string author = document["payload"]["author"].Get<const char*>();
             std::string content      = document["payload"]["content"].Get<const char*>();
             content = std::regex_replace(content, std::regex("\""), "\\\"");
             if (type == "message_create") {

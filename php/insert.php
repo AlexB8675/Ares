@@ -6,7 +6,9 @@
         $scale_80 = imagescale($image , 80, 80);
         $target   = "../assets/avatars/$author";
 
-        mkdir($target);
+        if (!is_dir($target)) {
+            mkdir($target);
+        }
         imagepng($scale_40, $target.'/avatar40.png', 0, PNG_ALL_FILTERS);
         imagepng($scale_80, $target.'/avatar80.png', 0, PNG_ALL_FILTERS);
         $query = "
@@ -19,11 +21,10 @@
     start_session();
     $connection = connect_database();
     $kind       = $_POST['kind'];
-    $id         = $_POST['id'];
 
     switch ($kind) {
         case 'avatar': {
-            insert_avatar($connection, intval($id), $_FILES['avatar']['tmp_name']);
+            insert_avatar($connection, $_SESSION['id'], $_FILES['avatar']['tmp_name']);
         } break;
 
         default: {

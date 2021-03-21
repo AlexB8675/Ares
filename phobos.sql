@@ -13,8 +13,9 @@ create table User (
 );
 
 create table Guild (
-    id   bigint       not null,
-    name varchar(128) not null,
+    id     bigint       not null,
+    name   varchar(128) not null,
+    avatar varchar(128) not null,
 
     primary key (id)
 );
@@ -51,7 +52,6 @@ create table Message (
     author    bigint  not null,
     channel   bigint  not null,
     content   text    not null,
-    timestamp bigint  not null,
 
     primary key (id),
     foreign key (author)
