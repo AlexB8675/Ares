@@ -1,21 +1,22 @@
 <?php
     include_once 'common.php';
     function insert_avatar(mysqli $connection, int $author, string $path) {
-        $image    = imagecreatefromstring(file_get_contents($path));
-        $scale_40 = imagescale($image , 40, 40);
-        $scale_80 = imagescale($image , 80, 80);
-        $target   = "../assets/avatars/$author";
+        $image = @imagecreatefromstring(file_get_contents($path));
+        if (!$image) {
+            die('unsupported_format');
+        }
 
+        $target = "../assets/avatars/$author";
         if (!is_dir($target)) {
             mkdir($target);
         }
-        imagepng($scale_40, $target.'/avatar40.png', 0, PNG_ALL_FILTERS);
-        imagepng($scale_80, $target.'/avatar80.png', 0, PNG_ALL_FILTERS);
+
+        imagepng(imagescale($image , 256, 256), "$target/avatar.png", 0);
         $query = "
             update User
             set avatar = ?
             where id = ?";
-        safe_query($connection, $query, "assets/avatars/$author", $author);
+        safe_query($connection, $query, "assets/avatars/$author/avatar.png", $author);
     }
 
     start_session();

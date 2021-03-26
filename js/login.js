@@ -11,6 +11,16 @@ $(function () {
                     .css('top', '30px');
             }
         });
+    $('#login-form')
+        .on('submit', function (event) {
+            event.preventDefault();
+            return login();
+        });
+    $('#register-form')
+        .on('submit', function (event) {
+            event.preventDefault();
+            return register();
+        });
 });
 
 function register() {

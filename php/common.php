@@ -1,5 +1,6 @@
 <?php
     function connect_database(): mysqli {
+        $database   = 'Ares';
         $hostname   = 'localhost';
         $username   = 'root';
         $password   = '';
@@ -7,7 +8,7 @@
         if ($connection->connect_error) {
             die("connection_error: $connection->connect_error");
         }
-        if (!mysqli_select_db($connection, 'Phobos')) {
+        if (!mysqli_select_db($connection, $database)) {
             die('unknown_database');
         }
         return $connection;
@@ -22,7 +23,7 @@
             die('argument_count_mismatch');
         }
         foreach ($params as $arg) {
-            $type = gettype($arg);
+            $type   = gettype($arg);
             $types .= match ($type) {
                 'string', 'double', 'integer' => $type[0],
                 default                        => die('type_error')

@@ -238,6 +238,7 @@ int main() {
     auto threads           = std::vector<std::thread>(concurrency - 1);
 
     std::make_shared<listener_t>(context, ip::tcp::endpoint{ address, port })->run();
+    std::cout << timestamp() << "started listening on port: " << port << '\n';
     for (auto& each : threads) {
         each = std::thread([&context]() noexcept {
             context.run();

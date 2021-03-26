@@ -201,8 +201,8 @@ a {
     resize: none;
     opacity: 1;
     transition:
-        z-index 450ms ease-out,
-        opacity 450ms ease-out;
+            z-index 450ms ease-out,
+            opacity 450ms ease-out;
 }
 /* Basic Hamburger Style */
 .basic-hamburger-content {
@@ -427,9 +427,14 @@ a {
 .basic-user-icon {
     position: relative;
     flex: 0 0 40px;
-    border-radius: 50%;
-    background: white;
     margin: 20px 25px;
+}
+
+.basic-user-icon > img {
+    width: 40px;
+    height: 40px;
+    outline: none;
+    border-radius: 50%;
 }
 
 /* Basic Header Style */
@@ -508,9 +513,15 @@ a {
     width: 40px;
     height: 40px;
     flex: 0 0 auto;
-    border-radius: 50%;
     overflow: hidden;
     margin: calc(4px - .125rem) 0 0 0;
+}
+
+.basic-message-avatar > img {
+    width: 40px;
+    height: 40px;
+    outline: none;
+    border-radius: 50%;
 }
 
 .basic-message-text {
@@ -742,6 +753,14 @@ a {
     border-radius: 50%;
 }
 
+.account-avatar > img {
+    width: 80px;
+    height: 80px;
+    outline: none;
+    border-radius: 50%;
+}
+
+
 .account-details {
     position: relative;
     flex: 1 1 auto;
@@ -784,8 +803,8 @@ a {
 
 .add-server-container.hidden {
     transition:
-        background 300ms,
-        z-index    0s ease 200ms;
+            background 300ms,
+            z-index    0s ease 200ms;
 }
 
 .add-server-container.visible {
@@ -812,7 +831,9 @@ a {
     right: 20px;
     top: 12px;
     opacity: 1.0;
-    transition: opacity 250ms;
+    transition:
+        opacity 250ms,
+        top     250ms;
 }
 
 .add-server-wrapper > .close:hover {
@@ -837,14 +858,11 @@ a {
 }
 
 .add-server-main {
-    position: absolute;
+    position: relative;
     backface-visibility: hidden;
-    width: 440px;
     display: flex;
     flex-direction: column;
     height: inherit;
-    transform: translate(0px, -50%) scale(1, 1);
-    top: 50%;
     left: 0;
     right: 0;
     transition: 350ms left;
@@ -857,8 +875,7 @@ a {
     display: flex;
     width: fit-content;
     flex: 0 1 auto;
-    margin: 0 auto 32px auto;
-    padding: 32px 0 0 0;
+    margin: 36px auto 48px;
     color: rgb(220, 221, 222);
 }
 
@@ -867,7 +884,6 @@ a {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    padding: 0 0 24px;
 }
 
 .add-server-button {

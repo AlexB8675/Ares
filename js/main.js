@@ -1,6 +1,5 @@
 // Initialization
 $(async function () {
-    const avatar = await avatar_from_id(await fetch('id'));
     $('#message-textbox')
         .on('keydown', async function (event) {
             if (event.key === 'Enter' && !event.shiftKey) {
@@ -54,11 +53,12 @@ $(async function () {
                 close_add_server($(this));
             }
         });
+    const avatar = await avatar_from_id(await fetch('id'));
     if (avatar !== '') {
-        $('div[class="basic-user-icon"]')
-            .css('background', `url(${avatar}/avatar40.png)`);
-        $('div[class="account-avatar"]')
-            .css('background', `url(${avatar}/avatar80.png)`);
+        $('div[class="basic-user-icon"] img')
+            .prop('src', avatar);
+        $('div[class="account-avatar"] img')
+            .prop('src', avatar);
     }
     $('div[class="settings-close-button"]')
         .on('click', function () {
@@ -137,7 +137,7 @@ async function insert_message(payload) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['content']).html();
     const avatar  = await avatar_from_id(payload['id']);
-    const path    = avatar === '' ? 'white' : `url(${avatar}/avatar40.png")`;
+    const path    = avatar === '' ? 'assets/icons/default.png' : avatar;
     const grouped = $('div[class="basic-message-username"]').last().text() === author;
 
     let html;
@@ -145,7 +145,9 @@ async function insert_message(payload) {
         html = `
             <div class="basic-message-group basic-group-start">
                 <div class="basic-chat-message">
-                    <div class="basic-message-avatar" style="background: ${path}"></div>
+                    <div class="basic-message-avatar">
+                        <img src="${path}" alt/>
+                    </div>
                     <div class="basic-message-text">
                         <div class="basic-message-username">${author}</div>
                         <div class="basic-message-content">${content}</div>
@@ -164,12 +166,12 @@ async function insert_message(payload) {
 }
 
 async function dispatch_event(payload) {
-    const bytes = JSON.stringify(payload);
-    console.log('dispatch_event: ', bytes);
+    const data = JSON.stringify(payload);
+    console.log('dispatch_event: ', data);
     switch (payload['type']) {
         case 'message_create': {
             try {
-                get_websocket().send(bytes);
+                get_websocket().send(data);
             } catch (e) {
                 console.log(e);
             }
@@ -190,7 +192,13 @@ function insert_avatar(id, file) {
         dataType : 'json',
         data: data,
         cache: false,
-        success: (_) => {} // TODO: Error handling.
+        success: (response) => {
+            switch (response) {
+                case 'unsupported_format': {
+                    alert('There was an error uploading your image');
+                } break;
+            }
+        }
     });
 }
 

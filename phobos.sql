@@ -1,7 +1,3 @@
-drop database Phobos;
-create database Phobos;
-use Phobos;
-
 create table User (
     id       bigint              not null,
     username varchar(128) unique not null,
