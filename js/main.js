@@ -24,13 +24,13 @@ $(async function () {
             $('#hamburger').toggleClass('open');
             $('#app-sidebar').toggleClass('open');
         });
-    $('div[class="basic-username"]').html(await fetch('username'));
+    $('.basic-username').html(await fetch('username'));
     $('#user-settings')
         .on('click', function () {
             toggle_settings();
         });
     $('#add-server')
-        .on('click', function () {
+        .on('click', function (event) {
             $('.add-server-container')
                 .addClass('visible')
                 .removeClass('hidden')
@@ -42,42 +42,70 @@ $(async function () {
                 .css({
                     'height': '300px'
                 });
+            $('.add-server-main')
+                .css({
+                    'left': '0'
+                });
+            $('.create-server-main')
+                .css({
+                    'left': '100%'
+                });
+            event.stopPropagation();
+        });
+    $('#create-server')
+        .on('click', function () {
+            $('.add-server-main').css({
+                'left': '-100%',
+            });
+            $('.create-server-main')
+                .css({
+                    'left': '0'
+                });
+        });
+    $('#make-server')
+        .on('click', function () {
+            const name = $(this).siblings('.create-server-input').text();
+            if (name !== '') {
+                insert_server(next_id(), name);
+            }
         });
     $('.add-server-wrapper .close')
-        .on('click', function () {
-            close_add_server($('.add-server-container'));
-        })
-    $('.add-server-container')
         .on('click', function (event) {
+            close_add_server($('.add-server-container'));
+            event.stopPropagation();
+        });
+    $('.add-server-container')
+        .on('mousedown', function (event) {
             if (event.target === this) {
                 close_add_server($(this));
             }
+            event.stopPropagation();
         });
     const avatar = await avatar_from_id(await fetch('id'));
     if (avatar !== '') {
-        $('div[class="basic-user-icon"] img')
+        $('.basic-user-icon img')
             .prop('src', avatar);
-        $('div[class="account-avatar"] img')
+        $('.account-avatar img')
             .prop('src', avatar);
     }
-    $('div[class="settings-close-button"]')
+    $('.settings-close-button')
         .on('click', function () {
             toggle_settings();
         });
-    $('div[class="settings-sidebar-button"]')
+    $('.settings-sidebar-button')
         .each(function (index) {
             const current = $(this);
             current.on('click', function () {
-                $('div[class="settings-sidebar-button"]')
+                $('.settings-sidebar-button')
                     .each(function () {
                         $(this).removeClass('active');
                     });
                 current.addClass('active');
-                $('div[class="settings-content"]')
+                $('.settings-content')
                     .each(function () {
                         $(this).removeClass('basic-visible');
                     });
-                $(`div[class="settings-content"][tabindex="${index}"]`)
+                $(`.settings-content[tabindex="${index}"]`)
                     .addClass('basic-visible');
             });
         });
@@ -99,10 +127,10 @@ $(async function () {
             const clipboard = event.originalEvent.clipboardData;
             document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
         });
-    $('.account-details div[id="username"]').text(await fetch('username'));
-    $('.account-details div[id="email"]').text(await fetch('email'));
+    $('.account-details #username').text(await fetch('username'));
+    $('.account-details #email').text(await fetch('email'));
 
-    $('div[class="account-avatar-change"]')
+    $('.account-avatar-change')
         .on('click', function () {
             $(document.createElement('input'))
                 .attr('type', 'file')
@@ -133,12 +161,32 @@ function close_add_server(that) {
         });
 }
 
+function insert_server(id, name) {
+    $.ajax({
+        url: 'php/insert.php',
+        type: 'POST',
+        data: { // TODO: Handle Guild Avatars.
+            kind: 'guild',
+            name: name,
+            id: id,
+        },
+        cache: false,
+        success: (response) => {
+            switch (response) {
+                default: {
+                    close_add_server($('.add-server-container'));
+                } break;
+            }
+        }
+    });
+}
+
 async function insert_message(payload) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['content']).html();
     const avatar  = await avatar_from_id(payload['id']);
     const path    = avatar === '' ? 'assets/icons/default.png' : avatar;
-    const grouped = $('div[class="basic-message-username"]').last().text() === author;
+    const grouped = $('.basic-message-username').last().text() === author;
 
     let html;
     if (!grouped) {

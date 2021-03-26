@@ -530,7 +530,7 @@ a {
     display: flex;
     margin: 0 0 0 16px;
     max-width: 100%;
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     flex-direction: column;
     color: rgb(150, 151, 155);
 }
@@ -813,8 +813,8 @@ a {
 
 .add-server-wrapper {
     position: relative;
-    display: flex;
     overflow: hidden;
+    display: flex;
     width: 440px;
     height: 0;
     flex: 0 1 auto;
@@ -832,8 +832,8 @@ a {
     top: 12px;
     opacity: 1.0;
     transition:
-        opacity 250ms,
-        top     250ms;
+            opacity 250ms,
+            top     250ms;
 }
 
 .add-server-wrapper > .close:hover {
@@ -858,13 +858,13 @@ a {
 }
 
 .add-server-main {
-    position: relative;
+    position: absolute;
+    flex-direction: column;
     backface-visibility: hidden;
     display: flex;
-    flex-direction: column;
-    height: inherit;
+    width: inherit;
     left: 0;
-    right: 0;
+    height: inherit;
     transition: 350ms left;
 }
 
@@ -902,4 +902,69 @@ a {
 .add-server-button:hover {
     background: rgb(58, 62, 68);
     cursor: pointer;
+}
+
+.create-server-main {
+    position: absolute;
+    flex-direction: column;
+    backface-visibility: hidden;
+    display: flex;
+    left: 100%;
+    width: inherit;
+    height: inherit;
+    transition: 350ms left;
+}
+
+.create-server-header {
+    position: relative;
+    font-size: 21pt;
+    font-weight: bold;
+    display: flex;
+    width: fit-content;
+    flex: 0 1 auto;
+    margin: 36px auto 48px;
+    color: rgb(220, 221, 222);
+}
+
+.create-server-body {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+
+.create-server-button {
+    position: relative;
+    margin: 12px auto;
+    padding: 12px 18px;
+    width: fit-content;
+    font-size: 15pt;
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: row;
+    color: rgb(220, 221, 222);
+    border: 1px solid rgb(66, 69, 74);
+    border-radius: 8px;
+}
+
+.create-server-button:hover {
+    background: rgb(58, 62, 68);
+    cursor: pointer;
+}
+
+.create-server-input {
+    position: relative;
+    display: flex;
+    flex: 0 1 auto;
+    font-size: 16pt;
+    border-radius: 8px;
+    padding: 8px 16px;
+    outline: none;
+    color: white;
+    border: 1px solid rgb(66, 69, 74);
+    margin: 16px 32px;
+}
+
+.create-server-input:empty:not(:focus)::before {
+    content: attr(data-text);
 }

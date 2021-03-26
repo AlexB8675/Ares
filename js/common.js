@@ -1,13 +1,18 @@
+const epoch     = 1609459200000;
+const node_bits = 10;
+const seq_bits  = 12;
+
 function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function timestamp_from_id(id) {
+    return new Date(Number((id >> (BigInt(node_bits + seq_bits))) + BigInt(epoch)));
+}
+
 let next_id = (function () {
-    const node_bits = 10;
-    const seq_bits  = 12;
     const max_node  = (2 ** node_bits) - 1;
     const max_seq   = (2 ** seq_bits) - 1;
-    const epoch     = 1609459200000;
 
     let last = -1;
     let node = random(0, max_node);

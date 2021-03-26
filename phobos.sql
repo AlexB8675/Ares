@@ -11,10 +11,12 @@ create table User (
 create table Guild (
     id     bigint       not null,
     name   varchar(128) not null,
-    avatar varchar(128) not null,
+    avatar varchar(128),
 
     primary key (id)
 );
+
+alter table Guild modify column avatar varchar(128);
 
 create table Channel (
     id    bigint       not null,

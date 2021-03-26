@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <link rel="icon" type="image/png" href="assets/icons/logo.png">
         <link href="css/stylesheet.css" rel="stylesheet">
         <script src="js/jquery-3.5.1.js"></script>
         <script src="js/common.js"></script>
@@ -19,7 +20,7 @@
                             <div class="basic-text">Add a Server</div>
                         </div>
                         <div class="add-server-body">
-                            <div class="add-server-button">
+                            <div class="add-server-button" id="create-server">
                                 <div class="basic-text">Create</div>
                                 <div class="basic-arrow right"></div>
                             </div>
@@ -29,8 +30,16 @@
                             </div>
                         </div>
                     </div>
-                    <div>
-
+                    <div class="create-server-main">
+                        <div class="create-server-header">
+                            <div class="basic-text">Create a Server</div>
+                        </div>
+                        <div class="create-server-body">
+                            <div class="create-server-input" data-text="Insert Server Name" contenteditable></div>
+                            <div class="create-server-button" id="make-server">
+                                <div class="basic-text">Create</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="close"></div>
                 </div>
