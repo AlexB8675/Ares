@@ -1,5 +1,5 @@
 create table User (
-    id       bigint              not null,
+    id       bigint       unique not null,
     username varchar(128) unique not null,
     email    varchar(128) unique not null,
     password char(128)           not null,
@@ -15,8 +15,6 @@ create table Guild (
 
     primary key (id)
 );
-
-alter table Guild modify column avatar varchar(128);
 
 create table Channel (
     id    bigint       not null,

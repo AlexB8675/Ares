@@ -74,7 +74,7 @@ function register() {
             success: (response) => {
                 if (response.length === 0) {
                     result.hide();
-                    window.location.replace('login.html');
+                    window.location.replace('login');
                 } else {
                     switch (response) {
                         case 'duplicate_username': {
@@ -128,7 +128,7 @@ function login() {
             success: (response) => {
                 if (response.length === 0) {
                     result.hide();
-                    window.location.replace('app.html');
+                    window.location.replace('app');
                 } else {
                     switch (response) {
                         case 'not_found': {

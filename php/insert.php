@@ -6,35 +6,35 @@
             die('unsupported_format');
         }
 
-        $target = "../assets/avatars/$user";
-        if (!is_dir($target)) {
-            mkdir($target);
+        $target = "assets/avatars/$user";
+        if (!is_dir("../$target")) {
+            mkdir("../$target");
         }
 
-        imagepng(imagescale($image , 256, 256), "$target/avatar.png", 0);
+        imagepng(imagescale($image , 256, 256), "../$target/avatar.png", 0);
         $query = "
             update User
             set avatar = ?
             where id = ?";
-        safe_query($connection, $query, "assets/avatars/$user/avatar.png", $user);
+        safe_query($connection, $query, "$target/avatar.png", $user);
     }
 
-    function insert_guild(mysqli $connection, int $id, string $name) {
+    function insert_guild(mysqli $connection, int $id, int $user, string $name) {
         $query = "insert into Guild value (?, ?, null)";
         safe_query($connection, $query, $id, $name);
+        $query = "insert into UserGuild value (?, ?)";
+        safe_query($connection, $query, $user, $id);
     }
 
     start_session();
     $connection = connect_database();
-    $kind       = $_POST['kind'];
-
-    switch ($kind) {
+    switch ($_POST['kind']) {
         case 'avatar': {
             insert_avatar($connection, $_SESSION['id'], $_FILES['avatar']['tmp_name']);
         } break;
 
         case 'guild': {
-            insert_guild($connection, $_POST['id'], $_POST['name']);
+            insert_guild($connection, $_POST['id'], $_SESSION['id'], $_POST['name']);
         } break;
 
         default: {

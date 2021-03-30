@@ -32,8 +32,6 @@ $(async function () {
     $('#add-server')
         .on('click', function (event) {
             $('.add-server-container')
-                .addClass('visible')
-                .removeClass('hidden')
                 .css({
                     'background': 'rgba(0, 0, 0, 0.6)',
                     'z-index': '2'
@@ -42,21 +40,13 @@ $(async function () {
                 .css({
                     'height': '300px'
                 });
-            $('.add-server-main')
-                .css({
-                    'left': '0'
-                });
-            $('.create-server-main')
-                .css({
-                    'left': '100%'
-                });
-            event.stopPropagation();
         });
     $('#create-server')
         .on('click', function () {
-            $('.add-server-main').css({
-                'left': '-100%',
-            });
+            $('.add-server-main')
+                .css({
+                    'left': '-100%',
+                });
             $('.create-server-main')
                 .css({
                     'left': '0'
@@ -70,23 +60,20 @@ $(async function () {
             }
         });
     $('.add-server-wrapper .close')
-        .on('click', function (event) {
-            close_add_server($('.add-server-container'));
-            event.stopPropagation();
+        .on('click', function () {
+            close_add_server();
         });
     $('.add-server-container')
         .on('mousedown', function (event) {
             if (event.target === this) {
-                close_add_server($(this));
+                close_add_server();
             }
-            event.stopPropagation();
         });
     const avatar = await avatar_from_id(await fetch('id'));
     if (avatar !== '') {
-        $('.basic-user-icon img')
-            .prop('src', avatar);
-        $('.account-avatar img')
-            .prop('src', avatar);
+        let updated = `${avatar}?id=${next_id()}`;
+        $('.basic-user-icon img').attr('src', updated);
+        $('.account-avatar img').attr('src', updated);
     }
     $('.settings-close-button')
         .on('click', function () {
@@ -117,7 +104,7 @@ $(async function () {
                 data: {},
                 cache: false,
                 success: (_) => {
-                    window.location.replace('index.html');
+                    window.location.replace('index');
                 }
             });
         });
@@ -139,7 +126,7 @@ $(async function () {
                     insert_avatar(await fetch('id'), event.target.files[0]);
                 });
         });
-    get_websocket(); // Initializes websocket connection.
+    websocket(); // Initializes websocket connection.
 });
 
 function toggle_settings() {
@@ -147,17 +134,30 @@ function toggle_settings() {
     $('.basic-app-container').toggleClass('basic-hidden');
 }
 
-function close_add_server(that) {
-    that
-        .addClass('hidden')
-        .removeClass('visible')
-        .css({
-            'background': 'rgba(0, 0, 0, 0.0)',
-            'z-index':    '-1'
-        });
+function close_add_server() {
     $('.add-server-wrapper')
         .css({
             'height': '0'
+        });
+    $('.create-server-input[contenteditable]')
+        .html('');
+    $('.create-server-main')
+        .css({
+            'left': '100%'
+        });
+    $('.add-server-main')
+        .css({
+            'left': '0'
+        });
+    $('.add-server-container')
+        .css({
+            'background': 'rgba(0, 0, 0, 0.0)'
+        })
+        .delay(300)
+        .queue(function () {
+            $(this)
+                .css({ 'z-index': '-1' })
+                .dequeue();
         });
 }
 
@@ -185,7 +185,7 @@ async function insert_message(payload) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['content']).html();
     const avatar  = await avatar_from_id(payload['id']);
-    const path    = avatar === '' ? 'assets/icons/default.png' : avatar;
+    const path    = avatar === '' ? 'assets/icons/blank.png' : `${avatar}?id=${next_id()}`;
     const grouped = $('.basic-message-username').last().text() === author;
 
     let html;
@@ -219,7 +219,7 @@ async function dispatch_event(payload) {
     switch (payload['type']) {
         case 'message_create': {
             try {
-                get_websocket().send(data);
+                websocket().send(data);
             } catch (e) {
                 console.log(e);
             }
@@ -235,13 +235,19 @@ function insert_avatar(id, file) {
     $.ajax({
         url: 'php/insert.php',
         type: 'POST',
+        data: data,
         processData: false,
         contentType: false,
-        dataType : 'json',
-        data: data,
         cache: false,
-        success: (response) => {
+        success: async (response) => {
             switch (response) {
+                default: {
+                    let updated = `${await avatar_from_id(await fetch('id'))}?id=${next_id()}`;
+                    $('.basic-message-avatar img').attr('src', updated);
+                    $('.basic-user-icon img').attr('src', updated);
+                    $('.account-avatar img').attr('src', updated);
+                } break;
+
                 case 'unsupported_format': {
                     alert('There was an error uploading your image');
                 } break;
@@ -269,7 +275,7 @@ let fetch = (function () {
 
                         case 'unknown_session': {
                             console.log('[Error] not logged in.');
-                            window.location.replace('login.html');
+                            window.location.replace('login');
                         } break;
                     }
                 }
@@ -279,15 +285,18 @@ let fetch = (function () {
     };
 })();
 
-let get_websocket = (function () {
+let websocket = (function () {
     let wss = null;
     return function () {
         if (wss === null) {
-            wss = new WebSocket('ws://93.41.228.90:9000');
-            wss.onopen = (_) => {
+            wss = new WebSocket('wss://wss.alex8675.eu:9000');
+            wss.onerror = function (error) {
+                console.error(error);
+            }
+            wss.onopen = function (_) {
                 console.log('[Info]: connection successful');
             };
-            wss.onmessage = async (payload) => {
+            wss.onmessage = async function (payload) {
                 const data = JSON.parse(payload.data);
                 console.log('[Info]: received message: ', data);
                 switch (data['type']) {
@@ -305,7 +314,7 @@ let avatar_from_id = (function () {
     let cached = {};
     return async function (id) {
         if (cached[id] === undefined) {
-            cached[id] = '';
+            cached[id] = String();
         }
         const has_author = !Object.keys(cached).includes(id);
         const is_default = cached[id] === '';
