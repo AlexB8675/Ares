@@ -289,7 +289,7 @@ let websocket = (function () {
     let wss = null;
     return function () {
         if (wss === null) {
-            wss = new WebSocket('wss://wss.alex8675.eu:9000');
+            wss = new WebSocket('wss://gateway.alex8675.eu:9000');
             wss.onerror = function (error) {
                 console.error(error);
             }
