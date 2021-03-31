@@ -187,7 +187,15 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     }
 
     void on_read(beast::error_code error) noexcept {
+        using namespace std::chrono_literals;
+        constexpr auto time_delta = 1000ms;
+        constexpr auto interval   = 60000ms;
         if (error == websocket::error::closed) {
+            return;
+        }
+
+        if (time_since_epoch() - _heartbeat > (interval + time_delta)) {
+            std::cout << timestamp() << "dead connection, terminating\n";
             return;
         }
 
@@ -216,17 +224,16 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     "}";
                 _state->broadcast({ response.begin(), response.end() }, this);
             } else if (type == "heartbeat") {
-                using namespace std::chrono_literals;
-                constexpr auto time_delta = 1000ms;
-                constexpr auto interval   = 60000ms;
                 const auto current = time_since_epoch();
-                if ((current - _heartbeat - interval) < time_delta) {
-                    constexpr std::string_view response = R"({ "op": 11 })";
+                const auto elapsed = current - _heartbeat - interval;
+                if (-time_delta < elapsed && elapsed < time_delta) {
+                    constexpr std::string_view response = R"({ "op": 11, "type": "heartbeat" })";
                     send({ response.begin(), response.end() });
                     std::cout << timestamp() << "heartbeat accepted, acking: " << _address << '\n';
                     _heartbeat = current;
                 } else {
-                    std::cout << timestamp() << "heartbeat failure, disconnecting: " << _address << '\n';
+                    std::cout << timestamp() << "heartbeat failure, dt is not within " << time_delta.count() << "ms, "
+                              << _address << " was " << std::abs((time_delta - elapsed).count()) << "ms late\n";
                     return;
                 }
             }

@@ -215,7 +215,7 @@ async function insert_message(payload) {
 
 async function dispatch_event(payload) {
     const data = JSON.stringify(payload);
-    console.log('[Info] dispatch_event: ', data);
+    console.log('[Info] dispatch_event:', data);
     switch (payload['type']) {
         case 'message_create': {
             try {
@@ -287,31 +287,53 @@ let fetch = (function () {
 
 let websocket = (function () {
     let wss = null;
+    let heartbeat = null;
+    let error =
+        (error) => {
+            console.error(error);
+        };
+    let open =
+        (_) => {
+            console.log('[Info]: connection successful');
+            heartbeat = setInterval(() => {
+                wss.send(JSON.stringify({
+                    op: 0,
+                    type: 'heartbeat'
+                }));
+                console.log('[Info]: sent heartbeat');
+            }, 60000);
+        };
+    let message =
+        async (payload) => {
+            const data = JSON.parse(payload.data);
+            switch (data['type']) {
+                case 'message_create': {
+                    console.log('[Info]: received message: ', data);
+                    await insert_message(data['payload']);
+                } break;
+
+                case 'heartbeat': {
+                    console.log('[Info]: heartbeat ack received');
+                } break;
+            }
+        };
+    let close =
+        () => {
+            console.error('[Error]: socket error, connection terminated');
+            wss = new WebSocket('wss://gateway.alex8675.eu:2096');
+            clearInterval(heartbeat);
+            wss.onerror = error;
+            wss.onopen = open;
+            wss.onmessage = message;
+            wss.onclose = close;
+        };
     return function () {
         if (wss === null) {
             wss = new WebSocket('wss://gateway.alex8675.eu:2096');
-            wss.onerror = function (error) {
-                console.error(error);
-            }
-            wss.onopen = function (_) {
-                console.log('[Info]: connection successful');
-                setInterval(() => {
-                    wss.send(JSON.stringify({
-                        op: 0,
-                        type: 'heartbeat'
-                    }));
-                    console.log('[Info]: sent heartbeat');
-                }, 60000);
-            };
-            wss.onmessage = async function (payload) {
-                const data = JSON.parse(payload.data);
-                console.log('[Info]: received message: ', data);
-                switch (data['type']) {
-                    case 'message_create': {
-                        await insert_message(data['payload']);
-                    } break;
-                }
-            };
+            wss.onerror = error;
+            wss.onopen = open;
+            wss.onmessage = message;
+            wss.onclose = close;
         }
         return wss;
     }
