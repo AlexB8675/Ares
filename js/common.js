@@ -11,8 +11,8 @@ function timestamp_from_id(id) {
 }
 
 let next_id = (function () {
-    const max_node  = (2 ** node_bits) - 1;
-    const max_seq   = (2 ** seq_bits) - 1;
+    const max_node = (2 ** node_bits) - 1;
+    const max_seq  = (2 ** seq_bits) - 1;
 
     let last = -1;
     let node = random(0, max_node);

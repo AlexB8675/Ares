@@ -32,32 +32,32 @@ function register() {
 
     if (username.length === 0) {
         result
-            .text('il campo nome utente non può essere vuoto')
+            .text('username field cannot be empty')
             .css('color', '#d71d48')
             .show();
     } else if (email.length === 0) {
         result
-            .text('il campo email non può essere vuoto')
+            .text('email field cannot be empty')
             .css('color', '#d71d48')
             .show();
     } else if (password.length === 0) {
         result
-            .text('il campo password non può essere vuoto')
+            .text('password field cannot be empty')
             .css('color', '#d71d48')
             .show();
     } else if (confirm.length === 0) {
         result
-            .text('il campo conferma password non può essere vuoto')
+            .text('confirm password')
             .css('color', '#d71d48')
             .show();
     } else if (password !== confirm) {
         result
-            .text('le password non corrispondono')
+            .text('password mismatch')
             .css('color', '#d71d48')
             .show();
     } else if (!email.includes('@')) {
         result
-            .text('l\'indirizzo email non è valido')
+            .text('invalid email address')
             .css('color', '#d71d48')
             .show();
     } else {
@@ -79,14 +79,14 @@ function register() {
                     switch (response) {
                         case 'duplicate_username': {
                             result
-                                .text('il nome utente inserito già è stato registrato')
+                                .text('the username already exists')
                                 .css('color', '#d71d48')
                                 .show();
                         } break;
 
                         case 'duplicate_email': {
                             result
-                                .text('l\'email inserita già è stata registrata')
+                                .text('the email already exists')
                                 .css('color', '#d71d48')
                                 .show();
                         } break;
@@ -108,12 +108,12 @@ function login() {
     let   result   = $('#result');
     if (username.length === 0) {
         result
-            .text('il campo nome utente non può essere vuoto')
+            .text('username field cannot be empty')
             .css('color', '#d71d48')
             .show();
     } else if (password.length === 0) {
         result
-            .text('il campo password non può essere vuoto')
+            .text('email field cannot be empty')
             .css('color', '#d71d48')
             .show();
     } else {
@@ -133,7 +133,7 @@ function login() {
                     switch (response) {
                         case 'not_found': {
                             result
-                                .text('nome utente o password errati')
+                                .text('unknown username or password')
                                 .css('color', '#d71d48')
                                 .show();
                         } break;

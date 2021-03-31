@@ -243,7 +243,6 @@ function insert_avatar(id, file) {
             switch (response) {
                 default: {
                     let updated = `${await avatar_from_id(await fetch('id'))}?id=${next_id()}`;
-                    $('.basic-message-avatar img').attr('src', updated);
                     $('.basic-user-icon img').attr('src', updated);
                     $('.account-avatar img').attr('src', updated);
                 } break;
@@ -287,6 +286,7 @@ let fetch = (function () {
 
 let websocket = (function () {
     let wss = null;
+    let last = Date.now();
     let heartbeat = null;
     let error =
         (error) => {
@@ -295,12 +295,14 @@ let websocket = (function () {
     let open =
         (_) => {
             console.log('[Info]: connection successful');
-            heartbeat = setInterval(() => {
+            heartbeat = setTimeout(function keep_alive() {
                 wss.send(JSON.stringify({
                     op: 0,
                     type: 'heartbeat'
                 }));
                 console.log('[Info]: sent heartbeat');
+                heartbeat = setTimeout(keep_alive, 60000 + (60000 - (Date.now() - last)));
+                last = Date.now();
             }, 60000);
         };
     let message =
