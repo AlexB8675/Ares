@@ -6,6 +6,10 @@ wss/ext
 wss/ext/*
 wss/cmake-build-debug
 wss/cmake-build-debug/*
+wss/cmake-build-release
+wss/cmake-build-release/*
+wss/cert.pem
+wss/cert.key
 doc/*
 !doc/proposal.pdf
 !doc/proposal.tex

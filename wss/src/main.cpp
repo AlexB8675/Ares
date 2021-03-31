@@ -37,8 +37,10 @@ namespace rjs       = rapidjson;
 using payload_data_t = std::vector<char8_t>;
 
 static std::string timestamp() noexcept {
-    const auto time = std::time(nullptr);
-    return (std::stringstream() << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S]: ")).str();
+    const auto clock = std::chrono::system_clock::now();
+    const auto milli = std::chrono::duration_cast<std::chrono::milliseconds>(clock.time_since_epoch()) % 1000;
+    const auto time  = std::chrono::system_clock::to_time_t(clock);
+    return (std::stringstream() << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S.") << milli.count() << "]: ").str();
 }
 
 static std::chrono::milliseconds time_since_epoch() noexcept {
@@ -47,73 +49,10 @@ static std::chrono::milliseconds time_since_epoch() noexcept {
 }
 
 static ssl::context make_ssl_context() noexcept {
-    ssl::context context{ ssl::context_base::tlsv12_server };
-    constexpr const char cert[] =
-        "-----BEGIN CERTIFICATE-----\n"
-        "MIIEFTCCAv2gAwIBAgIURcZvTgTX26V2YXX79X69Bhs8Z0IwDQYJKoZIhvcNAQEL\n"
-        "BQAwgagxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH\n"
-        "Ew1TYW4gRnJhbmNpc2NvMRkwFwYDVQQKExBDbG91ZGZsYXJlLCBJbmMuMRswGQYD\n"
-        "VQQLExJ3d3cuY2xvdWRmbGFyZS5jb20xNDAyBgNVBAMTK01hbmFnZWQgQ0EgYjc0\n"
-        "NjJiMGJiMTQ4MTk2ZGIwZTA3ODZhZTJjOWM5OTkwHhcNMjEwMzMwMjEwNzAwWhcN\n"
-        "MzEwMzI4MjEwNzAwWjAiMQswCQYDVQQGEwJVUzETMBEGA1UEAxMKQ2xvdWRmbGFy\n"
-        "ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAIyrlljVxZDmEujcTY4h\n"
-        "QoccYZaejF2xuQOp6s7k4WY5tHi6+cox6QP0tY3tHG417cDay4eN4tUQXEaFkwOg\n"
-        "4nAjtQRDXKpCCT7bAcv23v/NEvazAgP/i+lPhYMt091/okTVTK4Z1g9i2gh+kWcU\n"
-        "SKUbM9guR+WRucWeMqecHm0XMlcPuDg9YQoXxwiJ5cmonGTg8oC+hDlVmrg7dKyX\n"
-        "8sdqNqFzpci70djtH9pZSuoPmpRBwuh6kwh0LESTqFKdoPFX9ejJVEyjByKralVH\n"
-        "wJB8Dj+zmQf4T4PCvJBhhPvSZ5Uc4S9AvInQvtOOTO1NJ4Z2FOgTrL0AJLSB8l9t\n"
-        "qkUCAwEAAaOBuzCBuDATBgNVHSUEDDAKBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAA\n"
-        "MB0GA1UdDgQWBBSpIT/3r8ad7GSjESH7QXQOodNuhjAfBgNVHSMEGDAWgBRiTvNC\n"
-        "GnL+sHeRoChmBXH/lq79BTBTBgNVHR8ETDBKMEigRqBEhkJodHRwOi8vY3JsLmNs\n"
-        "b3VkZmxhcmUuY29tL2VjNWQ1MTdmLTk0OWEtNDQxMy04ZWU3LWJhZjdiMjdiMDgz\n"
-        "NC5jcmwwDQYJKoZIhvcNAQELBQADggEBAIkFWjbjp6hCuRqLdYf4afQCjHqOIkQN\n"
-        "oToDppEQ8rMBzWEmq2avNpunnodphTjsmPUmTzIg7f/s0u4OUb62lmH+Chr1qW5V\n"
-        "23kWNnvZ0F9AE/rRgdpqr7HqzjVpg8+GoYsmWcPosElJPGv+qijezAW99GyMiLOM\n"
-        "ZYLUDlSIDoG9yFsxWld1bYKDYgcfBikkAETm/ZkrP5Vr8WAhnZIE9s9BpVW16dS7\n"
-        "C1mvoKToNQahx/avMNX5sTdMC5M+TxdnXgALtm7JUE+gmPBSzd5ycVX0wl+b0OIU\n"
-        "l+sF/qroM+P8dEfxRKmO9VwH31fN2mXwpQmWUFamTSiMEfLJlRboPpM=\n"
-        "-----END CERTIFICATE-----";
-
-    constexpr const char key[] =
-        "-----BEGIN PRIVATE KEY-----\n"
-        "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCMq5ZY1cWQ5hLo\n"
-        "3E2OIUKHHGGWnoxdsbkDqerO5OFmObR4uvnKMekD9LWN7RxuNe3A2suHjeLVEFxG\n"
-        "hZMDoOJwI7UEQ1yqQgk+2wHL9t7/zRL2swID/4vpT4WDLdPdf6JE1UyuGdYPYtoI\n"
-        "fpFnFEilGzPYLkflkbnFnjKnnB5tFzJXD7g4PWEKF8cIieXJqJxk4PKAvoQ5VZq4\n"
-        "O3Ssl/LHajahc6XIu9HY7R/aWUrqD5qUQcLoepMIdCxEk6hSnaDxV/XoyVRMowci\n"
-        "q2pVR8CQfA4/s5kH+E+DwryQYYT70meVHOEvQLyJ0L7TjkztTSeGdhToE6y9ACS0\n"
-        "gfJfbapFAgMBAAECggEAEeSBaytFxfh9z0C2XK2+WJEzmITyNbi1X9HtHAPg56/P\n"
-        "VMvzmdRfXzFxJmxSgXI6m5045jUV9SPvmMjEumFsa/cevzwSPVXI90XEJL1x//eF\n"
-        "wfti9j86/KIwyU669CGX8klvR3Xh1HMuaIYw2HusAdRD8+tvGbQ/fPNyXf9tn1Jz\n"
-        "vd1TXGXzYZYOqmtYu704Co+tenZpf4tNfATTZ/B67Z2StQDmmrtMLh+oEzdCzWwf\n"
-        "savf2I3oGKHsMmheQMJyTSzsHArFZYPldHLuhioCS8VQohRGmQ0SscUkeF8dh6o9\n"
-        "KxIgYIzi3Nx9I3iP6ecqgk3lQoYfn+kfD+N0AXMsAQKBgQC/FJhvNq09T2Orqnwk\n"
-        "4/E6NRyhXBtOldvIzUiuMX9vr5qZV1Pzp4AQRN9Lwbq2yBjhr/4qzMzjSAYzPfnO\n"
-        "UmKpztGtv/m21Ui5MqtB6hBty9GtN0zowJmHSAt8lt9+3RZDSk24fV7GzyY32dcZ\n"
-        "m7+iHoRCg15mTzAX96NW/CVsFQKBgQC8doSDq8ermvdqdlB7Zcd7f583xa9fOLPk\n"
-        "XV1rL8xDRjq4ugsxhuMZPjGB80vYScwP7jo2MOBG4/3LMjErxzX1LldROFLDyKIy\n"
-        "qAEMn4eloYuImyr3m8WbjgYq7CGJGw6K0vA4VhT08D6cmL35wN/vP+LZQnRZaCOc\n"
-        "6/aQbWFhcQKBgAwIYP0H5Wrp9+3Ug5LTI9q1g4MJyNJvD3Maskv94/eFiGfFnwzF\n"
-        "7IOZwrIDlh1yhlaX/Zp2YSSi4XkSmwuKFpp44q1dXH1N+xFmhnBVLAmt/xs4U0iI\n"
-        "8GIbgFWtLo/PnlpIcJKAmppMayyzNB9xtmSgJVYG7cfljrLDrm6I3FZtAoGBAI09\n"
-        "GQSAyWwPABsWPiysUzp3o4Ats8dd/FtJqUg6Ew/b4wgrzVW5rBpv5LRp/E5EyBys\n"
-        "QY35RSt7k+kjXXxcmFB+AUxKNKSriPsDs32dVRBJKAQhnarhX8+7OV4ThvJ0h4p8\n"
-        "mTDvOldycMn1InK5HFn1+/Esf3u9surYX/lPL+rRAoGBAKpvA2vP/eipAdLZFa86\n"
-        "9TvutQuWE3MqYrXzLRIeTh0gQJxEJRzuidraxj7TXaRRgwH8EQFI+8PxgT8jAu5U\n"
-        "GIlEAFZOQHnwlKc3E40y83hJpO5+6Yrjc0RCV5W+apeU2PeeyLq3IhUMLDgmsf/5\n"
-        "Yi8kGv4XfXFXLp9q4IDTi+T9\n"
-        "-----END PRIVATE KEY-----";
-
-    context.set_options(
-        ssl::context::default_workarounds |
-        ssl::context::no_sslv2);
-
-    context.use_certificate_chain(
-        asio::buffer(cert, sizeof cert));
-
-    context.use_private_key(
-        asio::buffer(key, sizeof key),
-        ssl::context::file_format::pem);
+    ssl::context context{ ssl::context::tlsv12_server };
+    context.set_options(ssl::context::default_workarounds | ssl::context::no_sslv2);
+    context.use_certificate_chain_file("../cert.pem");
+    context.use_private_key_file("../cert.key", ssl::context::file_format::pem);
     return context;
 }
 
@@ -195,7 +134,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
         }
 
         if (time_since_epoch() - _heartbeat > (interval + time_delta)) {
-            std::cout << timestamp() << "dead connection, terminating\n";
+            std::cout << timestamp() << "heartbeat failure, was more than " << (interval + time_delta).count() << "ms late\n";
             return;
         }
 
@@ -232,8 +171,8 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     std::cout << timestamp() << "heartbeat accepted, acking: " << _address << '\n';
                     _heartbeat = current;
                 } else {
-                    std::cout << timestamp() << "heartbeat failure, dt is not within " << time_delta.count() << "ms, "
-                              << _address << " was " << std::abs((time_delta - elapsed).count()) << "ms late\n";
+                    const auto difference = (time_delta - elapsed).count();
+                    std::cout << timestamp() << "heartbeat failure, was " << std::abs(difference) << "ms early";
                     return;
                 }
             }
@@ -246,9 +185,9 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     }
 
     void on_accept(beast::error_code error) noexcept {
-        std::cout << timestamp() << "handshake approved\n";
+        std::cout << timestamp() << "handshake accepted\n";
         if (!error) {
-            std::cout << timestamp() << "connection accepted\n";
+            std::cout << timestamp() << "connection approved\n";
             _heartbeat = time_since_epoch();
             _state->insert(this);
             _wss.async_read(
@@ -289,6 +228,7 @@ public:
     websocket_session_t(ip::tcp::socket&& socket, ip::tcp::endpoint&& endpoint, ssl::context& ssl, std::shared_ptr<shared_state_t> state) noexcept
         : _wss(std::move(socket), ssl),
           _state(std::move(state)),
+          _heartbeat(),
           _address(endpoint.address().to_string()) {}
 
     ~websocket_session_t() noexcept {
