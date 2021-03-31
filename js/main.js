@@ -288,12 +288,14 @@ let websocket = (function () {
     let wss = null;
     let last = Date.now();
     let heartbeat = null;
+    let tries = 0;
     let error =
         (error) => {
             console.error(error);
         };
     let open =
         (_) => {
+            tries = 0;
             console.log('[Info]: connection successful');
             heartbeat = setTimeout(function keep_alive() {
                 wss.send(JSON.stringify({
@@ -321,13 +323,17 @@ let websocket = (function () {
         };
     let close =
         () => {
-            console.error('[Error]: socket error, connection terminated');
-            wss = new WebSocket('wss://gateway.alex8675.eu:2096');
-            clearInterval(heartbeat);
-            wss.onerror = error;
-            wss.onopen = open;
-            wss.onmessage = message;
-            wss.onclose = close;
+            if (tries++ > 5) {
+                console.error('[Error]: cannot connect to the websocket server');
+            } else {
+                console.log('[Info]: connection terminated');
+                wss = new WebSocket('wss://gateway.alex8675.eu:2096');
+                clearTimeout(heartbeat);
+                wss.onerror = error;
+                wss.onopen = open;
+                wss.onmessage = message;
+                wss.onclose = close;
+            }
         };
     return function () {
         if (wss === null) {
