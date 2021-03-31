@@ -215,7 +215,7 @@ async function insert_message(payload) {
 
 async function dispatch_event(payload) {
     const data = JSON.stringify(payload);
-    console.log('dispatch_event: ', data);
+    console.log('[Info] dispatch_event: ', data);
     switch (payload['type']) {
         case 'message_create': {
             try {
@@ -289,12 +289,19 @@ let websocket = (function () {
     let wss = null;
     return function () {
         if (wss === null) {
-            wss = new WebSocket('wss://gateway.alex8675.eu:9000');
+            wss = new WebSocket('wss://gateway.alex8675.eu:2096');
             wss.onerror = function (error) {
                 console.error(error);
             }
             wss.onopen = function (_) {
                 console.log('[Info]: connection successful');
+                setInterval(() => {
+                    wss.send(JSON.stringify({
+                        op: 0,
+                        type: 'heartbeat'
+                    }));
+                    console.log('[Info]: sent heartbeat');
+                }, 60000);
             };
             wss.onmessage = async function (payload) {
                 const data = JSON.parse(payload.data);

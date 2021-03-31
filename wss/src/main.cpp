@@ -21,6 +21,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <cmath>
 #include <queue>
 #include <regex>
 #include <set>
@@ -38,6 +39,11 @@ using payload_data_t = std::vector<char8_t>;
 static std::string timestamp() noexcept {
     const auto time = std::time(nullptr);
     return (std::stringstream() << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S]: ")).str();
+}
+
+static std::chrono::milliseconds time_since_epoch() noexcept {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::high_resolution_clock::now().time_since_epoch());
 }
 
 static ssl::context make_ssl_context() noexcept {
@@ -112,7 +118,6 @@ static ssl::context make_ssl_context() noexcept {
 }
 
 class websocket_session_t;
-
 class shared_state_t {
     std::set<websocket_session_t*> _sessions; // TODO: Split sessions for server | channel
     std::mutex _lock;
@@ -128,7 +133,7 @@ public:
     }
 
     template <typename... Args>
-    void send(const payload_data_t& data, Args&&... args) noexcept {
+    void broadcast(const payload_data_t& data, Args&&... args) noexcept {
         const auto excluded = std::set<websocket_session_t*>{ args... };
 
         std::vector<std::weak_ptr<websocket_session_t>> session_refs; {
@@ -153,8 +158,9 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     websocket::stream<beast::ssl_stream<beast::tcp_stream>> _wss;
     std::shared_ptr<shared_state_t> _state;
     std::queue<payload_data_t> _payloads;
-    ip::tcp::endpoint _endpoint;
+    std::chrono::milliseconds _heartbeat;
     beast::flat_buffer _buffer;
+    std::string _address;
 
     void on_send(const payload_data_t& payload) noexcept {
         _payloads.push(payload);
@@ -191,14 +197,13 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             document.Parse(static_cast<const char*>(_buffer.cdata().data()), _buffer.size());
             rjs::Writer<rjs::StringBuffer> writer(buffer);
             document.Accept(writer);
-            std::cout << timestamp() << buffer.GetString() << '\n';
+            std::cout << timestamp() << "received payload: " << buffer.GetString() << '\n';
             _buffer.consume(_buffer.size());
-            const std::string type   = document["type"].Get<const char*>();
-            const std::string id     = document["payload"]["id"].Get<const char*>();
-            const std::string author = document["payload"]["author"].Get<const char*>();
-            std::string content      = document["payload"]["content"].Get<const char*>();
-            content = std::regex_replace(content, std::regex("\""), "\\\"");
+            const std::string type = document["type"].Get<const char*>();
             if (type == "message_create") {
+                const std::string id      = document["payload"]["id"].Get<const char*>();
+                const std::string author  = document["payload"]["author"].Get<const char*>();
+                const std::string content = std::regex_replace(document["payload"]["content"].Get<const char*>(), std::regex("\""), "\\\"");
                 const auto response =
                     "{\n"
                     "  \"op\": 1,\n"
@@ -209,7 +214,21 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     "    \"content\": \"" + content + "\"\n"
                     "  }\n"
                     "}";
-                _state->send({ response.begin(), response.end() }, this);
+                _state->broadcast({ response.begin(), response.end() }, this);
+            } else if (type == "heartbeat") {
+                using namespace std::chrono_literals;
+                constexpr auto time_delta = 1000ms;
+                constexpr auto interval   = 60000ms;
+                const auto current = time_since_epoch();
+                if ((current - _heartbeat - interval) < time_delta) {
+                    constexpr std::string_view response = R"({ "op": 11 })";
+                    send({ response.begin(), response.end() });
+                    std::cout << timestamp() << "heartbeat accepted, acking: " << _address << '\n';
+                    _heartbeat = current;
+                } else {
+                    std::cout << timestamp() << "heartbeat failure, disconnecting: " << _address << '\n';
+                    return;
+                }
             }
         }
         _wss.async_read(
@@ -223,18 +242,20 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
         std::cout << timestamp() << "handshake approved\n";
         if (!error) {
             std::cout << timestamp() << "connection accepted\n";
+            _heartbeat = time_since_epoch();
             _state->insert(this);
             _wss.async_read(
                 _buffer,
                 beast::bind_front_handler([self = shared_from_this()](beast::error_code error, std::size_t) noexcept {
                     self->on_read(error);
                 }));
+        } else {
+            std::cout << timestamp() << "connection denied\n";
         }
-        std::cout << timestamp() << "connection denied\n";
     }
 
     void on_handshake(beast::error_code error) noexcept {
-        std::cout << timestamp() << "handshake request from: " << _endpoint.address().to_string() << '\n';
+        std::cout << timestamp() << "handshake request from: " << _address << '\n';
         if (!error) {
             beast::get_lowest_layer(_wss).expires_never();
             _wss.set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
@@ -242,8 +263,9 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                 beast::bind_front_handler([self = shared_from_this()](beast::error_code error) noexcept {
                     self->on_accept(error);
                 }));
+        } else {
+            std::cout << timestamp() << "handshake error, connection denied\n";
         }
-        std::cout << timestamp() << "handshake error, connection denied\n";
     }
 
     void on_run() noexcept {
@@ -260,10 +282,10 @@ public:
     websocket_session_t(ip::tcp::socket&& socket, ip::tcp::endpoint&& endpoint, ssl::context& ssl, std::shared_ptr<shared_state_t> state) noexcept
         : _wss(std::move(socket), ssl),
           _state(std::move(state)),
-          _endpoint(std::move(endpoint)) {}
+          _address(endpoint.address().to_string()) {}
 
     ~websocket_session_t() noexcept {
-        std::cout << timestamp() << "connection terminated: " << _endpoint.address().to_string() << '\n';
+        std::cout << timestamp() << "connection terminated: " << _address << '\n';
         _state->erase(this);
     }
 
@@ -325,12 +347,12 @@ public:
 int main() {
     const auto concurrency = std::thread::hardware_concurrency();
     const auto address     = asio::ip::make_address("0.0.0.0");
-    const auto port        = 9000u;
+    const auto port        = 2096u;
     auto context           = asio::io_context(concurrency);
     auto ssl               = make_ssl_context();
     auto threads           = std::vector<std::thread>(concurrency - 1);
 
-    std::make_shared<listener_t>(context, ssl,ip::tcp::endpoint{ address, port })->run();
+    std::make_shared<listener_t>(context, ssl, ip::tcp::endpoint{ address, port })->run();
     std::cout << timestamp() << "started listening on port: " << port << '\n';
     for (auto& each : threads) {
         each = std::thread([&context]() noexcept {
