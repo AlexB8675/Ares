@@ -1,6 +1,7 @@
 /* ----------------- Debug ------------------ */
 /** {
     outline: 1px solid white !important;
+    box-sizing: border-box;
 }*/
 
 /* ----------- General/Global Style --------- */
@@ -280,7 +281,6 @@ a {
     width: 90px;
     display: flex;
     flex-direction: column;
-    flex: 1;
     height: 100%;
     float: left;
     background: rgb(47, 49, 54);
@@ -301,7 +301,7 @@ a {
 
 .basic-sidebar-footer {
     position: relative;
-    width: inherit;
+    width: 280px;
     overflow: hidden;
     flex: 1 0 80px;
     flex-direction: row;
@@ -310,7 +310,6 @@ a {
     box-shadow:
             0  3px 2px rgba(29, 32, 33, 0.67),
             0 -3px 2px rgba(29, 32, 33, 0.67);
-    z-index: 1;
 }
 
 .basic-sidebar-content {
@@ -443,7 +442,6 @@ a {
     flex-direction: column;
     display: flex;
     height: 100%;
-    flex: 1;
 }
 
 .basic-header {
@@ -823,8 +821,8 @@ a {
     top: 12px;
     opacity: 1.0;
     transition:
-        opacity 250ms,
-        top     250ms;
+            opacity 250ms,
+            top     250ms;
 }
 
 .add-server-wrapper > .close:hover {

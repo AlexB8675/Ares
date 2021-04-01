@@ -69,7 +69,7 @@ $(async function () {
                 close_add_server();
             }
         });
-    const avatar = await avatar_from_id(await fetch('id'));
+    const avatar = await fetch_avatar(await fetch('id'));
     if (avatar !== '') {
         let updated = `${avatar}?id=${next_id()}`;
         $('.basic-user-icon img').attr('src', updated);
@@ -184,12 +184,12 @@ function insert_server(id, name) {
 async function insert_message(payload) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['content']).html();
-    const avatar  = await avatar_from_id(payload['id']);
-    const path    = avatar === '' ? 'assets/icons/blank.png' : `${avatar}?id=${next_id()}`;
     const grouped = $('.basic-message-username').last().text() === author;
 
     let html;
     if (!grouped) {
+        const avatar = await fetch_avatar(payload['id']);
+        const path   = avatar === '' ? 'assets/icons/blank.png' : `${avatar}?id=${next_id()}`;
         html = `
             <div class="basic-message-group basic-group-start">
                 <div class="basic-chat-message">
@@ -242,7 +242,7 @@ function insert_avatar(id, file) {
         success: async (response) => {
             switch (response) {
                 default: {
-                    let updated = `${await avatar_from_id(await fetch('id'))}?id=${next_id()}`;
+                    let updated = await fetch_avatar(await fetch('id'));
                     $('.basic-user-icon img').attr('src', updated);
                     $('.account-avatar img').attr('src', updated);
                 } break;
@@ -317,7 +317,7 @@ let websocket = (function () {
                 } break;
 
                 case 'heartbeat': {
-                    console.log('[Info]: heartbeat ack received');
+                    // TODO: Something useful lol.
                 } break;
             }
         };
@@ -347,7 +347,7 @@ let websocket = (function () {
     }
 })();
 
-let avatar_from_id = (function () {
+let fetch_avatar = (function () {
     let cached = {};
     return async function (id) {
         if (cached[id] === undefined) {

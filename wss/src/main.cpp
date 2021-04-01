@@ -134,7 +134,6 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
         }
 
         if (time_since_epoch() - _heartbeat > (interval + time_delta)) {
-            std::cout << timestamp() << "heartbeat failure, was more than " << (interval + time_delta).count() << "ms late\n";
             return;
         }
 
@@ -168,11 +167,8 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                 if (-time_delta < elapsed && elapsed < time_delta) {
                     constexpr std::string_view response = R"({ "op": 11, "type": "heartbeat" })";
                     send({ response.begin(), response.end() });
-                    std::cout << timestamp() << "heartbeat accepted, acking: " << _address << '\n';
                     _heartbeat = current;
                 } else {
-                    const auto difference = (time_delta - elapsed).count();
-                    std::cout << timestamp() << "heartbeat failure, was " << std::abs(difference) << "ms early";
                     return;
                 }
             }
