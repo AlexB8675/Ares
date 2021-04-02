@@ -189,7 +189,7 @@ async function insert_message(payload) {
     let html;
     if (!grouped) {
         const avatar = await fetch_avatar(payload['id']);
-        const path   = avatar === '' ? 'assets/icons/blank.png' : `${avatar}?id=${next_id()}`;
+        const path   = avatar === '' ? 'assets/icons/blank.png' : avatar;
         html = `
             <div class="basic-message-group basic-group-start">
                 <div class="basic-chat-message">
