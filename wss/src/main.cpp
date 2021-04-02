@@ -40,7 +40,7 @@ static std::string timestamp() noexcept {
     const auto clock = std::chrono::system_clock::now();
     const auto milli = std::chrono::duration_cast<std::chrono::milliseconds>(clock.time_since_epoch()) % 1000;
     const auto time  = std::chrono::system_clock::to_time_t(clock);
-    return (std::stringstream() << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S.") << milli.count() << "]: ").str();
+    return (std::stringstream() << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S.") << std::setw(3) << std::setfill('0') << milli.count() << "]: ").str();
 }
 
 static std::chrono::milliseconds time_since_epoch() noexcept {
@@ -49,7 +49,7 @@ static std::chrono::milliseconds time_since_epoch() noexcept {
 }
 
 static ssl::context make_ssl_context() noexcept {
-    ssl::context context{ ssl::context::tlsv12_server };
+    ssl::context context{ ssl::context::tlsv13_server };
     context.set_options(ssl::context::default_workarounds | ssl::context::no_sslv2);
     context.use_certificate_chain_file("../cert.pem");
     context.use_private_key_file("../cert.key", ssl::context::file_format::pem);
@@ -133,7 +133,8 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             return;
         }
 
-        if (time_since_epoch() - _heartbeat > (interval + time_delta)) {
+        if (time_since_epoch() - _heartbeat > interval + time_delta) {
+            std::printf("%s0x%08llx | %s: heartbeat error\n", timestamp().c_str(), (std::uintptr_t)this);
             return;
         }
 
@@ -143,7 +144,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             document.Parse(static_cast<const char*>(_buffer.cdata().data()), _buffer.size());
             rjs::Writer<rjs::StringBuffer> writer(buffer);
             document.Accept(writer);
-            std::cout << timestamp() << "received payload: " << buffer.GetString() << '\n';
+            std::printf("%s0x%08llx | %s: received payload: %s\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str(), buffer.GetString());
             _buffer.consume(_buffer.size());
             const std::string type = document["type"].Get<const char*>();
             if (type == "message_create") {
@@ -169,6 +170,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     send({ response.begin(), response.end() });
                     _heartbeat = current;
                 } else {
+                    std::printf("%s0x%08llx | %s: heartbeat error\n", timestamp().c_str(), (std::uintptr_t)this);
                     return;
                 }
             }

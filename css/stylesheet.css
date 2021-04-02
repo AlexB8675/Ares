@@ -24,13 +24,15 @@ div *::-webkit-scrollbar-thumb {
 
 html, body {
     background: rgb(54, 57, 63);
-    font-family: Whitney,Helvetica,sans-serif;
+    font-family: Whitney, Helvetica, sans-serif;
     position: absolute;
     font-size: 10px;
     margin: 0;
     padding: 0;
     height: 100vh;
     width: 100vw;
+    overflow: hidden;
+    resize: none;
 }
 
 a {
@@ -98,7 +100,7 @@ a {
 }
 
 .basic-group-start {
-    padding: 0.125rem 64px !important;
+    padding: 0.250rem 64px !important;
     margin: 1rem 0 0 0;
 }
 
@@ -184,17 +186,8 @@ a {
 }
 
 /* Basic Main Application Styles */
-.basic-master-container {
-    position: absolute;
-    resize: none;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    background: inherit;
-}
-
 .basic-app-container {
-    position: absolute;
+    position: fixed;
     width: inherit;
     height: inherit;
     overflow: hidden;
@@ -308,7 +301,7 @@ a {
     display: flex;
     background: rgb(41, 43, 47);
     box-shadow:
-            0  3px 2px rgba(29, 32, 33, 0.67),
+            0 3px 2px rgba(29, 32, 33, 0.67),
             0 -3px 2px rgba(29, 32, 33, 0.67);
 }
 
@@ -326,7 +319,7 @@ a {
 .basic-username {
     position: relative;
     font-size: 11pt;
-    flex: 0 0 96px;
+    flex: 1 0 auto;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -342,7 +335,7 @@ a {
     padding: 0 12px 0 0;
     margin: auto 0;
     flex-direction: row;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
 }
 
 .settings-icon {
@@ -389,8 +382,8 @@ a {
     color: white;
     background: rgb(24, 25, 28);
     border-radius: 8px;
-    z-index: -1;
     visibility: hidden;
+    z-index: -1;
 }
 
 .basic-bottom-icon-note::after {
@@ -437,14 +430,15 @@ a {
 }
 
 /* Basic Header Style */
-.basic-master-app {
+.basic-master-wrapper {
     position: relative;
     flex-direction: column;
     display: flex;
     height: 100%;
+    z-index: 1;
 }
 
-.basic-header {
+.basic-master-header {
     position: relative;
     width: 100%;
     flex: 0 0 80px;
@@ -453,10 +447,8 @@ a {
     z-index: 1;
 }
 
-/* Basic Message Box Style */
-.basic-message-container {
+.basic-master-container {
     position: relative;
-    height: 100%;
     width: 100%;
     display: flex;
     flex: auto;
@@ -464,6 +456,35 @@ a {
     background: rgb(54, 57, 63);
 }
 
+.basic-default-container {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex: auto;
+}
+
+.basic-default-container > img {
+    /* transform: rotate(10deg); */
+    position: relative;
+    display: flex;
+    width: 256px;
+    height: 256px;
+}
+
+.basic-app-name {
+    position: relative;
+    display: flex;
+    font-size: 90pt;
+    font-family: Ananda, sans-serif;
+    text-align: center;
+    margin: -120px 0 0 0;
+    flex: 0;
+    color: rgb(232, 232, 232);
+}
+
+/* Basic Message Box Style */
 .basic-message-scroller {
     position: relative;
     width: 100%;
@@ -490,7 +511,7 @@ a {
     flex: 0 0 auto;
     line-height: 22px;
     min-height: 22px;
-    padding: 0.125rem 64px 0.125rem 120px;
+    padding: 0.250rem 64px 0.250rem 120px;
 }
 
 .basic-message-group:hover {
@@ -528,6 +549,7 @@ a {
     display: flex;
     margin: 0 0 0 16px;
     max-width: 100%;
+    word-break: break-word;
     flex: 1 1 auto;
     flex-direction: column;
     color: rgb(150, 151, 155);
@@ -594,10 +616,14 @@ a {
     color: rgb(220, 221, 222);
 }
 
+.basic-message-textbox:empty:not(:focus)::before {
+    content: attr(placeholder);
+}
+
 /* Specialized Styles */
 /* Settings Tab Styles */
 .settings-container {
-    position: absolute;
+    position: fixed;
     width: inherit;
     height: inherit;
     overflow: hidden;
@@ -955,5 +981,5 @@ a {
 }
 
 .create-server-input:empty:not(:focus)::before {
-    content: attr(data-text);
+    content: attr(placeholder);
 }

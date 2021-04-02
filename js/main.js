@@ -286,13 +286,8 @@ let fetch = (function () {
 
 let websocket = (function () {
     let wss = null;
-    let last = Date.now();
     let heartbeat = null;
     let tries = 0;
-    let error =
-        (error) => {
-            console.error(error);
-        };
     let open =
         (_) => {
             tries = 0;
@@ -303,8 +298,7 @@ let websocket = (function () {
                     type: 'heartbeat'
                 }));
                 console.log('[Info]: sent heartbeat');
-                heartbeat = setTimeout(keep_alive, 60000 + (60000 - (Date.now() - last)));
-                last = Date.now();
+                heartbeat = setTimeout(keep_alive, 60000);
             }, 60000);
         };
     let message =
@@ -329,7 +323,6 @@ let websocket = (function () {
                 console.log('[Info]: connection terminated');
                 wss = new WebSocket('wss://gateway.alex8675.eu:2096');
                 clearTimeout(heartbeat);
-                wss.onerror = error;
                 wss.onopen = open;
                 wss.onmessage = message;
                 wss.onclose = close;
@@ -338,7 +331,6 @@ let websocket = (function () {
     return function () {
         if (wss === null) {
             wss = new WebSocket('wss://gateway.alex8675.eu:2096');
-            wss.onerror = error;
             wss.onopen = open;
             wss.onmessage = message;
             wss.onclose = close;

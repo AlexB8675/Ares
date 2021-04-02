@@ -11,122 +11,120 @@
         <title>Ares</title>
     </head>
     <body>
-        <div class="basic-master-container">
-            <!-- Add Server Main Container -->
-            <div class="add-server-container">
-                <div class="add-server-wrapper">
-                    <div class="add-server-main">
-                        <div class="add-server-header">
-                            <div class="basic-text">Add a Server</div>
+        <!-- Add Server Main Container -->
+        <div class="add-server-container">
+            <div class="add-server-wrapper">
+                <div class="add-server-main">
+                    <div class="add-server-header">
+                        <div class="basic-text">Add a Server</div>
+                    </div>
+                    <div class="add-server-body">
+                        <div class="add-server-button" id="create-server">
+                            <div class="basic-text">Create</div>
+                            <div class="basic-arrow right"></div>
                         </div>
-                        <div class="add-server-body">
-                            <div class="add-server-button" id="create-server">
-                                <div class="basic-text">Create</div>
-                                <div class="basic-arrow right"></div>
-                            </div>
-                            <div class="add-server-button">
-                                <div class="basic-text">Join</div>
-                                <div class="basic-arrow right"></div>
-                            </div>
+                        <div class="add-server-button">
+                            <div class="basic-text">Join</div>
+                            <div class="basic-arrow right"></div>
                         </div>
                     </div>
-                    <div class="create-server-main">
-                        <div class="create-server-header">
-                            <div class="basic-text">Create a Server</div>
-                        </div>
-                        <div class="create-server-body">
-                            <div class="create-server-input" data-text="Insert Server Name" contenteditable></div>
-                            <div class="create-server-button" id="make-server">
-                                <div class="basic-text">Create</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="close"></div>
                 </div>
+                <div class="create-server-main">
+                    <div class="create-server-header">
+                        <div class="basic-text">Create a Server</div>
+                    </div>
+                    <div class="create-server-body">
+                        <div class="create-server-input" placeholder="Insert Server Name" contenteditable></div>
+                        <div class="create-server-button" id="make-server">
+                            <div class="basic-text">Create</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="close"></div>
             </div>
+        </div>
 
-            <!-- Application Main Container -->
-            <div class="basic-app-container">
-                <div class="basic-sidebar" id="app-sidebar">
-                    <div class="basic-hamburger-content">
-                        <div class="basic-hamburger-wrapper">
-                            <div class="basic-hamburger" id="hamburger">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="basic-sidebar-scroller">
-                        <div class="basic-sidebar-content"></div>
-                    </div>
-                    <div class="basic-sidebar-footer">
-                        <div class="basic-user-icon">
-                            <img src="assets/icons/blank.png" alt/>
-                        </div>
-                        <div class="basic-username"></div>
-                        <div class="basic-user-settings">
-                            <div class="settings-icon" id="add-server">
-                                <div class="basic-bottom-icon-note">Add Server</div>
-                                <img src="assets/icons/plus.ico" alt>
-                            </div>
-                            <div class="settings-icon" id="user-settings">
-                                <div class="basic-bottom-icon-note">User Settings</div>
-                                <img src="assets/icons/settings.ico" alt>
-                            </div>
+        <!-- Application Master Container -->
+        <div class="basic-app-container">
+            <div class="basic-sidebar" id="app-sidebar">
+                <div class="basic-hamburger-content">
+                    <div class="basic-hamburger-wrapper">
+                        <div class="basic-hamburger" id="hamburger">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
                         </div>
                     </div>
                 </div>
-                <div class="basic-master-app">
-                    <div class="basic-header"></div>
-                    <div class="basic-message-container">
-                        <div class="basic-message-scroller">
-                            <div>
-                                <div class="basic-message-wrapper"></div>
-                            </div>
+                <div class="basic-sidebar-scroller">
+                    <div class="basic-sidebar-content"></div>
+                </div>
+                <div class="basic-sidebar-footer">
+                    <div class="basic-user-icon">
+                        <img draggable="false" src="assets/icons/blank.png" alt/>
+                    </div>
+                    <div class="basic-username"></div>
+                    <div class="basic-user-settings">
+                        <div class="settings-icon" id="add-server">
+                            <div class="basic-bottom-icon-note">Add Server</div>
+                            <img draggable="false" src="assets/icons/plus.ico" alt>
                         </div>
-                        <div class="basic-message-sender">
-                            <div class="basic-textbox-wrapper" id="textbox-wrapper">
-                                <div class="basic-message-textbox" id="message-textbox" role="textbox" spellcheck="false" contenteditable></div>
-                            </div>
+                        <div class="settings-icon" id="user-settings">
+                            <div class="basic-bottom-icon-note">User Settings</div>
+                            <img draggable="false" src="assets/icons/settings.ico" alt>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- Settings Main Container -->
-            <div class="settings-container" tabindex="0">
-                <div class="settings-sidebar">
-                    <div class="settings-sidebar-content">
-                        <div class="settings-sidebar-line">
-                            <div class="settings-sidebar-button active" id="button-account">My Account</div>
-                            <div class="basic-separator"></div>
-                            <div class="settings-sidebar-button color-red" id="button-logout">Log Out</div>
+            <div class="basic-master-wrapper">
+                <div class="basic-master-header"></div>
+                <div class="basic-master-container">
+                    <div class="basic-message-scroller">
+                        <div>
+                            <div class="basic-message-wrapper"></div>
+                        </div>
+                    </div>
+                    <div class="basic-message-sender">
+                        <div class="basic-textbox-wrapper" id="textbox-wrapper">
+                            <div class="basic-message-textbox" id="message-textbox" placeholder="Message #global" contenteditable></div>
                         </div>
                     </div>
                 </div>
-                <div class="settings-main">
-                    <div class="settings-scroller">
-                        <!-- My Account Page -->
-                        <div class="settings-content">
-                            <div class="settings-header">My Account</div>
-                            <div class="account-container basic-visible" tabindex="0">
-                                <div class="account-profile">
-                                    <div class="account-avatar">
-                                        <img src="assets/icons/blank.png" alt/>
-                                    </div>
-                                    <div class="account-details">
-                                        <div id="username"></div>
-                                        <div id="email"></div>
-                                    </div>
-                                    <div class="account-avatar-change">Change Avatar</div>
+            </div>
+        </div>
+        <!-- Settings Main Container -->
+        <div class="settings-container" tabindex="0">
+            <div class="settings-sidebar">
+                <div class="settings-sidebar-content">
+                    <div class="settings-sidebar-line">
+                        <div class="settings-sidebar-button active" id="button-account">My Account</div>
+                        <div class="basic-separator"></div>
+                        <div class="settings-sidebar-button color-red" id="button-logout">Log Out</div>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-main">
+                <div class="settings-scroller">
+                    <!-- My Account Page -->
+                    <div class="settings-content">
+                        <div class="settings-header">My Account</div>
+                        <div class="account-container basic-visible" tabindex="0">
+                            <div class="account-profile">
+                                <div class="account-avatar">
+                                    <img draggable="false" src="assets/icons/blank.png" alt/>
                                 </div>
+                                <div class="account-details">
+                                    <div id="username"></div>
+                                    <div id="email"></div>
+                                </div>
+                                <div class="account-avatar-change">Change Avatar</div>
                             </div>
                         </div>
                     </div>
-                    <div class="settings-close-button">
-                        <img src="assets/icons/close.ico" alt>
-                    </div>
+                </div>
+                <div class="settings-close-button">
+                    <img draggable="false" src="assets/icons/close.ico" alt>
                 </div>
             </div>
         </div>
