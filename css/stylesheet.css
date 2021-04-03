@@ -319,12 +319,46 @@ a {
 .basic-username {
     position: relative;
     font-size: 11pt;
-    flex: 1 0 auto;
+    flex: 1 1 auto;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
     margin: auto 1px;
     color: white;
+}
+
+.basic-username div:first-child {
+    text-overflow: ellipsis;
+}
+
+.basic-username-note {
+    position: fixed;
+    font-size: 11pt;
+    display: flex;
+    bottom: 64px;
+    margin: 0 0 0 -12px;
+    padding: 8px 12px;
+    color: white;
+    background: rgb(24, 25, 28);
+    border-radius: 8px;
+    visibility: hidden;
+    z-index: -1;
+}
+
+.basic-username-note::after {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-right: solid 6px transparent;
+    border-left: solid 6px transparent;
+    border-top: solid 6px rgb(24, 25, 28);
+    content: '';
+    top: 100%;
+    left: 10px;
+}
+
+.basic-username:hover > .basic-username-note {
+    z-index: 2;
+    visibility: visible;
 }
 
 .basic-user-settings {
@@ -360,7 +394,7 @@ a {
     cursor: pointer;
 }
 
-.settings-icon:hover > .basic-bottom-icon-note {
+.settings-icon:hover > .settings-icon-note {
     z-index: 2;
     visibility: visible;
 }
@@ -373,7 +407,7 @@ a {
     transform: rotate(90deg);
 }
 
-.basic-bottom-icon-note {
+.settings-icon-note {
     position: fixed;
     font-size: 11pt;
     display: flex;
@@ -386,7 +420,7 @@ a {
     z-index: -1;
 }
 
-.basic-bottom-icon-note::after {
+.settings-icon-note::after {
     position: absolute;
     width: 0;
     height: 0;

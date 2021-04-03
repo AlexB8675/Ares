@@ -134,7 +134,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
         }
 
         if (time_since_epoch() - _heartbeat > interval + time_delta) {
-            std::printf("%s0x%08llx | %s: heartbeat error\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
+            std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
             return;
         }
 
@@ -170,7 +170,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     send({ response.begin(), response.end() });
                     _heartbeat = current;
                 } else {
-                    std::printf("%s0x%08llx | %s: heartbeat error\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
+                    std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
                     return;
                 }
             }

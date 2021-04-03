@@ -24,7 +24,7 @@ $(async function () {
             $('#hamburger').toggleClass('open');
             $('#app-sidebar').toggleClass('open');
         });
-    $('.basic-username').html(await fetch('username'));
+    $('.basic-username div').html(await fetch('username'));
     $('#user-settings')
         .on('click', function () {
             toggle_settings();
@@ -71,9 +71,8 @@ $(async function () {
         });
     const avatar = await fetch_avatar(await fetch('id'));
     if (avatar !== '') {
-        let updated = `${avatar}?id=${next_id()}`;
-        $('.basic-user-icon img').attr('src', updated);
-        $('.account-avatar img').attr('src', updated);
+        $('.basic-user-icon img').attr('src', avatar);
+        $('.account-avatar img').attr('src', avatar);
     }
     $('.settings-close-button')
         .on('click', function () {

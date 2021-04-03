@@ -10,5 +10,3 @@ wss/*
 !wss/src
 !wss/src/*
 !wss/CMakeLists.txt
-wss/cert.pem
-wss/cert.key
