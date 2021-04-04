@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <link rel="icon" type="image/png" href="assets/icons/logo.png">
         <link href="css/stylesheet.css" rel="stylesheet">
-        <script src="js/jquery-3.5.1.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="js/common.js"></script>
         <script src="js/main.js"></script>
         <title>Ares</title>
@@ -46,20 +46,13 @@
 
         <!-- Application Master Container -->
         <div class="basic-app-container">
+            <div class="basic-server-list"></div>
             <div class="basic-sidebar" id="app-sidebar">
-                <div class="basic-hamburger-content">
-                    <div class="basic-hamburger-wrapper">
-                        <div class="basic-hamburger" id="hamburger">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                </div>
+                <div class="basic-sidebar-header"></div>
                 <div class="basic-sidebar-wrapper">
-                    <div class="basic-sidebar-channels"></div>
-                    <div class="basic-sidebar-servers"></div>
+                    <div class="basic-sidebar-channels">
+                        <div class="basic-sidebar-scroller"></div>
+                    </div>
                 </div>
                 <div class="basic-sidebar-footer">
                     <div class="basic-user-icon">

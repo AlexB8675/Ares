@@ -198,81 +198,73 @@ a {
             z-index 450ms ease-out,
             opacity 450ms ease-out;
 }
-/* Basic Hamburger Style */
-.basic-hamburger-content {
+
+/* Basic Server List Style*/
+.basic-server-list {
+    position: static;
+    display: flex;
+    width: 90px;
+    height: 100%;
+    float: left;
+    background: rgb(32, 34, 37);
+    padding: 12px 0 0 0;
+    flex-direction: column;
+    overflow: hidden auto;
+}
+
+.basic-server-list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.basic-server-instance {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    align-self: center;
+    margin: 0 0 25px 0;
+    background: white;
+    border-radius: 50%;
+}
+
+.basic-server-tooltip {
+    position: fixed;
+    visibility: visible;
+    background: black;
+    font-size: 11pt;
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    padding: 8px 12px;
+    left: 84px;
+    z-index: 2;
+}
+
+.basic-server-tooltip::after {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid black;
+    content: '';
+    top: 6px;
+    left: -6px;
+}
+
+/* Basic Sidebar Style */
+.basic-sidebar-header {
     position: relative;
     width: inherit;
     flex: 0 0 80px;
     z-index: 1;
-    background: rgb(41, 43, 47);
     box-shadow: 0 4px 2px -2px rgba(29, 32, 33, 0.67);
 }
 
-.basic-hamburger-wrapper {
-    width: 50px;
-    height: 40px;
-    position: relative;
-    float: right;
-    margin: 20px 20px 0 0;
-    cursor: pointer;
-}
-
-.basic-hamburger {
-    transform: rotate(0deg);
-}
-
-.basic-hamburger span {
-    position: absolute;
-    height: 8px;
-    width: 100%;
-    background: rgb(64, 68, 75);
-    border-radius: 8px;
-    opacity: 1;
-    left: 0;
-    transition:
-            top 250ms ease-in-out,
-            left 250ms ease-in-out,
-            width 250ms ease-in-out,
-            transform 250ms ease-in-out;
-}
-
-.basic-hamburger span:nth-child(1) {
-    top: 0;
-}
-
-.basic-hamburger span:nth-child(2),
-.basic-hamburger span:nth-child(3) {
-    top: 15px;
-}
-
-.basic-hamburger span:nth-child(4) {
-    top: 30px;
-}
-
-.basic-hamburger.open span:nth-child(1) {
-    top: 16px;
-    width: 0;
-    left: 50%;
-}
-
-.basic-hamburger.open span:nth-child(2) {
-    transform: rotate(45deg);
-}
-
-.basic-hamburger.open span:nth-child(3) {
-    transform: rotate(-45deg);
-}
-
-.basic-hamburger.open span:nth-child(4) {
-    top: 16px;
-    width: 0;
-    left: 50%;
-}
-
-/* Basic Sidebar Style */
 .basic-sidebar {
     position: relative;
-    width: 90px;
+    width: 280px;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -281,21 +273,26 @@ a {
     transition: width 350ms;
 }
 
-.basic-sidebar.open {
-    width: 320px;
-}
-
 .basic-sidebar-wrapper {
     position: relative;
     flex: 0 1 100%;
     display: flex;
     width: inherit;
-    background: rgb(47, 49, 54);
+    flex-direction: row;
+    overflow: visible hidden;
+}
+
+.basic-sidebar-scroller {
+    position: relative;
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    overflow-y: visible;
 }
 
 .basic-sidebar-footer {
     position: relative;
-    width: 320px;
+    width: inherit;
     overflow: hidden;
     flex: 1 0 80px;
     flex-direction: row;
@@ -306,27 +303,15 @@ a {
             0 -3px 2px rgba(29, 32, 33, 0.67);
 }
 
-.basic-sidebar-servers {
-    position: relative;
-    align-items: flex-end;
-    flex-direction: column;
-    display: flex;
-    padding-top: 15px;
-    width: 90px;
-    flex: 0 1 auto;
-    overflow: visible;
-}
-
 .basic-sidebar-channels {
     position: relative;
     align-items: flex-end;
     flex-direction: column;
     display: flex;
     padding-top: 15px;
-    background: rgb(41, 43, 47);
     flex: 1 0 auto;
     box-shadow: 4px 0 2px -2px rgba(29, 32, 33, 0.67);
-    overflow: visible;
+    overflow-y: auto;
 }
 
 .basic-username {
@@ -446,62 +431,16 @@ a {
     left: 50%;
 }
 
-/* Basic Icon Style */
-.basic-sidebar-icon {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    cursor: pointer;
-    align-items: center;
-    border-radius: 50%;
-    background: white;
-    margin: 0 21px 12px 0;
-    transition: border-radius 350ms;
-}
-
-.basic-sidebar-icon:hover {
-    border-radius: 33%;
-}
-
-.basic-sidebar-icon:hover > .basic-sidebar-note {
-    visibility: visible;
-}
-
-.basic-sidebar-note {
-    position: fixed;
-    visibility: hidden;
-    background: rgb(24, 25, 28);
-    color: white;
-    font-size: 11pt;
-    text-align: center;
-    border-radius: 8px;
-    margin: 0 0 0 60px;
-    padding: 8px 12px;
-    z-index: 1;
-}
-
-.basic-sidebar-note::after {
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-top: solid 12px transparent;
-    border-bottom: solid 12px transparent;
-    border-right: solid 12px rgb(24, 25, 28);
-    left: -6px;
-    top: 4px;
-    content: '';
-}
-
+/* Basic User Icon Style */
 .basic-user-icon {
     position: relative;
     flex: 0 0 40px;
-    margin: 20px 25px;
+    margin: auto 25px;
 }
 
 .basic-user-icon > img {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     outline: none;
     border-radius: 50%;
 }
