@@ -59,8 +59,11 @@ static ssl::context make_ssl_context() noexcept {
 class websocket_session_t;
 class shared_state_t {
     std::set<websocket_session_t*> _sessions; // TODO: Split sessions for server | channel
+    asio::io_context& _ctx;
     std::mutex _lock;
 public:
+    explicit shared_state_t(asio::io_context& ctx) noexcept : _ctx(ctx) {}
+
     void insert(websocket_session_t* session) noexcept {
         std::lock_guard<std::mutex> guard(_lock);
         _sessions.insert(session);
@@ -142,36 +145,40 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             rjs::Document document;
             rjs::StringBuffer buffer;
             document.Parse(static_cast<const char*>(_buffer.cdata().data()), _buffer.size());
-            rjs::Writer<rjs::StringBuffer> writer(buffer);
-            document.Accept(writer);
-            std::printf("%s0x%08llx | %s: received payload: %s\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str(), buffer.GetString());
-            _buffer.consume(_buffer.size());
-            const std::string type = document["type"].Get<const char*>();
-            if (type == "message_create") {
-                const std::string id      = document["payload"]["id"].Get<const char*>();
-                const std::string author  = document["payload"]["author"].Get<const char*>();
-                const std::string content = std::regex_replace(document["payload"]["content"].Get<const char*>(), std::regex("\""), "\\\"");
-                const auto response =
-                    "{\n"
-                    "  \"op\": 1,\n"
-                    "  \"type\": \"message_create\",\n"
-                    "  \"payload\": {\n"
-                    "    \"id\": \"" + id + "\",\n"
-                    "    \"author\": \"" + author + "\",\n"
-                    "    \"content\": \"" + content + "\"\n"
-                    "  }\n"
-                    "}";
-                _state->broadcast({ response.begin(), response.end() }, this);
-            } else if (type == "heartbeat") {
-                const auto current = time_since_epoch();
-                const auto elapsed = current - _heartbeat - interval;
-                if (-time_delta < elapsed && elapsed < time_delta) {
-                    constexpr std::string_view response = R"({ "op": 11, "type": "heartbeat" })";
-                    send({ response.begin(), response.end() });
-                    _heartbeat = current;
-                } else {
-                    std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
-                    return;
+            if (document.HasParseError()) {
+                std::printf("%s0x%08llx | %s: payload parse error\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
+            } else {
+                rjs::Writer<rjs::StringBuffer> writer(buffer);
+                document.Accept(writer);
+                std::printf("%s0x%08llx | %s: received payload: %s\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str(), buffer.GetString());
+                _buffer.consume(_buffer.size());
+                const std::string type = document["type"].Get<const char*>();
+                if (type == "message_create") {
+                    const std::string id      = document["payload"]["id"].Get<const char*>();
+                    const std::string author  = document["payload"]["author"].Get<const char*>();
+                    const std::string content = std::regex_replace(document["payload"]["content"].Get<const char*>(), std::regex("\""), "\\\"");
+                    const auto response =
+                        "{\n"
+                        "  \"op\": 1,\n"
+                        "  \"type\": \"message_create\",\n"
+                        "  \"payload\": {\n"
+                        "    \"id\": \"" + id + "\",\n"
+                        "    \"author\": \"" + author + "\",\n"
+                        "    \"content\": \"" + content + "\"\n"
+                        "  }\n"
+                        "}";
+                    _state->broadcast({ response.begin(), response.end() }, this);
+                } else if (type == "heartbeat") {
+                    const auto current = time_since_epoch();
+                    const auto elapsed = current - _heartbeat - interval;
+                    if (-time_delta < elapsed && elapsed < time_delta) {
+                        constexpr std::string_view response = R"({ "op": 11, "type": "heartbeat" })";
+                        send({ response.begin(), response.end() });
+                        _heartbeat = current;
+                    } else {
+                        std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
+                        return;
+                    }
                 }
             }
         }
@@ -270,7 +277,7 @@ class listener_t : public std::enable_shared_from_this<listener_t> {
 
 public:
     listener_t(asio::io_context& context, ssl::context& ssl, const ip::tcp::endpoint& endpoint) noexcept
-        : _state(new shared_state_t()),
+        : _state(new shared_state_t(context)),
           _acceptor(context),
           _context(context),
           _ssl(ssl) {

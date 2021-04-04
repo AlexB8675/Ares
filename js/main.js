@@ -30,7 +30,7 @@ $(async function () {
             toggle_settings();
         });
     $('#add-server')
-        .on('click', function (event) {
+        .on('click', function () {
             $('.add-server-container')
                 .css({
                     'background': 'rgba(0, 0, 0, 0.6)',
@@ -125,8 +125,33 @@ $(async function () {
                     insert_avatar(await fetch('id'), event.target.files[0]);
                 });
         });
-    websocket(); // Initializes websocket connection.
+    fetch_servers();
+    gateway(); // Initializes websocket connection.
 });
+
+function fetch_servers() {
+    $.ajax({
+        url: 'php/fetch.php',
+        type: 'POST',
+        data: {
+            kind: 'guild'
+        },
+        cache: false,
+        success: (response) => {
+            switch (response) {
+                default: {
+                    for (const server of JSON.parse(response)) {
+                        $('.basic-sidebar-servers')
+                            .append(`
+                                <div class="basic-sidebar-icon">
+                                    <div class="basic-sidebar-note">${server['name']}</div> 
+                                </div>`);
+                    }
+                } break;
+            }
+        }
+    });
+}
 
 function toggle_settings() {
     $('.settings-container').toggleClass('basic-visible');
@@ -174,6 +199,11 @@ function insert_server(id, name) {
             switch (response) {
                 default: {
                     close_add_server($('.add-server-container'));
+                    $('.basic-sidebar-content')
+                        .append(
+                            `<div class="basic-sidebar-icon">
+                                <div class="basic-sidebar-note">${name}</div> 
+                            </div>`);
                 } break;
             }
         }
@@ -218,7 +248,7 @@ async function dispatch_event(payload) {
     switch (payload['type']) {
         case 'message_create': {
             try {
-                websocket().send(data);
+                gateway().send(data);
             } catch (e) {
                 console.log(e);
             }
@@ -283,7 +313,7 @@ let fetch = (function () {
     };
 })();
 
-let websocket = (function () {
+let gateway = (function () {
     let wss = null;
     let heartbeat = null;
     let tries = 0;

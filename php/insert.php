@@ -20,10 +20,12 @@
     }
 
     function insert_guild(mysqli $connection, int $id, int $user, string $name) {
-        $query = "insert into Guild value (?, ?, null)";
+        $query = "insert into Guild value (?, ?, null)"; // TODO: Maybe insert a Guild icon at creation-time?
         safe_query($connection, $query, $id, $name);
         $query = "insert into UserGuild value (?, ?)";
         safe_query($connection, $query, $user, $id);
+        $query = "insert into Channel value (?, ?, ?)";
+        safe_query($connection, $query, $id + 1, $id, "default");
     }
 
     start_session();
