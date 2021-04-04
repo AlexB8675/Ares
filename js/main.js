@@ -123,6 +123,24 @@ $(async function () {
     gateway(); // Initializes websocket connection.
 });
 
+function make_server(name) {
+    $('.basic-server-list')
+        .append(`<div class="basic-server-instance"></div>`)
+        .children('.basic-server-instance')
+        .last()
+        .on('mouseover', function () {
+            const position = $(this).position();
+            $(this).html(`<div class="basic-server-tooltip">${name}</div>`);
+            $('.basic-server-tooltip')
+                .css({
+                    top: position.top + 8,
+                });
+        })
+        .on('mouseleave', function () {
+            $(this).html('');
+        });
+}
+
 function fetch_servers() {
     $.ajax({
         url: 'php/fetch.php',
@@ -135,21 +153,7 @@ function fetch_servers() {
             switch (response) {
                 default: {
                     for (const server of JSON.parse(response)) {
-                        $('.basic-server-list')
-                            .append(`<div class="basic-server-instance" aria-label="${server['name']}"></div>`)
-                            .children('.basic-server-instance')
-                            .last()
-                            .on('mouseover', function () {
-                                const position = $(this).position();
-                                $(this).html(`<div class="basic-server-tooltip">${$(this).attr('aria-label')}</div>`);
-                                $('.basic-server-tooltip')
-                                    .css({
-                                        top: position.top + 8,
-                                    });
-                            })
-                            .on('mouseleave', function () {
-                                $(this).html('');
-                            });
+                        make_server(server['name']);
                     }
                 } break;
             }
@@ -203,7 +207,7 @@ function insert_server(id, name) {
             switch (response) {
                 default: {
                     close_add_server($('.add-server-container'));
-                    $('.basic-server-list').append(`<div class="basic-server-instance" aria-label="${name}"></div>`);
+                    make_server(name);
                 } break;
             }
         }

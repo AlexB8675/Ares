@@ -20,7 +20,7 @@
                 inner join Guild on UserGuild.guild_id = Guild.id
             where user_id = ?";
         $result = safe_query($connection, $query, $user)->get_result();
-        $data = array();
+        $data   = array();
         while ($row = $result->fetch_object()) {
             $data[] = $row;
         }
