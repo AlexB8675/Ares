@@ -1,5 +1,6 @@
 // Initialization
 $(async function () {
+    fetch_servers();
     $('#message-textbox')
         .on('keydown', async function (event) {
             if (event.key === 'Enter' && !event.shiftKey) {
@@ -7,8 +8,8 @@ $(async function () {
                 const content = $(this).text().trim();
                 if (content !== '') {
                     await dispatch_event({
-                        op: "1",
-                        type: "message_create",
+                        op: '1',
+                        type: 'message_create',
                         payload: {
                             id: `${await fetch('id')}`,
                             author: `${await fetch('username')}`,
@@ -127,7 +128,6 @@ $(async function () {
                 'z-index': -1
             });
         });
-    fetch_servers();
     gateway(); // Initializes websocket connection.
 });
 
@@ -139,65 +139,66 @@ function make_server(name, id) {
             </div>`)
         .children('.basic-server-instance')
         .last()
-        .on('mouseover', function (event) {
-            if (event.target !== $(this).children('.arrow')) {
-                const tooltip  = $(`<div class="basic-server-tooltip">${name}</div>`);
-                const position = $(this).position();
-                const height   = $(this).height();
-                $(this).append(tooltip);
-                $('.basic-server-tooltip')
-                    .css({
-                        top: position.top + ((height - tooltip.outerHeight()) / 2)
-                    });
-            }
-        })
-        .on('mouseleave', function () {
-            $(this)
-                .children('.basic-server-tooltip')
-                .remove();
-        })
-        .on('contextmenu', function (event) {
-            event.preventDefault();
-            const menu = $('.server-context-menu');
-            let height = event.pageY;
-            if (event.pageY + menu.outerHeight() > $(window).height()) {
-                height -= menu.outerHeight();
-            }
-            menu.css({
-                'top': height,
-                'left': event.pageX,
-                'z-index': 2,
-            });
-            menu.children('#id')
-                .one('click', () => {
-                    let clipboard = $('<input>');
-                    $('#hidden-data').append(clipboard);
-                    clipboard
-                        .val(id)
-                        .trigger('select');
-                    document.execCommand("copy");
-                    menu.css({
-                        'top': 0,
-                        'left': 0,
-                        'z-index': -1
-                    });
-                    clipboard.remove();
-                })
-            menu.children('#leave')
-                .one('click', () => { // TODO: Implement this shit.
-                    menu.css({
-                        'top': 0,
-                        'left': 0,
-                        'z-index': -1
-                    });
+        .on({
+            mouseover: function (event) {
+                if (event.target !== $(this).children('.arrow')) {
+                    const tooltip = $(`<div class="basic-server-tooltip">${name}</div>`);
+                    const position = $(this).position();
+                    const height = $(this).height();
+                    $(this).append(tooltip);
+                    $('.basic-server-tooltip')
+                        .css({
+                            top: position.top + ((height - tooltip.outerHeight()) / 2)
+                        });
+                }
+            },
+            mouseleave: function () {
+                $(this)
+                    .children('.basic-server-tooltip')
+                    .remove();
+            },
+            contextmenu: function (event) {
+                event.preventDefault();
+                const menu = $('.server-context-menu');
+                let height = event.pageY;
+                if (event.pageY + menu.outerHeight() > $(window).height()) {
+                    height -= menu.outerHeight();
+                }
+                menu.css({
+                    'top': height,
+                    'left': event.pageX,
+                    'z-index': 2,
                 });
-        })
-        .on('click', function () {
-            $('.basic-server-instance .pill')
-                .css({ 'height': '12px' });
-            $(this)
-                .children('.pill')
-                .css({ 'height': '36px' });
+                menu.children('#id')
+                    .one('click', () => {
+                        let clipboard = $('<input>');
+                        $('#hidden-data').append(clipboard);
+                        clipboard
+                            .val(id)
+                            .trigger('select');
+                        document.execCommand("copy");
+                        menu.css({
+                            'top': 0,
+                            'left': 0,
+                            'z-index': -1
+                        });
+                        clipboard.remove();
+                    })
+                menu.children('#leave')
+                    .one('click', () => { // TODO: Implement this shit.
+                        menu.css({
+                            'top': 0,
+                            'left': 0,
+                            'z-index': -1
+                        });
+                    });
+            },
+            click: function () {
+                $('.basic-server-instance .pill').attr('style', '');
+                $(this)
+                    .children('.pill')
+                    .css({ 'height': '36px' });
+            }
         });
 }
 

@@ -245,11 +245,11 @@ a {
 .basic-server-instance .pill {
     position: absolute;
     width: 4px;
-    height: 12px;
+    height: 0;
     left: -21px;
     top: 50%;
     background: white;
-    transition: height 250ms;
+    transition: height 200ms ease-in-out;
     pointer-events: none;
     transform: translate(0, -50%);
     border-radius: 0 16px 16px 0;
@@ -257,6 +257,11 @@ a {
 
 .basic-server-instance:hover {
     border-radius: 33%;
+    cursor: pointer;
+}
+
+.basic-server-instance:hover > .pill {
+    height: 16px;
 }
 
 .basic-server-tooltip {
@@ -294,7 +299,7 @@ a {
     display: flex;
     height: fit-content;
     width: fit-content;
-    padding: 8px;
+    padding: 10px;
     border-radius: 6px;
     color: rgb(172, 174, 177);
     z-index: -1;
