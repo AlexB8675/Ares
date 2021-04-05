@@ -44,7 +44,8 @@ a {
 }
 
 .color-red:hover {
-    background: rgb(66, 51, 55) !important;
+    color: rgb(253, 225, 225) !important;
+    background: rgb(240, 71, 71) !important;
 }
 
 .basic-visible {
@@ -90,11 +91,12 @@ a {
 }
 
 .basic-separator {
+    position: relative;
     width: 95%;
     height: 2px;
     padding: 0;
     border: 0;
-    margin: 8px 0 8px 3px;
+    margin: 8px auto;
     background: rgb(59, 61, 66);
     vertical-align: baseline;
 }
@@ -185,6 +187,17 @@ a {
     transition: top 200ms;
 }
 
+/* Basic Layered Container Styles */
+.basic-layer-container {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background: none;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
 /* Basic Main Application Styles */
 .basic-app-container {
     position: fixed;
@@ -232,7 +245,8 @@ a {
     position: fixed;
     visibility: visible;
     background: black;
-    font-size: 11pt;
+    font-size: 13pt;
+    line-height: 20px;
     color: white;
     text-align: center;
     border-radius: 8px;
@@ -248,9 +262,45 @@ a {
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
     border-right: 10px solid black;
+    transform: translate(0, -50%);
     content: '';
-    top: 6px;
+    top: 50%;
     left: -6px;
+}
+
+/* Server Context Menu Style */
+.server-context-menu {
+    position: absolute;
+    flex-direction: column;
+    background: rgb(24, 25, 28);
+    display: flex;
+    height: fit-content;
+    width: fit-content;
+    padding: 10px;
+    border-radius: 6px;
+    color: rgb(172, 174, 177);
+    z-index: -1;
+}
+.server-context-menu .basic-group {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    font-size: 14pt;
+    float: right;
+    padding: 6px 14px;
+    /* margin: 0 0 0 10px; */
+    text-align: left;
+    outline: none;
+    color: rgb(215, 221, 217);
+    border-radius: 4px;
+    transition:
+            color      250ms ease-in-out,
+            background 250ms ease-in-out;
+}
+
+.server-context-menu .basic-group:hover {
+    color: rgb(253, 225, 225);
+    background: rgb(92, 111, 177);
 }
 
 /* Basic Sidebar Style */

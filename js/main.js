@@ -119,25 +119,71 @@ $(async function () {
                     insert_avatar(await fetch('id'), event.target.files[0]);
                 });
         });
+    $('.basic-app-container')
+        .on('mousedown', function () {
+            $('.server-context-menu').css({
+                'top': 0,
+                'left': 0,
+                'z-index': -1
+            });
+        });
     fetch_servers();
     gateway(); // Initializes websocket connection.
 });
 
-function make_server(name) {
+function make_server(name, id) {
     $('.basic-server-list')
         .append(`<div class="basic-server-instance"></div>`)
         .children('.basic-server-instance')
         .last()
         .on('mouseover', function () {
+            const tooltip  = $(`<div class="basic-server-tooltip">${name}</div>`);
             const position = $(this).position();
-            $(this).html(`<div class="basic-server-tooltip">${name}</div>`);
+            const height   = $(this).height();
+            $(this).html(tooltip);
             $('.basic-server-tooltip')
                 .css({
-                    top: position.top + 8,
+                    top: position.top + ((height - tooltip.outerHeight()) / 2)
                 });
         })
         .on('mouseleave', function () {
             $(this).html('');
+        })
+        .on('contextmenu', function (event) {
+            event.preventDefault();
+            const menu = $('.server-context-menu');
+            let height = event.pageY;
+            if (event.pageY + menu.outerHeight() > $(window).height()) {
+                height -= menu.outerHeight();
+            }
+            menu.css({
+                'top': height,
+                'left': event.pageX,
+                'z-index': 2,
+            });
+            menu.children('#id')
+                .one('click', () => {
+                    let clipboard = $('<input>');
+                    $('#hidden-data').append(clipboard);
+                    clipboard
+                        .val(id)
+                        .trigger('select');
+                    document.execCommand("copy");
+                    menu.css({
+                        'top': 0,
+                        'left': 0,
+                        'z-index': -1
+                    });
+                    clipboard.remove();
+                })
+                .children('#leave')
+                .one('click', () => { // TODO: Implement this shit.
+                    menu.css({
+                        'top': 0,
+                        'left': 0,
+                        'z-index': -1
+                    });
+                });
         });
 }
 
@@ -153,7 +199,7 @@ function fetch_servers() {
             switch (response) {
                 default: {
                     for (const server of JSON.parse(response)) {
-                        make_server(server['name']);
+                        make_server(server['name'], server['id']);
                     }
                 } break;
             }
@@ -207,7 +253,7 @@ function insert_server(id, name) {
             switch (response) {
                 default: {
                     close_add_server($('.add-server-container'));
-                    make_server(name);
+                    make_server(name, id);
                 } break;
             }
         }
