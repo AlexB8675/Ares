@@ -133,21 +133,28 @@ $(async function () {
 
 function make_server(name, id) {
     $('.basic-server-list')
-        .append(`<div class="basic-server-instance"></div>`)
+        .append(
+            `<div class="basic-server-instance">
+                <div class="pill"></div>
+            </div>`)
         .children('.basic-server-instance')
         .last()
-        .on('mouseover', function () {
-            const tooltip  = $(`<div class="basic-server-tooltip">${name}</div>`);
-            const position = $(this).position();
-            const height   = $(this).height();
-            $(this).html(tooltip);
-            $('.basic-server-tooltip')
-                .css({
-                    top: position.top + ((height - tooltip.outerHeight()) / 2)
-                });
+        .on('mouseover', function (event) {
+            if (event.target !== $(this).children('.arrow')) {
+                const tooltip  = $(`<div class="basic-server-tooltip">${name}</div>`);
+                const position = $(this).position();
+                const height   = $(this).height();
+                $(this).append(tooltip);
+                $('.basic-server-tooltip')
+                    .css({
+                        top: position.top + ((height - tooltip.outerHeight()) / 2)
+                    });
+            }
         })
         .on('mouseleave', function () {
-            $(this).html('');
+            $(this)
+                .children('.basic-server-tooltip')
+                .remove();
         })
         .on('contextmenu', function (event) {
             event.preventDefault();
@@ -176,7 +183,7 @@ function make_server(name, id) {
                     });
                     clipboard.remove();
                 })
-                .children('#leave')
+            menu.children('#leave')
                 .one('click', () => { // TODO: Implement this shit.
                     menu.css({
                         'top': 0,
@@ -184,6 +191,13 @@ function make_server(name, id) {
                         'z-index': -1
                     });
                 });
+        })
+        .on('click', function () {
+            $('.basic-server-instance .pill')
+                .css({ 'height': '12px' });
+            $(this)
+                .children('.pill')
+                .css({ 'height': '36px' });
         });
 }
 
