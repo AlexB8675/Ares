@@ -40,7 +40,9 @@ static std::string timestamp() noexcept {
     const auto clock = std::chrono::system_clock::now();
     const auto milli = std::chrono::duration_cast<std::chrono::milliseconds>(clock.time_since_epoch()) % 1000;
     const auto time  = std::chrono::system_clock::to_time_t(clock);
-    return (std::stringstream() << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S.") << std::setw(3) << std::setfill('0') << milli.count() << "]: ").str();
+    auto format      = std::stringstream();
+    format << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S.") << std::setw(3) << std::setfill('0') << milli.count() << "]: ";
+    return format.str();
 }
 
 static std::chrono::milliseconds time_since_epoch() noexcept {
@@ -75,25 +77,7 @@ public:
     }
 
     template <typename... Args>
-    void broadcast(const payload_data_t& data, Args&&... args) noexcept {
-        const auto excluded = std::set<websocket_session_t*>{ args... };
-
-        std::vector<std::weak_ptr<websocket_session_t>> session_refs; {
-            std::lock_guard<std::mutex> guard(_lock);
-            session_refs.reserve(_sessions.size() - excluded.size());
-            for (auto session : _sessions) {
-                if (!excluded.contains(session)) {
-                    session_refs.emplace_back(session->weak_from_this());
-                }
-            }
-        }
-
-        for (const auto& each : session_refs) {
-            if (auto session = each.lock()) {
-                session->send(data);
-            }
-        }
-    }
+    void broadcast(const payload_data_t& data, Args&&... args) noexcept;
 };
 
 class websocket_session_t : public std::enable_shared_from_this<websocket_session_t> {
@@ -257,6 +241,27 @@ public:
             });
     }
 };
+
+template <typename... Args>
+void shared_state_t::broadcast(const payload_data_t& data, Args&&... args) noexcept {
+    const auto excluded = std::set<websocket_session_t*>{ args... };
+
+    std::vector<std::weak_ptr<websocket_session_t>> session_refs; {
+        std::lock_guard<std::mutex> guard(_lock);
+        session_refs.reserve(_sessions.size() - excluded.size());
+        for (auto session : _sessions) {
+            if (!excluded.contains(session)) {
+                session_refs.emplace_back(session->weak_from_this());
+            }
+        }
+    }
+
+    for (const auto& each : session_refs) {
+        if (auto session = each.lock()) {
+            session->send(data);
+        }
+    }
+}
 
 class listener_t : public std::enable_shared_from_this<listener_t> {
     std::shared_ptr<shared_state_t> _state;

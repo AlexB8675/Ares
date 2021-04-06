@@ -26,7 +26,7 @@
             $type   = gettype($arg);
             $types .= match ($type) {
                 'string', 'double', 'integer' => $type[0],
-                default                        => die('type_error')
+                default                       => die('type_error')
             };
         }
         if (strlen($types) > 0) {

@@ -44,10 +44,10 @@ create table UserGuild (
 );
 
 create table Message (
-    id        bigint  not null,
-    author    bigint  not null,
-    channel   bigint  not null,
-    content   text    not null,
+    id      bigint not null,
+    author  bigint not null,
+    channel bigint not null,
+    content text   not null,
 
     primary key (id),
     foreign key (author)

@@ -134,7 +134,7 @@ $(async function () {
 function make_server(name, id) {
     $('.basic-server-list')
         .append(
-            `<div class="basic-server-instance">
+            `<div class="basic-server-instance" aria-label>
                 <div class="pill"></div>
             </div>`)
         .children('.basic-server-instance')
@@ -185,19 +185,40 @@ function make_server(name, id) {
                         clipboard.remove();
                     })
                 menu.children('#leave')
-                    .one('click', () => { // TODO: Implement this shit.
+                    .one('click', () => { // TODO: Implement this shit (Properly).
                         menu.css({
                             'top': 0,
                             'left': 0,
                             'z-index': -1
                         });
+                        // FixMe: Sometimes it removes the whole server sidebar lol.
+                        if ($(this).attr('aria-label') === 'selected') {
+                            $('.basic-sidebar-header .basic-text').text('');
+                            [$(this).prev(), $(this).next()]
+                                .filter((each) => each !== undefined)
+                                .forEach((each) => each.trigger('click'));
+                        }
+                        $(this).remove();
                     });
             },
             click: function () {
-                $('.basic-server-instance .pill').attr('style', '');
-                $(this)
+                $('.basic-server-instance')
+                    .attr({
+                        'style': '',
+                        'aria-label': ''
+                    })
                     .children('.pill')
-                    .css({ 'height': '36px' });
+                    .attr('style', '');
+                $(this)
+                    .attr('aria-label', 'selected')
+                    .css({
+                        'border-radius': '33%'
+                    })
+                    .children('.pill')
+                    .css({
+                        'height': '36px'
+                    });
+                $('.basic-sidebar-header .basic-text').text(name);
             }
         });
 }

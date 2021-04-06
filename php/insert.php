@@ -8,7 +8,7 @@
 
         $target = "assets/avatars/$user";
         if (!is_dir("../$target")) {
-            mkdir("../$target");
+            mkdir("../$target", 0777, true);
         }
 
         imagepng(imagescale($image , 256, 256), "../$target/avatar.png", 0);
