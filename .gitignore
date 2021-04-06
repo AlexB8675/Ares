@@ -6,6 +6,8 @@ doc/*
 js/jquery-3.5.1.js
 wss/idea
 wss/idea/*
+wss/ext
+wss/ext/*
 wss/*
 !wss/src
 !wss/src/*
