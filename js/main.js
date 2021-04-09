@@ -1,25 +1,6 @@
 // Initialization
 $(async function () {
     fetch_servers();
-    $('#message-textbox')
-        .on('keydown', async function (event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                const content = $(this).text().trim();
-                if (content !== '') {
-                    await dispatch_event({
-                        op: '1',
-                        type: 'message_create',
-                        payload: {
-                            id: `${await fetch('id')}`,
-                            author: `${await fetch('username')}`,
-                            content: `${content}`
-                        }
-                    });
-                    $(this).html('');
-                }
-            }
-        });
     $('.basic-username div').html(await fetch('username'));
     $('#user-settings')
         .on('click', function () {
@@ -78,17 +59,10 @@ $(async function () {
         .each(function (index) {
             const current = $(this);
             current.on('click', function () {
-                $('.settings-sidebar-button')
-                    .each(function () {
-                        $(this).removeClass('active');
-                    });
+                $('.settings-sidebar-button').removeClass('active');
                 current.addClass('active');
-                $('.settings-content')
-                    .each(function () {
-                        $(this).removeClass('basic-visible');
-                    });
-                $(`.settings-content[tabindex="${index}"]`)
-                    .addClass('basic-visible');
+                $('.settings-content').removeClass('basic-visible');
+                $(`.settings-content div[tabindex="${index}"]`).addClass('basic-visible');
             });
         });
     $('#button-logout')
@@ -195,32 +169,116 @@ function make_server(name, id) {
                         if ($(this).attr('aria-label') === 'selected') {
                             $('.basic-sidebar-header .basic-text').text('');
                             [$(this).prev(), $(this).next()]
-                                .filter((each) => each !== undefined)
-                                .forEach((each) => each.trigger('click'));
+                                .filter((each) => each !== undefined)[0]
+                                .click();
                         }
                         $(this).remove();
                     });
             },
-            click: function () {
-                $('.basic-server-instance')
-                    .attr({
-                        'style': '',
-                        'aria-label': ''
-                    })
-                    .children('.pill')
-                    .attr('style', '');
-                $(this)
-                    .attr('aria-label', 'selected')
-                    .css({
-                        'border-radius': '33%'
-                    })
-                    .children('.pill')
-                    .css({
-                        'height': '36px'
-                    });
-                $('.basic-sidebar-header .basic-text').text(name);
+            click: async function () {
+                if ($('div.basic-server-instance[aria-label="selected"]')[0] !== $(this)[0]) {
+                    $('.basic-server-instance')
+                        .attr({
+                            'style': '',
+                            'aria-label': ''
+                        })
+                        .children('.pill')
+                        .attr('style', '');
+                    $(this)
+                        .attr('aria-label', 'selected')
+                        .css({
+                            'border-radius': '33%'
+                        })
+                        .children('.pill')
+                        .css({
+                            'height': '36px'
+                        });
+                    let channels = '';
+                    for (const channel of JSON.parse(await fetch_channels(id))) {
+                        channels += `
+                            <div class="basic-channel-instance">
+                                <img draggable="false" src="assets/icons/hash.png" alt>
+                                <div class="basic-text" id="${channel['id']}">${channel['name']}</div>
+                            </div>`;
+                    }
+                    $('.basic-sidebar-channels')
+                        .children()
+                        .html(channels)
+                        .children()
+                        .on('click', function () {
+                            if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== $(this)[0]) {
+                                $('.basic-channel-instance')
+                                    .css({'background': 'transparent'})
+                                    .attr('aria-label', '');
+                                $(this)
+                                    .css({
+                                        'color': 'rgb(209, 221, 212)',
+                                        'background': 'rgb(52, 55, 60)'
+                                    })
+                                    .attr('aria-label', 'selected');
+                                $('.basic-master-container')
+                                    .html(`
+                                        <div class="basic-message-scroller">
+                                            <div>
+                                                <div class="basic-message-wrapper"></div>
+                                            </div>
+                                        </div>
+                                        <div class="basic-message-sender">
+                                            <div class="basic-textbox-wrapper" id="textbox-wrapper">
+                                                <div class="basic-message-textbox" id="message-textbox" placeholder="Message #${$(this).children('.basic-text').text()}" role="textbox" contenteditable></div>
+                                            </div>
+                                        </div>`);
+                                $('#message-textbox')
+                                    .on('keydown', async function (event) {
+                                        if (event.key === 'Enter' && !event.shiftKey) {
+                                            event.preventDefault();
+                                            const content = $(this).text().trim();
+                                            if (content !== '') {
+                                                await dispatch_event({
+                                                    op: '1',
+                                                    type: 'message_create',
+                                                    payload: {
+                                                        id: `${await fetch('id')}`,
+                                                        author: `${await fetch('username')}`,
+                                                        message: {
+                                                            id: `${next_id()}`,
+                                                            content: `${content}`
+                                                        }
+                                                    }
+                                                });
+                                                $(this).html('');
+                                            }
+                                        }
+                                    });
+                            }
+                        })
+                        .first()
+                        .trigger('click');
+                    $('.basic-sidebar-header .basic-text').text(name);
+                }
             }
         });
+}
+
+async function fetch_channels(id) {
+    let result = '';
+    await $.ajax({
+        url: 'php/fetch.php',
+        type: 'POST',
+        data: {
+            kind: 'channels',
+            id: id
+        },
+        cache: false,
+        success: (response) => {
+            switch (response) {
+                default: { // TODO: Error handling.
+                    result = response;
+                } break;
+            }
+        }
+    });
+    return result;
 }
 
 function fetch_servers() {
@@ -298,7 +356,7 @@ function insert_server(id, name) {
 
 async function insert_message(payload) {
     const author  = payload['author'];
-    const content = $("<div>").text(payload['content']).html();
+    const content = $("<div>").text(payload['message']['content']).html();
     const grouped = $('.basic-message-username').last().text() === author;
 
     let html;

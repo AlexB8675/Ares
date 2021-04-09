@@ -19,11 +19,22 @@
             from UserGuild
                 inner join Guild on UserGuild.guild_id = Guild.id
             where user_id = ?";
-        $result = safe_query($connection, $query, $user)->get_result();
-        $data   = array();
-        while ($row = $result->fetch_object()) {
-            $data[] = $row;
-        }
+        $data =
+            safe_query($connection, $query, $user)
+                ->get_result()
+                ->fetch_all(MYSQLI_ASSOC);
+        return json_encode($data);
+    }
+
+    function fetch_channels(mysqli $connection, int $guild): string {
+        $query = "
+            select id, name
+            from Channel
+            where guild = ?";
+        $data =
+            safe_query($connection, $query, $guild)
+                ->get_result()
+                ->fetch_all(MYSQLI_ASSOC);
         return json_encode($data);
     }
 
@@ -36,6 +47,7 @@
         'id'       => $_SESSION['id'],
         'avatar'   => fetch_avatar($connection, intval($_POST['id'])),
         'guild'    => fetch_guilds($connection, $_SESSION['id']),
+        'channels' => fetch_channels($connection, intval($_POST['id'])),
         default     => die('unknown_kind')
     };
     mysqli_close($connection);

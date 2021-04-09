@@ -35,6 +35,7 @@ namespace ip        = asio::ip;
 namespace rjs       = rapidjson;
 
 using payload_data_t = std::vector<char8_t>;
+using ulong = unsigned long long;
 
 static std::string timestamp() noexcept {
     const auto clock = std::chrono::system_clock::now();
@@ -121,7 +122,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
         }
 
         if (time_since_epoch() - _heartbeat > interval + time_delta) {
-            std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
+            std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (ulong)this, _address.c_str());
             return;
         }
 
@@ -130,26 +131,30 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             rjs::StringBuffer buffer;
             document.Parse(static_cast<const char*>(_buffer.cdata().data()), _buffer.size());
             if (document.HasParseError()) {
-                std::printf("%s0x%08llx | %s: payload parse error\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
+                std::printf("%s0x%08llx | %s: payload parse error\n", timestamp().c_str(), (ulong)this, _address.c_str());
             } else {
                 rjs::Writer<rjs::StringBuffer> writer(buffer);
                 document.Accept(writer);
-                std::printf("%s0x%08llx | %s: received payload: %s\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str(), buffer.GetString());
+                std::printf("%s0x%08llx | %s: received payload: %s\n", timestamp().c_str(), (ulong)this, _address.c_str(), buffer.GetString());
                 _buffer.consume(_buffer.size());
                 const std::string type = document["type"].Get<const char*>();
                 if (type == "message_create") {
-                    const std::string id      = document["payload"]["id"].Get<const char*>();
+                    const std::string user    = document["payload"]["id"].Get<const char*>();
                     const std::string author  = document["payload"]["author"].Get<const char*>();
-                    const std::string content = std::regex_replace(document["payload"]["content"].Get<const char*>(), std::regex("\""), "\\\"");
+                    const std::string id      = document["payload"]["message"]["id"].Get<const char*>();
+                    const std::string content = std::regex_replace(document["payload"]["message"]["content"].Get<const char*>(), std::regex("\""), "\\\"");
                     const auto response =
                         "{\n"
-                        "  \"op\": 1,\n"
-                        "  \"type\": \"message_create\",\n"
-                        "  \"payload\": {\n"
-                        "    \"id\": \"" + id + "\",\n"
-                        "    \"author\": \"" + author + "\",\n"
-                        "    \"content\": \"" + content + "\"\n"
-                        "  }\n"
+                        "    op: \"1\",\n"
+                        "    type: \"message_create\",\n"
+                        "    payload: {\n"
+                        "        id: \""+ user +"\",\n"
+                        "        author: \""+ author +"\",\n"
+                        "        message: {\n"
+                        "            id: \"" + id + "\",\n"
+                        "            content: \"" + content + "\"\n"
+                        "        }\n"
+                        "    }\n"
                         "}";
                     _state->broadcast({ response.begin(), response.end() }, this);
                 } else if (type == "heartbeat") {
@@ -160,7 +165,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                         send({ response.begin(), response.end() });
                         _heartbeat = current;
                     } else {
-                        std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (std::uintptr_t)this, _address.c_str());
+                        std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (ulong)this, _address.c_str());
                         return;
                     }
                 }
