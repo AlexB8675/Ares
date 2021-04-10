@@ -28,6 +28,16 @@
         safe_query($connection, $query, strval(intval($id) + 1), $id, "default");
     }
 
+    function insert_message(mysqli $connection, string $message) {
+        $data    = json_decode($message, true);
+        $query   = "insert into Message value (?, ?, ?, ?)";
+        $id      = $data['message']['id'];
+        $user    = $data['id'];
+        $channel = $data['channel'];
+        $content = $data['message']['content'];
+        safe_query($connection, $query, $id, $user, $channel, $content);
+    }
+
     function join_guild(mysqli $connection, string $id, string $user) {
         $query = "select name from Guild where id = ?";
         $guild = safe_query($connection, $query, $id)->get_result();
@@ -52,6 +62,10 @@
 
         case 'guild': {
             insert_guild($connection, $_POST['id'], $_SESSION['id'], $_POST['name']);
+        } break;
+
+        case 'message': {
+            insert_message($connection, $_POST['message']);
         } break;
 
         case 'join': {

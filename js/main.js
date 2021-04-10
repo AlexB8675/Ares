@@ -1,6 +1,5 @@
 // Initialization
 $(async function () {
-    gateway(); // Initializes websocket connection.
     fetch_servers();
     $('.basic-username div').html(await fetch('username'));
     $('#user-settings')
@@ -80,7 +79,7 @@ $(async function () {
 
                             default: {
                                 make_server(response, id);
-                                $('#join-error').text();
+                                $('#join-error').text('');
                                 close_add_server();
                             } break;
                         }
@@ -153,6 +152,7 @@ $(async function () {
                 'z-index': -1
             });
         });
+    gateway(); // Initializes websocket connection.
 });
 
 function make_server(name, id) {
@@ -264,7 +264,7 @@ function make_server(name, id) {
                         .children()
                         .html(channels)
                         .children()
-                        .on('click', async function (event) {
+                        .on('click', async function () {
                             const current = $(this);
                             if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
                                 $('.basic-channel-instance')
@@ -288,13 +288,14 @@ function make_server(name, id) {
                                                 <div class="basic-message-textbox" id="message-textbox" placeholder="Message #${current.children('.basic-text').text()}" role="textbox" contenteditable></div>
                                             </div>
                                         </div>`);
+                                fetch_messages(current.children('.basic-text').attr('id'));
                                 $('#message-textbox')
                                     .on('keydown', async function (event) {
                                         if (event.key === 'Enter' && !event.shiftKey) {
                                             event.preventDefault();
                                             const content = $(this).text().trim();
                                             if (content !== '') {
-                                                await dispatch_event({
+                                                const data = {
                                                     op: 0,
                                                     type: 'message_create',
                                                     payload: {
@@ -310,6 +311,17 @@ function make_server(name, id) {
                                                             content: `${content}`
                                                         }
                                                     }
+                                                };
+                                                await dispatch_event(data);
+                                                $.ajax({
+                                                    url: 'php/insert.php',
+                                                    type: 'POST',
+                                                    data: {
+                                                        kind: 'message',
+                                                        message: JSON.stringify(data['payload'])
+                                                    },
+                                                    cache: false,
+                                                    success: (_) => {} // TODO: Error Handling (?).
                                                 });
                                                 $(this).html('');
                                             }
@@ -374,6 +386,35 @@ function fetch_servers() {
                 default: {
                     for (const server of JSON.parse(response)) {
                         make_server(server['name'], server['id']);
+                    }
+                } break;
+            }
+        }
+    });
+}
+
+function fetch_messages(channel) {
+    $.ajax({
+        url: 'php/messages.php',
+        type: 'POST',
+        data: {
+            channel: channel
+        },
+        cache: false,
+        success: async (response) => {
+            switch (response) {
+                default: {
+                    for (const message of JSON.parse(response)) {
+                        await insert_message({
+                            id: message['author'],
+                            author: await fetch_author(message['author']),
+                            guild: `${message['guild']}`,
+                            channel: `${message['channel']}`,
+                            message: {
+                                id: message['id'],
+                                content: message['content']
+                            }
+                        });
                     }
                 } break;
             }
@@ -631,6 +672,31 @@ let gateway = (function () {
         }
         return wss;
     }
+})();
+
+const fetch_author = (function () {
+    let cached = {};
+    return async function (id) {
+        if (cached[id] === undefined) {
+            await $.ajax({
+                url: 'php/fetch.php',
+                type: 'POST',
+                data: {
+                    kind: 'author',
+                    id: id,
+                },
+                cache: false,
+                success: (response) => {
+                    switch (response) { // TODO: Error handling.
+                        default: {
+                            cached[id] = response;
+                        } break;
+                    }
+                }
+            });
+        }
+        return cached[id];
+    };
 })();
 
 const fetch_avatar = (function () {

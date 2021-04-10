@@ -38,6 +38,15 @@
         return json_encode($data);
     }
 
+    function fetch_author(mysqli $connection, string $user): string {
+        $query  = "select username from User where id = ?";
+        $result = safe_query($connection, $query, $user)->get_result();
+        if ($result->num_rows === 0) {
+            die('not_found');
+        }
+        return $result->fetch_object()->username;
+    }
+
     start_session();
     $connection = connect_database();
     $kind       = $_POST['kind'];
@@ -48,6 +57,7 @@
         'avatar'   => fetch_avatar($connection, $_POST['id']),
         'guild'    => fetch_guilds($connection, $_SESSION['id']),
         'channels' => fetch_channels($connection, $_POST['id']),
+        'author'   => fetch_author($connection, $_POST['id']),
         default     => die('unknown_kind')
     };
     mysqli_close($connection);
