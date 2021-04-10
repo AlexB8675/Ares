@@ -87,8 +87,7 @@ $(async function () {
     $('.account-details #email').text(await fetch('email'));
     $('.account-avatar-change')
         .on('click', function () {
-            $(document.createElement('input'))
-                .attr('type', 'file')
+            $('<input type="file">')
                 .trigger('click')
                 .on('change', async function (event) {
                     insert_avatar(await fetch('id'), event.target.files[0]);
@@ -168,9 +167,17 @@ function make_server(name, id) {
                         // FixMe: Sometimes it removes the whole server sidebar lol.
                         if ($(this).attr('aria-label') === 'selected') {
                             $('.basic-sidebar-header .basic-text').text('');
-                            [$(this).prev(), $(this).next()]
-                                .filter((each) => each !== undefined)[0]
-                                .click();
+                            const next = [$(this).prev(), $(this).next()].filter((each) => each !== undefined)[0];
+                            if (next.length === 0) {
+                                $('.basic-sidebar-scroller').html('');
+                                $('.basic-master-container')
+                                    .html(`
+                                        <div class="basic-default-container">
+                                            <img draggable="false" src="assets/icons/logo.png" alt>
+                                        </div>`);
+                            } else {
+                                next.trigger('click');
+                            }
                         }
                         $(this).remove();
                     });
@@ -196,7 +203,7 @@ function make_server(name, id) {
                     let channels = '';
                     for (const channel of JSON.parse(await fetch_channels(id))) {
                         channels += `
-                            <div class="basic-channel-instance">
+                            <div class="basic-channel-instance" aria-label>
                                 <img draggable="false" src="assets/icons/hash.png" alt>
                                 <div class="basic-text" id="${channel['id']}">${channel['name']}</div>
                             </div>`;
@@ -205,12 +212,13 @@ function make_server(name, id) {
                         .children()
                         .html(channels)
                         .children()
-                        .on('click', function () {
-                            if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== $(this)[0]) {
+                        .on('click', async function (event) {
+                            const current = $(this);
+                            if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
                                 $('.basic-channel-instance')
                                     .css({'background': 'transparent'})
                                     .attr('aria-label', '');
-                                $(this)
+                                current
                                     .css({
                                         'color': 'rgb(209, 221, 212)',
                                         'background': 'rgb(52, 55, 60)'
@@ -225,7 +233,7 @@ function make_server(name, id) {
                                         </div>
                                         <div class="basic-message-sender">
                                             <div class="basic-textbox-wrapper" id="textbox-wrapper">
-                                                <div class="basic-message-textbox" id="message-textbox" placeholder="Message #${$(this).children('.basic-text').text()}" role="textbox" contenteditable></div>
+                                                <div class="basic-message-textbox" id="message-textbox" placeholder="Message #${current.children('.basic-text').text()}" role="textbox" contenteditable></div>
                                             </div>
                                         </div>`);
                                 $('#message-textbox')
@@ -235,11 +243,16 @@ function make_server(name, id) {
                                             const content = $(this).text().trim();
                                             if (content !== '') {
                                                 await dispatch_event({
-                                                    op: '1',
+                                                    op: 0,
                                                     type: 'message_create',
                                                     payload: {
                                                         id: `${await fetch('id')}`,
                                                         author: `${await fetch('username')}`,
+                                                        guild: `${id}`,
+                                                        channel: `${
+                                                            current
+                                                                .children('.basic-text')
+                                                                .attr('id')}`,
                                                         message: {
                                                             id: `${next_id()}`,
                                                             content: `${content}`
@@ -250,6 +263,16 @@ function make_server(name, id) {
                                             }
                                         }
                                     });
+                                await dispatch_event({
+                                    op: 0,
+                                    type: 'transition_channel',
+                                    payload: {
+                                        channel: `${
+                                            current
+                                                .children('.basic-text')
+                                                .attr('id')}`
+                                    }
+                                });
                             }
                         })
                         .first()
@@ -389,13 +412,9 @@ async function insert_message(payload) {
 async function dispatch_event(payload) {
     const data = JSON.stringify(payload);
     console.log('[Info] dispatch_event:', data);
+    gateway().send(data);
     switch (payload['type']) {
         case 'message_create': {
-            try {
-                gateway().send(data);
-            } catch (e) {
-                console.log(e);
-            }
             await insert_message(payload['payload']);
         } break;
     }
@@ -465,12 +484,11 @@ let gateway = (function () {
         (_) => {
             tries = 0;
             console.log('[Info]: connection successful');
-            heartbeat = setTimeout(function keep_alive() {
-                wss.send(JSON.stringify({
-                    op: 0,
+            heartbeat = setTimeout(async function keep_alive() {
+                await dispatch_event({
+                    op: 1,
                     type: 'heartbeat'
-                }));
-                console.log('[Info]: sent heartbeat');
+                });
                 heartbeat = setTimeout(keep_alive, 60000);
             }, 60000);
         };

@@ -300,10 +300,11 @@ a {
     height: fit-content;
     width: fit-content;
     padding: 10px;
-    border-radius: 6px;
+    border-radius: 10px;
     color: rgb(172, 174, 177);
     z-index: -1;
 }
+
 .server-context-menu .basic-group {
     position: relative;
     cursor: pointer;
@@ -338,10 +339,14 @@ a {
 .basic-sidebar-header > .basic-text {
     position: relative;
     display: flex;
-    flex: 0;
+    flex: 0 1 auto;
+    width: 240px;
+    text-overflow: ellipsis;
     align-self: center;
-    margin: 0 0 0 24px;
+    overflow: hidden;
+    margin: 0 auto;
     font-size: 14pt;
+    white-space: nowrap;
     color: white;
 }
 

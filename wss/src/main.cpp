@@ -35,7 +35,7 @@ namespace ip        = asio::ip;
 namespace rjs       = rapidjson;
 
 using payload_data_t = std::vector<char8_t>;
-using ulong = unsigned long long;
+using u64 = unsigned long long;
 
 static std::string timestamp() noexcept {
     const auto clock = std::chrono::system_clock::now();
@@ -61,24 +61,18 @@ static ssl::context make_ssl_context() noexcept {
 
 class websocket_session_t;
 class shared_state_t {
-    std::set<websocket_session_t*> _sessions; // TODO: Split sessions for server | channel
+    std::map<u64, std::set<websocket_session_t*>> _sessions;
     asio::io_context& _ctx;
     std::mutex _lock;
 public:
     explicit shared_state_t(asio::io_context& ctx) noexcept : _ctx(ctx) {}
 
-    void insert(websocket_session_t* session) noexcept {
-        std::lock_guard<std::mutex> guard(_lock);
-        _sessions.insert(session);
-    }
-
-    void erase(websocket_session_t* session) noexcept {
-        std::lock_guard<std::mutex> guard(_lock);
-        _sessions.erase(session);
-    }
-
+    void insert(websocket_session_t*) noexcept;
+    void erase(websocket_session_t*) noexcept;
+    void transition(websocket_session_t*, u64) noexcept;
     template <typename... Args>
-    void broadcast(const payload_data_t& data, Args&&... args) noexcept;
+    void broadcast(u64, const payload_data_t&, Args&&...) noexcept;
+    void dump() noexcept;
 };
 
 class websocket_session_t : public std::enable_shared_from_this<websocket_session_t> {
@@ -88,6 +82,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     std::chrono::milliseconds _heartbeat;
     beast::flat_buffer _buffer;
     std::string _address;
+    u64 _channel;
 
     void on_send(const payload_data_t& payload) noexcept {
         _payloads.push(payload);
@@ -122,7 +117,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
         }
 
         if (time_since_epoch() - _heartbeat > interval + time_delta) {
-            std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (ulong)this, _address.c_str());
+            std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (u64)this, _address.c_str());
             return;
         }
 
@@ -131,43 +126,64 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             rjs::StringBuffer buffer;
             document.Parse(static_cast<const char*>(_buffer.cdata().data()), _buffer.size());
             if (document.HasParseError()) {
-                std::printf("%s0x%08llx | %s: payload parse error\n", timestamp().c_str(), (ulong)this, _address.c_str());
+                std::printf("%s0x%08llx | %s: payload parse error\n", timestamp().c_str(), (u64)this, _address.c_str());
             } else {
                 rjs::Writer<rjs::StringBuffer> writer(buffer);
                 document.Accept(writer);
-                std::printf("%s0x%08llx | %s: received payload: %s\n", timestamp().c_str(), (ulong)this, _address.c_str(), buffer.GetString());
+                std::printf("%s0x%08llx | %s: received payload: %s\n", timestamp().c_str(), (u64)this, _address.c_str(), buffer.GetString());
                 _buffer.consume(_buffer.size());
+                const int op = document["op"].Get<int>();
                 const std::string type = document["type"].Get<const char*>();
-                if (type == "message_create") {
-                    const std::string user    = document["payload"]["id"].Get<const char*>();
-                    const std::string author  = document["payload"]["author"].Get<const char*>();
-                    const std::string id      = document["payload"]["message"]["id"].Get<const char*>();
-                    const std::string content = std::regex_replace(document["payload"]["message"]["content"].Get<const char*>(), std::regex("\""), "\\\"");
-                    const auto response =
-                        "{\n"
-                        "    op: \"1\",\n"
-                        "    type: \"message_create\",\n"
-                        "    payload: {\n"
-                        "        id: \""+ user +"\",\n"
-                        "        author: \""+ author +"\",\n"
-                        "        message: {\n"
-                        "            id: \"" + id + "\",\n"
-                        "            content: \"" + content + "\"\n"
-                        "        }\n"
-                        "    }\n"
-                        "}";
-                    _state->broadcast({ response.begin(), response.end() }, this);
-                } else if (type == "heartbeat") {
-                    const auto current = time_since_epoch();
-                    const auto elapsed = current - _heartbeat - interval;
-                    if (-time_delta < elapsed && elapsed < time_delta) {
-                        constexpr std::string_view response = R"({ "op": 11, "type": "heartbeat" })";
-                        send({ response.begin(), response.end() });
-                        _heartbeat = current;
-                    } else {
-                        std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (ulong)this, _address.c_str());
-                        return;
-                    }
+                switch (op) {
+                    case -1: { // FixMe: debug_event (only for debugging purposes, to be removed).
+                        if (type == "dump_sessions") {
+                            _state->dump();
+                        }
+                    } break;
+
+                    case 0: { // dispatch_message.
+                        if (type == "message_create") {
+                            const std::string user    = document["payload"]["id"].Get<const char*>();
+                            const std::string author  = document["payload"]["author"].Get<const char*>();
+                            const std::string guild   = document["payload"]["guild"].Get<const char*>();
+                            const std::string channel = document["payload"]["channel"].Get<const char*>();
+                            const std::string id      = document["payload"]["message"]["id"].Get<const char*>();
+                            const std::string content = std::regex_replace(document["payload"]["message"]["content"].Get<const char*>(), std::regex("\""), "\\\"");
+                            const auto response =
+                                "{\n"
+                                "    \"op\": 1,\n"
+                                "    \"type\": \"message_create\",\n"
+                                "    \"payload\": {\n"
+                                "        \"id\": \""+ user +"\",\n"
+                                "        \"author\": \""+ author +"\",\n"
+                                "        \"guild\": \""+ guild +"\",\n"
+                                "        \"channel\": \""+ channel +"\",\n"
+                                "        \"message\": {\n"
+                                "            \"id\": \"" + id + "\",\n"
+                                "            \"content\": \"" + content + "\"\n"
+                                "        }\n"
+                                "    }\n"
+                                "}";
+                            _state->broadcast(std::stoull(channel), { response.begin(), response.end() }, this);
+                        } else if (type == "transition_channel") {
+                            const u64 next = std::stoull(document["payload"]["channel"].Get<const char*>());
+                            _state->transition(this, next);
+                            _channel = next;
+                        }
+                    } break;
+
+                    case 1: { // heartbeat_event.
+                        const auto current = time_since_epoch();
+                        const auto elapsed = current - _heartbeat - interval;
+                        if (-time_delta < elapsed && elapsed < time_delta) {
+                            constexpr std::string_view response = R"({ "op": 11, "type": "heartbeat" })";
+                            send({ response.begin(), response.end() });
+                            _heartbeat = current;
+                        } else {
+                            std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (u64)this, _address.c_str());
+                            return;
+                        }
+                    } break;
                 }
             }
         }
@@ -223,7 +239,8 @@ public:
         : _wss(std::move(socket), ssl),
           _state(std::move(state)),
           _heartbeat(),
-          _address(endpoint.address().to_string()) {}
+          _address(endpoint.address().to_string()),
+          _channel() {}
 
     ~websocket_session_t() noexcept {
         std::cout << timestamp() << "connection terminated: " << _address << '\n';
@@ -245,16 +262,44 @@ public:
                 self->on_send(payload);
             });
     }
+
+    u64 channel() const noexcept {
+        return _channel;
+    }
+
+    std::string_view address() const noexcept {
+        return _address;
+    }
 };
 
+void shared_state_t::insert(websocket_session_t* session) noexcept {
+    std::lock_guard<std::mutex> guard(_lock);
+    _sessions[session->channel()].insert(session);
+}
+
+void shared_state_t::erase(websocket_session_t* session) noexcept {
+    std::lock_guard<std::mutex> guard(_lock);
+    _sessions[session->channel()].erase(session);
+}
+
+void shared_state_t::transition(websocket_session_t* session, u64 next) noexcept {
+    std::lock_guard<std::mutex> guard(_lock);
+    auto& previous = _sessions[session->channel()];
+    previous.erase(session);
+    if (previous.empty()) {
+        _sessions.erase(session->channel());
+    }
+    _sessions[next].insert(session);
+}
+
 template <typename... Args>
-void shared_state_t::broadcast(const payload_data_t& data, Args&&... args) noexcept {
+void shared_state_t::broadcast(u64 channel, const payload_data_t& data, Args&&... args) noexcept {
     const auto excluded = std::set<websocket_session_t*>{ args... };
 
     std::vector<std::weak_ptr<websocket_session_t>> session_refs; {
         std::lock_guard<std::mutex> guard(_lock);
-        session_refs.reserve(_sessions.size() - excluded.size());
-        for (auto session : _sessions) {
+        session_refs.reserve(_sessions[channel].size() - excluded.size());
+        for (auto session : _sessions[channel]) {
             if (!excluded.contains(session)) {
                 session_refs.emplace_back(session->weak_from_this());
             }
@@ -264,6 +309,16 @@ void shared_state_t::broadcast(const payload_data_t& data, Args&&... args) noexc
     for (const auto& each : session_refs) {
         if (auto session = each.lock()) {
             session->send(data);
+        }
+    }
+}
+
+void shared_state_t::dump() noexcept {
+    std::lock_guard<std::mutex> guard(_lock);
+    for (const auto& [channel, session] : _sessions) {
+        std::cout << timestamp() << channel << ":\n";
+        for (auto each : session) {
+            std::cout << timestamp() << "  - " << each->address() << '\n';
         }
     }
 }

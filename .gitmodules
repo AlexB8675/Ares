@@ -1,0 +1,3 @@
+[submodule "wss/ext/rapidjson"]
+	path = wss/ext/rapidjson
+	url = https://github.com/tencent/rapidjson
