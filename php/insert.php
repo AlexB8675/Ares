@@ -1,6 +1,6 @@
 <?php
     include_once 'common.php';
-    function insert_avatar(mysqli $connection, int $user, string $path) {
+    function insert_avatar(mysqli $connection, string $user, string $path) {
         $image = @imagecreatefromstring(file_get_contents($path));
         if (!$image) {
             die('unsupported_format');
@@ -19,13 +19,28 @@
         safe_query($connection, $query, "$target/avatar.png", $user);
     }
 
-    function insert_guild(mysqli $connection, int $id, int $user, string $name) {
+    function insert_guild(mysqli $connection, string $id, string $user, string $name) {
         $query = "insert into Guild value (?, ?, null)"; // TODO: Maybe insert a Guild icon at creation-time?
         safe_query($connection, $query, $id, $name);
         $query = "insert into UserGuild value (?, ?)";
         safe_query($connection, $query, $user, $id);
         $query = "insert into Channel value (?, ?, ?)";
-        safe_query($connection, $query, $id + 1, $id, "default");
+        safe_query($connection, $query, strval(intval($id) + 1), $id, "default");
+    }
+
+    function join_guild(mysqli $connection, string $id, string $user) {
+        $query = "select name from Guild where id = ?";
+        $guild = safe_query($connection, $query, $id)->get_result();
+        if ($guild->num_rows === 0) {
+            die('not_found');
+        }
+        $query = "select * from UserGuild where guild_id = ? and user_id = ?";
+        if (safe_query($connection, $query, $id, $user)->get_result()->num_rows !== 0) {
+            die('already_joined');
+        }
+        $query = "insert into UserGuild value (?, ?)";
+        safe_query($connection, $query, $user, $id);
+        print $guild->fetch_object()->name;
     }
 
     start_session();
@@ -37,6 +52,10 @@
 
         case 'guild': {
             insert_guild($connection, $_POST['id'], $_SESSION['id'], $_POST['name']);
+        } break;
+
+        case 'join': {
+            join_guild($connection, $_POST['id'], $_SESSION['id']);
         } break;
 
         default: {

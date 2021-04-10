@@ -316,9 +316,11 @@ void shared_state_t::broadcast(u64 channel, const payload_data_t& data, Args&&..
 void shared_state_t::dump() noexcept {
     std::lock_guard<std::mutex> guard(_lock);
     for (const auto& [channel, session] : _sessions) {
-        std::cout << timestamp() << channel << ":\n";
-        for (auto each : session) {
-            std::cout << timestamp() << "  - " << each->address() << '\n';
+        if (!session.empty()) {
+            std::cout << timestamp() << channel << ":\n";
+            for (auto each : session) {
+                std::cout << timestamp() << "  - " << each->address() << '\n';
+            }
         }
     }
 }

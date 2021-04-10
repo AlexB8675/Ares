@@ -33,32 +33,32 @@ function register() {
     if (username.length === 0) {
         result
             .text('username field cannot be empty')
-            .css('color', '#d71d48')
+            .css('color', 'rgb(215, 29, 72)')
             .show();
     } else if (email.length === 0) {
         result
             .text('email field cannot be empty')
-            .css('color', '#d71d48')
+            .css('color', 'rgb(215, 29, 72)')
             .show();
     } else if (password.length === 0) {
         result
             .text('password field cannot be empty')
-            .css('color', '#d71d48')
+            .css('color', 'rgb(215, 29, 72)')
             .show();
     } else if (confirm.length === 0) {
         result
             .text('confirm password')
-            .css('color', '#d71d48')
+            .css('color', 'rgb(215, 29, 72)')
             .show();
     } else if (password !== confirm) {
         result
             .text('password mismatch')
-            .css('color', '#d71d48')
+            .css('color', 'rgb(215, 29, 72)')
             .show();
     } else if (!email.includes('@')) {
         result
             .text('invalid email address')
-            .css('color', '#d71d48')
+            .css('color', 'rgb(215, 29, 72)')
             .show();
     } else {
         $.ajax({
@@ -80,14 +80,14 @@ function register() {
                         case 'duplicate_username': {
                             result
                                 .text('the username already exists')
-                                .css('color', '#d71d48')
+                                .css('color', 'rgb(215, 29, 72)')
                                 .show();
                         } break;
 
                         case 'duplicate_email': {
                             result
                                 .text('the email already exists')
-                                .css('color', '#d71d48')
+                                .css('color', 'rgb(215, 29, 72)')
                                 .show();
                         } break;
 
@@ -109,12 +109,12 @@ function login() {
     if (username.length === 0) {
         result
             .text('username field cannot be empty')
-            .css('color', '#d71d48')
+            .css('color', 'rgb(215, 29, 72)')
             .show();
     } else if (password.length === 0) {
         result
             .text('email field cannot be empty')
-            .css('color', '#d71d48')
+            .css('color', 'rgb(215, 29, 72)')
             .show();
     } else {
         $.ajax({
@@ -134,7 +134,7 @@ function login() {
                         case 'not_found': {
                             result
                                 .text('unknown username or password')
-                                .css('color', '#d71d48')
+                                .css('color', 'rgb(215, 29, 72)')
                                 .show();
                         } break;
 

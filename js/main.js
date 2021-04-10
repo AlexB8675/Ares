@@ -29,11 +29,62 @@ $(async function () {
                     'left': '0'
                 });
         });
-    $('#make-server')
+    $('#join-server')
+        .on('click', function () {
+            $('.add-server-main')
+                .css({
+                    'left': '-100%',
+                });
+            $('.join-server-main')
+                .css({
+                    'left': '0'
+                });
+        });
+    $('.create-server-button')
         .on('click', function () {
             const name = $(this).siblings('.create-server-input').text();
             if (name !== '') {
                 insert_server(next_id(), name);
+            }
+        });
+    $('.join-server-button')
+        .on('click', function () {
+            const id = $(this).siblings('.join-server-input').text();
+            if (id !== '') {
+                $.ajax({
+                    url: 'php/insert.php',
+                    type: 'POST',
+                    data: {
+                        kind: 'join',
+                        id: id
+                    },
+                    cache: false,
+                    success: (response) => {
+                        switch (response) {
+                            case 'not_found': {
+                                $('#join-error')
+                                    .css({
+                                        'width': '100%',
+                                    })
+                                    .text('This ID does not exist');
+                            } break;
+
+                            case 'already_joined': {
+                                $('#join-error')
+                                    .css({
+                                        'width': '100%',
+                                    })
+                                    .text('You already are in this server');
+                            } break;
+
+                            default: {
+                                make_server(response, id);
+                                $('#join-error').text();
+                                close_add_server();
+                            } break;
+                        }
+                    }
+                });
             }
         });
     $('.add-server-wrapper .close')
@@ -179,6 +230,7 @@ function make_server(name, id) {
                                 next.trigger('click');
                             }
                         }
+                        leave_server(id);
                         $(this).remove();
                     });
             },
@@ -340,6 +392,15 @@ function close_add_server() {
         .css({
             'left': '100%'
         });
+    $('.join-server-input[contenteditable]')
+        .html('');
+    $('.join-server-main')
+        .css({
+            'left': '100%'
+        });
+    $('#join-error')
+        .attr('style', '')
+        .text('');
     $('.add-server-main')
         .css({
             'left': '0'
@@ -371,6 +432,25 @@ function insert_server(id, name) {
                 default: {
                     close_add_server($('.add-server-container'));
                     make_server(name, id);
+                } break;
+            }
+        }
+    });
+}
+
+function leave_server(id) {
+    $.ajax({
+        url: 'php/delete.php',
+        type: 'POST',
+        data: {
+            kind: 'guild',
+            id: id,
+        },
+        cache: false,
+        success: (response) => {
+            switch (response) {
+                case 'query_error': {
+                    console.log(response);
                 } break;
             }
         }
@@ -480,7 +560,7 @@ let gateway = (function () {
     let wss = null;
     let heartbeat = null;
     let tries = 0;
-    let open =
+    const open =
         (_) => {
             tries = 0;
             console.log('[Info]: connection successful');
@@ -492,7 +572,7 @@ let gateway = (function () {
                 heartbeat = setTimeout(keep_alive, 60000);
             }, 60000);
         };
-    let message =
+    const message =
         async (payload) => {
             const data = JSON.parse(payload.data);
             switch (data['type']) {
@@ -506,7 +586,7 @@ let gateway = (function () {
                 } break;
             }
         };
-    let close =
+    const close =
         () => {
             if (tries++ > 5) {
                 console.error('[Error]: cannot connect to the websocket server');
@@ -514,9 +594,25 @@ let gateway = (function () {
                 console.log('[Info]: connection terminated');
                 wss = new WebSocket('wss://gateway.alex8675.eu:2096');
                 clearTimeout(heartbeat);
-                wss.onopen = open;
+                wss.onopen = async () => {
+                    const channel = $('div.basic-channel-instance[aria-label="selected"]');
+                    if (channel.length !== 0) {
+                        await dispatch_event({
+                            op: 0,
+                            type: 'transition_channel',
+                            payload: {
+                                channel: `${
+                                    channel
+                                        .children('.basic-text')
+                                        .attr('id')}`
+                            }
+                        });
+                    }
+                    open();
+                };
                 wss.onmessage = message;
                 wss.onclose = close;
+
             }
         };
     return function () {

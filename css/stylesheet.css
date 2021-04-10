@@ -1066,6 +1066,7 @@ a {
     cursor: pointer;
 }
 
+/* Create Server Styles */
 .create-server-main {
     position: absolute;
     flex-direction: column;
@@ -1128,5 +1129,86 @@ a {
 }
 
 .create-server-input:empty:not(:focus)::before {
+    content: attr(placeholder);
+}
+
+/* Join Server Styles */
+.join-server-main {
+    position: absolute;
+    flex-direction: column;
+    backface-visibility: hidden;
+    display: flex;
+    left: 100%;
+    width: inherit;
+    height: inherit;
+    transition: 350ms left;
+}
+
+.join-server-header {
+    position: relative;
+    font-size: 21pt;
+    font-weight: bold;
+    display: flex;
+    width: fit-content;
+    flex: 0 1 auto;
+    margin: 36px auto 48px;
+    color: rgb(220, 221, 222);
+}
+
+.join-server-body {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+
+.join-server-body > .basic-text {
+    position: relative;
+    display: flex;
+    height: fit-content;
+    white-space: nowrap;
+    overflow: hidden;
+    justify-content: center;
+    align-self: center;
+    width: 0;
+    flex: 0 1 auto;
+    font-size: 12pt;
+    color: rgb(215, 29, 72);
+    transition: width 350ms;
+}
+
+.join-server-button {
+    position: relative;
+    margin: 12px auto;
+    padding: 8px 18px;
+    width: fit-content;
+    font-size: 15pt;
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: row;
+    color: rgb(220, 221, 222);
+    border: 1px solid rgb(66, 69, 74);
+    border-radius: 8px;
+}
+
+.join-server-button:hover {
+    background: rgb(58, 62, 68);
+    cursor: pointer;
+}
+
+.join-server-input {
+    position: relative;
+    display: flex;
+    flex: 0 1 auto;
+    font-size: 16pt;
+    border-radius: 8px;
+    padding: 8px 16px;
+    outline: none;
+    color: white;
+    border: 1px solid rgb(66, 69, 74);
+    margin: 16px 32px;
+}
+
+.join-server-input:empty:not(:focus)::before {
     content: attr(placeholder);
 }
