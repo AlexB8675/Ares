@@ -1,5 +1,6 @@
 // Initialization
 $(async function () {
+    gateway(); // Initializes websocket connection.
     fetch_servers();
     $('.basic-username div').html(await fetch('username'));
     $('#user-settings')
@@ -152,7 +153,6 @@ $(async function () {
                 'z-index': -1
             });
         });
-    gateway(); // Initializes websocket connection.
 });
 
 function make_server(name, id) {
@@ -209,7 +209,7 @@ function make_server(name, id) {
                         clipboard.remove();
                     })
                 menu.children('#leave')
-                    .one('click', () => { // TODO: Implement this shit (Properly).
+                    .one('click', () => {
                         menu.css({
                             'top': 0,
                             'left': 0,
@@ -314,6 +314,11 @@ function make_server(name, id) {
                                                 $(this).html('');
                                             }
                                         }
+                                    })
+                                    .on('paste', function (event) {
+                                        event.preventDefault();
+                                        const clipboard = event.originalEvent.clipboardData;
+                                        document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
                                     });
                                 await dispatch_event({
                                     op: 0,
@@ -527,7 +532,7 @@ function insert_avatar(id, file) {
     });
 }
 
-let fetch = (function () {
+const fetch = (function () {
     let cached = {};
     return async function (kind) {
         if (!Object.keys(cached).includes(kind)) {
@@ -612,13 +617,15 @@ let gateway = (function () {
                 };
                 wss.onmessage = message;
                 wss.onclose = close;
-
             }
         };
     return function () {
         if (wss === null) {
             wss = new WebSocket('wss://gateway.alex8675.eu:2096');
-            wss.onopen = open;
+            wss.onopen = () => {
+                $('.basic-loader').fadeOut(500);
+                open();
+            };
             wss.onmessage = message;
             wss.onclose = close;
         }
@@ -626,7 +633,7 @@ let gateway = (function () {
     }
 })();
 
-let fetch_avatar = (function () {
+const fetch_avatar = (function () {
     let cached = {};
     return async function (id) {
         if (cached[id] === undefined) {

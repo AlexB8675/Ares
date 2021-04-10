@@ -84,6 +84,22 @@ a {
     transform: rotate(45deg);
 }
 
+.basic-loader {
+    background:
+            rgb(25, 25, 25)
+            url('../assets/icons/loading.gif')
+                no-repeat
+                center
+                center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    z-index: 2;
+}
+
 .basic-text {
     position: relative;
     display: flex;
@@ -716,6 +732,7 @@ a {
     line-height: 22px;
     min-height: 22px;
     font-size: 12pt;
+    overflow: hidden;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     justify-content: center;
@@ -751,9 +768,10 @@ a {
     margin: 0 auto;
     resize: none;
     font-size: 18px;
-    display: inline-block;
+    display: block;
     text-align: left;
-    white-space: pre-wrap;
+    white-space: break-spaces;
+    word-break: break-word;
     overflow: visible;
     outline: none;
     border: none;
@@ -858,9 +876,9 @@ a {
     background: inherit;
     flex-direction: column;
     padding: 60px 40px 80px;
-    flex: 1 1 auto;
-    max-width: 750px;
-    min-width: 750px;
+    flex: 0 0 auto;
+    width: 50%;
+    min-width: 700px;
 }
 
 .settings-header {
