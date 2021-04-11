@@ -1,6 +1,6 @@
 <?php
     include_once 'common.php';
-    function fetch_avatar(mysqli $connection, string $user): string {
+    function fetch_avatar(mysqli $connection, int $user): string {
         $query  = "select avatar from User where id = ?";
         $result = safe_query($connection, $query, $user)->get_result();
         if ($result->num_rows === 0) {
@@ -13,9 +13,9 @@
         return $result->avatar;
     }
 
-    function fetch_guilds(mysqli $connection, string $user): string {
+    function fetch_guilds(mysqli $connection, int $user): string {
         $query = "
-            select id, name
+            select cast(id as char(20)) as id, name
             from UserGuild
                 inner join Guild on UserGuild.guild_id = Guild.id
             where user_id = ?";
@@ -26,9 +26,9 @@
         return json_encode($data);
     }
 
-    function fetch_channels(mysqli $connection, string $guild): string {
+    function fetch_channels(mysqli $connection, int $guild): string {
         $query = "
-            select id, name
+            select cast(id as char(20)) as id, name
             from Channel
             where guild = ?";
         $data =
@@ -45,9 +45,9 @@
         'username' => $_SESSION['username'],
         'email'    => $_SESSION['email'],
         'id'       => $_SESSION['id'],
-        'avatar'   => fetch_avatar($connection, $_POST['id']),
+        'avatar'   => fetch_avatar($connection, intval($_POST['id'])),
         'guild'    => fetch_guilds($connection, $_SESSION['id']),
-        'channels' => fetch_channels($connection, $_POST['id']),
+        'channels' => fetch_channels($connection, intval($_POST['id'])),
         default     => die('unknown_kind')
     };
     mysqli_close($connection);
