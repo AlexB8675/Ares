@@ -267,12 +267,13 @@ function make_server(name, id) {
                         .on('click', async function () {
                             const current = $(this);
                             if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
+                                $('.basic-loader').show();
                                 $('.basic-channel-instance')
                                     .css({'background': 'transparent'})
                                     .attr('aria-label', '');
                                 current
                                     .css({
-                                        'color': 'rgb(209, 221, 212)',
+                                        'color': 'rgb(209, 210, 221)',
                                         'background': 'rgb(52, 55, 60)'
                                     })
                                     .attr('aria-label', 'selected');
@@ -299,16 +300,16 @@ function make_server(name, id) {
                                                     op: 0,
                                                     type: 'message_create',
                                                     payload: {
-                                                        id: `${await fetch('id')}`,
-                                                        author: `${await fetch('username')}`,
-                                                        guild: `${id}`,
-                                                        channel: `${
+                                                        id: await fetch('id'),
+                                                        author: await fetch('username'),
+                                                        guild: id,
+                                                        channel:
                                                             current
                                                                 .children('.basic-text')
-                                                                .attr('id')}`,
+                                                                .attr('id'),
                                                         message: {
-                                                            id: `${next_id()}`,
-                                                            content: `${content}`
+                                                            id: next_id(),
+                                                            content: content
                                                         }
                                                     }
                                                 };
@@ -336,10 +337,10 @@ function make_server(name, id) {
                                     op: 0,
                                     type: 'transition_channel',
                                     payload: {
-                                        channel: `${
+                                        channel:
                                             current
                                                 .children('.basic-text')
-                                                .attr('id')}`
+                                                .attr('id')
                                     }
                                 });
                             }
@@ -407,15 +408,16 @@ function fetch_messages(channel) {
                     for (const message of JSON.parse(response)) {
                         await insert_message({
                             id: message['author'],
-                            author: await fetch_author(message['author']),
-                            guild: `${message['guild']}`,
-                            channel: `${message['channel']}`,
+                            author: message['username'],
+                            guild: message['guild'],
+                            channel: message['channel'],
                             message: {
                                 id: message['id'],
                                 content: message['content']
                             }
-                        });
+                        }, message['avatar']);
                     }
+                    $('.basic-loader').fadeOut(500);
                 } break;
             }
         }
@@ -503,15 +505,17 @@ function leave_server(id) {
     });
 }
 
-async function insert_message(payload) {
+async function insert_message(payload, avatar) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['message']['content']).html();
     const grouped = $('.basic-message-username').last().text() === author;
 
     let html;
     if (!grouped) {
-        const avatar = await fetch_avatar(payload['id']);
-        const path   = avatar === '' ? 'assets/icons/blank.png' : avatar;
+        if (avatar === undefined) {
+            avatar = await fetch_avatar(payload['id']);
+        }
+        const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
         html = `
             <div class="basic-message-group basic-group-start">
                 <div class="basic-chat-message">
@@ -532,7 +536,7 @@ async function insert_message(payload) {
                 </div>
             </div>`;
     }
-    $('div[class="basic-message-wrapper"]').append(html);
+    await $('div.basic-message-wrapper').append(html);
 }
 
 async function dispatch_event(payload) {
@@ -647,10 +651,10 @@ let gateway = (function () {
                             op: 0,
                             type: 'transition_channel',
                             payload: {
-                                channel: `${
+                                channel:
                                     channel
                                         .children('.basic-text')
-                                        .attr('id')}`
+                                        .attr('id')
                             }
                         });
                     }
@@ -672,31 +676,6 @@ let gateway = (function () {
         }
         return wss;
     }
-})();
-
-const fetch_author = (function () {
-    let cached = {};
-    return async function (id) {
-        if (cached[id] === undefined) {
-            await $.ajax({
-                url: 'php/fetch.php',
-                type: 'POST',
-                data: {
-                    kind: 'author',
-                    id: id,
-                },
-                cache: false,
-                success: (response) => {
-                    switch (response) { // TODO: Error handling.
-                        default: {
-                            cached[id] = response;
-                        } break;
-                    }
-                }
-            });
-        }
-        return cached[id];
-    };
 })();
 
 const fetch_avatar = (function () {

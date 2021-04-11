@@ -437,7 +437,7 @@ a {
 }
 
 .basic-channel-instance:hover {
-    color: rgb(209, 221, 212);
+    color: rgb(209, 211, 221);
     background: rgb(52, 55, 60);
     cursor: pointer;
 }
