@@ -5,13 +5,11 @@
         if (!$image) {
             die('unsupported_format');
         }
-
         $target = "assets/avatars/$user";
         if (!is_dir("../$target")) {
             mkdir("../$target", 0777, true);
         }
-
-        imagepng(imagescale($image , 256, 256), "../$target/avatar.png", 0);
+        imagepng(imagescale($image, 256, 256), "../$target/avatar.png", 0);
         $query = "
             update User
             set avatar = ?

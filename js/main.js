@@ -277,6 +277,7 @@ function make_server(name, id) {
                                         'background': 'rgb(52, 55, 60)'
                                     })
                                     .attr('aria-label', 'selected');
+                                const name = current.children('.basic-text').text();
                                 $('.basic-master-container')
                                     .html(`
                                         <div class="basic-message-scroller">
@@ -285,12 +286,12 @@ function make_server(name, id) {
                                             </div>
                                         </div>
                                         <div class="basic-message-sender">
-                                            <div class="basic-textbox-wrapper" id="textbox-wrapper">
-                                                <div class="basic-message-textbox" id="message-textbox" placeholder="Message #${current.children('.basic-text').text()}" role="textbox" contenteditable></div>
+                                            <div class="basic-textbox-wrapper">
+                                                <div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>
                                             </div>
                                         </div>`);
                                 fetch_messages(current.children('.basic-text').attr('id'));
-                                $('#message-textbox')
+                                $('.basic-message-textbox')
                                     .on('keydown', async function (event) {
                                         if (event.key === 'Enter' && !event.shiftKey) {
                                             event.preventDefault();

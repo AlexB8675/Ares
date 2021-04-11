@@ -719,6 +719,7 @@ a {
     overflow-wrap: break-word;
     line-height: 22px;
     min-height: 22px;
+    color: white;
     justify-content: center;
     align-content: center;
     flex-direction: column;
@@ -739,7 +740,7 @@ a {
     align-content: center;
     flex-direction: column;
     flex: 1 1 auto;
-    color: rgb(171, 172, 177);
+    color: rgb(220, 221, 222);
 }
 
 /* Basic Message Textbox Style */
