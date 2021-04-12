@@ -598,9 +598,31 @@ a {
     position: relative;
     width: 100%;
     flex: 0 0 64px;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
     background: rgb(54, 57, 63);
     box-shadow: 0 4px 2px -2px rgba(29, 32, 33, 0.67);
     z-index: 1;
+}
+
+.basic-master-header > img {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    flex: 0 0 auto;
+    margin: 0 0 0 24px;
+}
+
+.basic-master-header > .basic-text {
+    position: relative;
+    display: flex;
+    flex: 0 0 auto;
+    margin: 0 0 0 4px;
+    text-align: left;
+    color: white;
+    font-size: 12pt;
 }
 
 .basic-master-container {

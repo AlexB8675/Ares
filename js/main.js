@@ -162,7 +162,7 @@ $(function () {
     gateway(); // Initializes websocket connection.
 });
 
-function make_server(name, id) {
+function make_server(name, guild) {
     $('.basic-server-list')
         .append(
             `<div class="basic-server-instance" aria-label>
@@ -205,7 +205,7 @@ function make_server(name, id) {
                         let clipboard = $('<input>');
                         $('#hidden-data').append(clipboard);
                         clipboard
-                            .val(id)
+                            .val(guild)
                             .trigger('select');
                         document.execCommand("copy");
                         menu.css({
@@ -227,6 +227,7 @@ function make_server(name, id) {
                             $('.basic-sidebar-header .basic-text').text('');
                             const next = [$(this).prev(), $(this).next()].filter((each) => each !== undefined)[0];
                             if (next.length === 0) {
+                                $('.basic-master-header').html('');
                                 $('.basic-sidebar-scroller').html('');
                                 $('.basic-master-container')
                                     .html(`
@@ -237,7 +238,7 @@ function make_server(name, id) {
                                 next.trigger('click');
                             }
                         }
-                        leave_server(id);
+                        leave_server(guild);
                         $(this).remove();
                     });
             },
@@ -266,7 +267,7 @@ function make_server(name, id) {
                         type: 'POST',
                         data: {
                             kind: 'channels',
-                            id: id
+                            id: guild
                         },
                         cache: false,
                         success: (response) => {
@@ -288,6 +289,9 @@ function make_server(name, id) {
                                                     const name    = current.children('.basic-text').text();
                                                     const channel = current.children('.basic-text').attr('id');
                                                     $('.basic-loader').show();
+                                                    $('.basic-master-header')
+                                                        .html(`<img draggable="false" src="assets/icons/hash.png" alt>
+                                                               <div class="basic-text">${name}</div>`);
                                                     dispatch_event({
                                                         op: 0,
                                                         type: 'transition_channel',
@@ -323,15 +327,15 @@ function make_server(name, id) {
                                                                 event.preventDefault();
                                                                 const content = $(this).text().trim();
                                                                 if (content !== '') {
-                                                                    fetch('id', (user_id) => {
+                                                                    fetch('id', (id) => {
                                                                         fetch('username', (username) => {
                                                                             const data = {
                                                                                 op: 0,
                                                                                 type: 'message_create',
                                                                                 payload: {
-                                                                                    id: user_id,
+                                                                                    id: id,
                                                                                     author: username,
-                                                                                    guild: id,
+                                                                                    guild: guild,
                                                                                     channel: channel,
                                                                                     message: {
                                                                                         id: next_id(),
@@ -662,10 +666,7 @@ let gateway = (function () {
                             op: 0,
                             type: 'transition_channel',
                             payload: {
-                                channel:
-                                    channel
-                                        .children('.basic-text')
-                                        .attr('id')
+                                channel: channel.children('.basic-text').attr('id')
                             }
                         });
                     }
