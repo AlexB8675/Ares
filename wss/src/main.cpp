@@ -26,6 +26,8 @@
 #include <regex>
 #include <set>
 
+#define debug_output 1
+
 namespace beast     = boost::beast;
 namespace asio      = boost::asio;
 namespace websocket = beast::websocket;
@@ -59,6 +61,14 @@ static ssl::context make_ssl_context() noexcept {
     return context;
 }
 
+template <typename... Args>
+static void print(std::string_view format, Args&&... args) noexcept {
+#if debug_output == 1
+    std::cout << timestamp();
+    std::printf(format.data(), std::forward<Args>(args)...);
+#endif
+}
+
 class websocket_session_t;
 class shared_state_t {
     std::map<u64, std::set<websocket_session_t*>> _sessions;
@@ -81,7 +91,6 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     std::queue<payload_data_t> _payloads;
     std::chrono::milliseconds _heartbeat;
     beast::flat_buffer _buffer;
-    std::string _address;
     u64 _channel;
 
     void on_send(const payload_data_t& payload) noexcept {
@@ -117,7 +126,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
         }
 
         if (time_since_epoch() - _heartbeat > interval + time_delta) {
-            std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (u64)this, _address.c_str());
+            print("0x%08llx: heartbeat failure\n", (u64)this);
             return;
         }
 
@@ -126,11 +135,11 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
             rjs::StringBuffer buffer;
             document.Parse(static_cast<const char*>(_buffer.cdata().data()), _buffer.size());
             if (document.HasParseError()) {
-                std::printf("%s0x%08llx | %s: payload parse error\n", timestamp().c_str(), (u64)this, _address.c_str());
+                print("0x%08llx: payload parse error\n", (u64)this);
             } else {
                 rjs::Writer<rjs::StringBuffer> writer(buffer);
                 document.Accept(writer);
-                std::printf("%s0x%08llx | %s: received payload: %s\n", timestamp().c_str(), (u64)this, _address.c_str(), buffer.GetString());
+                print("0x%08llx: received payload: %s\n", (u64)this, buffer.GetString());
                 _buffer.consume(_buffer.size());
                 const int op = document["op"].Get<int>();
                 const std::string type = document["type"].Get<const char*>();
@@ -180,7 +189,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                             send({ response.begin(), response.end() });
                             _heartbeat = current;
                         } else {
-                            std::printf("%s0x%08llx | %s: heartbeat failure\n", timestamp().c_str(), (u64)this, _address.c_str());
+                            print("0x%08llx: heartbeat failure\n", (u64)this);
                             return;
                         }
                     } break;
@@ -195,9 +204,9 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     }
 
     void on_accept(beast::error_code error) noexcept {
-        std::cout << timestamp() << "handshake accepted\n";
+        print("handshake accepted\n");
         if (!error) {
-            std::cout << timestamp() << "connection approved\n";
+            print("connection approved\n");
             _heartbeat = time_since_epoch();
             _state->insert(this);
             _wss.async_read(
@@ -206,12 +215,12 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     self->on_read(error);
                 }));
         } else {
-            std::cout << timestamp() << "connection denied\n";
+            print("connection denied\n");
         }
     }
 
     void on_handshake(beast::error_code error) noexcept {
-        std::cout << timestamp() << "handshake request from: " << _address << '\n';
+        print("handshake request from: 0x%08llx\n", (u64)this);
         if (!error) {
             beast::get_lowest_layer(_wss).expires_never();
             _wss.set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
@@ -220,7 +229,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     self->on_accept(error);
                 }));
         } else {
-            std::cout << timestamp() << "handshake error, connection denied\n";
+            print("handshake error, connection denied\n");
         }
     }
 
@@ -235,15 +244,14 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                 });
     }
 public:
-    websocket_session_t(ip::tcp::socket&& socket, ip::tcp::endpoint&& endpoint, ssl::context& ssl, std::shared_ptr<shared_state_t> state) noexcept
+    websocket_session_t(ip::tcp::socket&& socket, ssl::context& ssl, std::shared_ptr<shared_state_t> state) noexcept
         : _wss(std::move(socket), ssl),
           _state(std::move(state)),
           _heartbeat(),
-          _address(endpoint.address().to_string()),
           _channel() {}
 
     ~websocket_session_t() noexcept {
-        std::cout << timestamp() << "connection terminated: " << _address << '\n';
+        print("connection terminated: 0x%08llx\n", (u64)this);
         _state->erase(this);
     }
 
@@ -265,10 +273,6 @@ public:
 
     u64 channel() const noexcept {
         return _channel;
-    }
-
-    std::string_view address() const noexcept {
-        return _address;
     }
 };
 
@@ -317,9 +321,9 @@ void shared_state_t::dump() noexcept {
     std::lock_guard<std::mutex> guard(_lock);
     for (const auto& [channel, session] : _sessions) {
         if (!session.empty()) {
-            std::cout << timestamp() << channel << ":\n";
+            print("%ull - %ull:\n", channel, session.size());
             for (auto each : session) {
-                std::cout << timestamp() << "  - " << each->address() << '\n';
+                print("  - %s\n", (u64)each);
             }
         }
     }
@@ -332,9 +336,8 @@ class listener_t : public std::enable_shared_from_this<listener_t> {
     ssl::context& _ssl;
 
     void accept(ip::tcp::socket&& socket) noexcept {
-        auto endpoint = socket.remote_endpoint();
-        std::cout << timestamp() << "connection request from: " << endpoint.address().to_string() << '\n';
-        std::make_shared<websocket_session_t>(std::move(socket), std::move(endpoint), _ssl, _state)->run();
+        print("connection request\n");
+        std::make_shared<websocket_session_t>(std::move(socket), _ssl, _state)->run();
         _acceptor.async_accept(
             asio::make_strand(_context),
             [self = shared_from_this()](beast::error_code, ip::tcp::socket socket) noexcept {
@@ -372,7 +375,7 @@ int main() {
     auto threads           = std::vector<std::thread>(concurrency - 1);
 
     std::make_shared<listener_t>(context, ssl, ip::tcp::endpoint{ address, port })->run();
-    std::cout << timestamp() << "started listening on port: " << port << '\n';
+    print("started listening on port: %u\n", port);
     for (auto& each : threads) {
         each = std::thread([&context]() noexcept {
             context.run();

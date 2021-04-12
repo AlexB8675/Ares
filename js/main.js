@@ -1,7 +1,23 @@
 // Initialization
-$(async function () {
+$(function () {
     fetch_servers();
-    $('.basic-username div').html(await fetch('username'));
+    fetch('username', (username) => {
+        $('.basic-username div').html(username);
+    });
+    fetch('id', (id) => {
+        fetch_avatar(id, (avatar) => {
+            if (avatar !== '') {
+                $('.basic-user-icon img').attr('src', avatar);
+                $('.account-avatar img').attr('src', avatar);
+            }
+        });
+    });
+    fetch('username', (username) => {
+        $('.account-details #username').text(username);
+    });
+    fetch('email', (email) => {
+        $('.account-details #email').text(email);
+    });
     $('#user-settings')
         .on('click', function () {
             toggle_settings();
@@ -97,11 +113,6 @@ $(async function () {
                 close_add_server();
             }
         });
-    const avatar = await fetch_avatar(await fetch('id'));
-    if (avatar !== '') {
-        $('.basic-user-icon img').attr('src', avatar);
-        $('.account-avatar img').attr('src', avatar);
-    }
     $('.settings-close-button')
         .on('click', function () {
             toggle_settings();
@@ -134,14 +145,14 @@ $(async function () {
             const clipboard = event.originalEvent.clipboardData;
             document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
         });
-    $('.account-details #username').text(await fetch('username'));
-    $('.account-details #email').text(await fetch('email'));
     $('.account-avatar-change')
         .on('click', function () {
             $('<input type="file">')
                 .trigger('click')
-                .on('change', async function (event) {
-                    insert_avatar(await fetch('id'), event.target.files[0]);
+                .on('change', function (event) {
+                    fetch('id', (id) => {
+                        insert_avatar(id, event.target.files[0]);
+                    });
                 });
         });
     $('.basic-app-container')
@@ -234,8 +245,9 @@ function make_server(name, id) {
                         $(this).remove();
                     });
             },
-            click: async function () {
+            click: function () {
                 if ($('div.basic-server-instance[aria-label="selected"]')[0] !== $(this)[0]) {
+                    $('.basic-loader').show();
                     $('.basic-server-instance')
                         .attr({
                             'style': '',
@@ -253,126 +265,119 @@ function make_server(name, id) {
                             'height': '36px'
                         });
                     let channels = '';
-                    for (const channel of JSON.parse(await fetch_channels(id))) {
-                        channels += `
-                            <div class="basic-channel-instance" aria-label>
-                                <img draggable="false" src="assets/icons/hash.png" alt>
-                                <div class="basic-text" id="${channel['id']}">${channel['name']}</div>
-                            </div>`;
-                    }
-                    $('.basic-sidebar-channels')
-                        .children()
-                        .html(channels)
-                        .children()
-                        .on('click', async function () {
-                            const current = $(this);
-                            if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
-                                $('.basic-loader').show();
-                                $('.basic-channel-instance')
-                                    .css({'background': 'transparent'})
-                                    .attr('aria-label', '');
-                                current
-                                    .css({
-                                        'color': 'rgb(209, 210, 221)',
-                                        'background': 'rgb(52, 55, 60)'
-                                    })
-                                    .attr('aria-label', 'selected');
-                                const name = current.children('.basic-text').text();
-                                $('.basic-master-container')
-                                    .html(`
-                                        <div class="basic-message-scroller">
-                                            <div>
-                                                <div class="basic-message-wrapper"></div>
-                                            </div>
-                                        </div>
-                                        <div class="basic-message-sender">
-                                            <div class="basic-textbox-wrapper">
-                                                <div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>
-                                            </div>
-                                        </div>`);
-                                fetch_messages(current.children('.basic-text').attr('id'));
-                                $('.basic-message-textbox')
-                                    .on('keydown', async function (event) {
-                                        if (event.key === 'Enter' && !event.shiftKey) {
-                                            event.preventDefault();
-                                            const content = $(this).text().trim();
-                                            if (content !== '') {
-                                                const data = {
-                                                    op: 0,
-                                                    type: 'message_create',
-                                                    payload: {
-                                                        id: await fetch('id'),
-                                                        author: await fetch('username'),
-                                                        guild: id,
-                                                        channel:
-                                                            current
-                                                                .children('.basic-text')
-                                                                .attr('id'),
-                                                        message: {
-                                                            id: next_id(),
-                                                            content: content
+                    $.ajax({
+                        url: 'php/fetch.php',
+                        type: 'POST',
+                        data: {
+                            kind: 'channels',
+                            id: id
+                        },
+                        cache: false,
+                        success: (response) => {
+                            switch (response) {
+                                default: { // TODO: Error handling.
+                                    for (const channel of JSON.parse(response)) {
+                                        channels += `
+                                            <div class="basic-channel-instance" aria-label>
+                                                <img draggable="false" src="assets/icons/hash.png" alt>
+                                                <div class="basic-text" id="${channel['id']}">${channel['name']}</div>
+                                            </div>`;
+                                        $('.basic-sidebar-channels')
+                                            .children()
+                                            .html(channels)
+                                            .children()
+                                            .on('click', function () {
+                                                const current = $(this);
+                                                if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
+                                                    const name    = current.children('.basic-text').text();
+                                                    const channel = current.children('.basic-text').attr('id');
+                                                    $('.basic-loader').show();
+                                                    dispatch_event({
+                                                        op: 0,
+                                                        type: 'transition_channel',
+                                                        payload: {
+                                                            channel: channel
                                                         }
-                                                    }
-                                                };
-                                                await dispatch_event(data);
-                                                $.ajax({
-                                                    url: 'php/insert.php',
-                                                    type: 'POST',
-                                                    data: {
-                                                        kind: 'message',
-                                                        message: JSON.stringify(data['payload'])
-                                                    },
-                                                    cache: false,
-                                                    success: (_) => {} // TODO: Error Handling (?).
-                                                });
-                                                $(this).html('');
-                                            }
-                                        }
-                                    })
-                                    .on('paste', function (event) {
-                                        event.preventDefault();
-                                        const clipboard = event.originalEvent.clipboardData;
-                                        document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
-                                    });
-                                await dispatch_event({
-                                    op: 0,
-                                    type: 'transition_channel',
-                                    payload: {
-                                        channel:
-                                            current
-                                                .children('.basic-text')
-                                                .attr('id')
+                                                    });
+                                                    fetch_messages(channel);
+                                                    $('.basic-channel-instance')
+                                                        .css({'background': 'transparent'})
+                                                        .attr('aria-label', '');
+                                                    current
+                                                        .css({
+                                                            'color': 'rgb(209, 210, 221)',
+                                                            'background': 'rgb(52, 55, 60)'
+                                                        })
+                                                        .attr('aria-label', 'selected');
+                                                    $('.basic-master-container')
+                                                        .html(`
+                                                            <div class="basic-message-scroller">
+                                                                <div>
+                                                                    <div class="basic-message-wrapper"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="basic-message-sender">
+                                                                <div class="basic-textbox-wrapper">
+                                                                    <div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>
+                                                                </div>
+                                                            </div>`);
+                                                    $('.basic-message-textbox')
+                                                        .on('keydown', function (event) {
+                                                            if (event.key === 'Enter' && !event.shiftKey) {
+                                                                event.preventDefault();
+                                                                const content = $(this).text().trim();
+                                                                if (content !== '') {
+                                                                    fetch('id', (user_id) => {
+                                                                        fetch('username', (username) => {
+                                                                            const data = {
+                                                                                op: 0,
+                                                                                type: 'message_create',
+                                                                                payload: {
+                                                                                    id: user_id,
+                                                                                    author: username,
+                                                                                    guild: id,
+                                                                                    channel: channel,
+                                                                                    message: {
+                                                                                        id: next_id(),
+                                                                                        content: content
+                                                                                    }
+                                                                                }
+                                                                            };
+                                                                            dispatch_event(data);
+                                                                            $.ajax({
+                                                                                url: 'php/insert.php',
+                                                                                type: 'POST',
+                                                                                data: {
+                                                                                    kind: 'message',
+                                                                                    message: JSON.stringify(data['payload'])
+                                                                                },
+                                                                                cache: false,
+                                                                                success: (_) => {} // TODO: Error Handling (?).
+                                                                            });
+                                                                            $(this).html('');
+                                                                        });
+                                                                    });
+                                                                }
+                                                            }
+                                                        })
+                                                        .on('paste', function (event) {
+                                                            event.preventDefault();
+                                                            const clipboard = event.originalEvent.clipboardData;
+                                                            document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
+                                                        });
+                                                }
+                                            })
+                                            .first()
+                                            .trigger('click');
+                                        $('.basic-sidebar-header .basic-text').text(name);
                                     }
-                                });
+                                } break;
                             }
-                        })
-                        .first()
-                        .trigger('click');
-                    $('.basic-sidebar-header .basic-text').text(name);
+                        }
+                    });
                 }
             }
         });
-}
-
-async function fetch_channels(id) {
-    let result = '';
-    await $.ajax({
-        url: 'php/fetch.php',
-        type: 'POST',
-        data: {
-            kind: 'channels',
-            id: id
-        },
-        cache: false,
-        success: (response) => {
-            switch (response) {
-                default: { // TODO: Error handling.
-                    result = response;
-                } break;
-            }
-        }
-    });
-    return result;
 }
 
 function fetch_servers() {
@@ -513,22 +518,30 @@ async function insert_message(payload, avatar) {
 
     let html;
     if (!grouped) {
-        if (avatar === undefined) {
-            avatar = await fetch_avatar(payload['id']);
+        const insert = (avatar) => {
+            const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
+            html = `
+                <div class="basic-message-group basic-group-start">
+                    <div class="basic-chat-message">
+                        <div class="basic-message-avatar">
+                            <img src="${path}" alt/>
+                        </div>
+                        <div class="basic-message-text">
+                            <div class="basic-message-username">${author}</div>
+                            <div class="basic-message-content">${content}</div>
+                        </div>
+                    </div>
+                </div>`;
         }
-        const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
-        html = `
-            <div class="basic-message-group basic-group-start">
-                <div class="basic-chat-message">
-                    <div class="basic-message-avatar">
-                        <img src="${path}" alt/>
-                    </div>
-                    <div class="basic-message-text">
-                        <div class="basic-message-username">${author}</div>
-                        <div class="basic-message-content">${content}</div>
-                    </div>
-                </div>
-            </div>`;
+        if (avatar === undefined) {
+            fetch_avatar(payload['id'], (avatar) => {
+                const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
+                insert(path);
+            });
+        } else {
+            const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
+            insert(path);
+        }
     } else {
         html = `
             <div class="basic-message-group">
@@ -537,16 +550,15 @@ async function insert_message(payload, avatar) {
                 </div>
             </div>`;
     }
-    await $('div.basic-message-wrapper').append(html);
+    $('div.basic-message-wrapper').append(html);
 }
 
-async function dispatch_event(payload) {
-    const data = JSON.stringify(payload);
-    console.log('[Info] dispatch_event:', data);
-    gateway().send(data);
+function dispatch_event(payload) {
+    gateway().send(JSON.stringify(payload));
+    console.log('[Info] dispatch_event:', payload);
     switch (payload['type']) {
         case 'message_create': {
-            await insert_message(payload['payload']);
+            insert_message(payload['payload']).catch(console.error);
         } break;
     }
 }
@@ -562,12 +574,16 @@ function insert_avatar(id, file) {
         processData: false,
         contentType: false,
         cache: false,
-        success: async (response) => {
+        success: (response) => {
             switch (response) {
                 default: {
-                    let updated = await fetch_avatar(await fetch('id'));
-                    $('.basic-user-icon img').attr('src', updated);
-                    $('.account-avatar img').attr('src', updated);
+                    fetch('id', (id) => {
+                        fetch_avatar(id, (avatar) => {
+                            $('.basic-user-icon img').attr('src', avatar);
+                            $('.account-avatar img').attr('src', avatar);
+                        });
+                    });
+
                 } break;
 
                 case 'unsupported_format': {
@@ -580,9 +596,9 @@ function insert_avatar(id, file) {
 
 const fetch = (function () {
     let cached = {};
-    return async function (kind) {
+    return function (kind, callback) {
         if (!Object.keys(cached).includes(kind)) {
-            await $.ajax({
+            $.ajax({
                 url: 'php/fetch.php',
                 type: 'POST',
                 data: {
@@ -592,7 +608,7 @@ const fetch = (function () {
                 success: (response) => {
                     switch (response) {
                         default: {
-                            cached[kind] = response;
+                            callback(cached[kind] = response);
                         } break;
 
                         case 'unknown_session': {
@@ -602,8 +618,9 @@ const fetch = (function () {
                     }
                 }
             });
+        } else {
+            callback(cached[kind]);
         }
-        return cached[kind];
     };
 })();
 
@@ -615,8 +632,8 @@ let gateway = (function () {
         (_) => {
             tries = 0;
             console.log('[Info]: connection successful');
-            heartbeat = setTimeout(async function keep_alive() {
-                await dispatch_event({
+            heartbeat = setTimeout(function keep_alive() {
+                dispatch_event({
                     op: 1,
                     type: 'heartbeat'
                 });
@@ -624,12 +641,12 @@ let gateway = (function () {
             }, 60000);
         };
     const message =
-        async (payload) => {
+        (payload) => {
             const data = JSON.parse(payload.data);
             switch (data['type']) {
                 case 'message_create': {
                     console.log('[Info]: received message: ', data);
-                    await insert_message(data['payload']);
+                    insert_message(data['payload']).catch(console.error);
                 } break;
 
                 case 'heartbeat': {
@@ -645,10 +662,10 @@ let gateway = (function () {
                 console.log('[Info]: connection terminated');
                 wss = new WebSocket('wss://gateway.alex8675.eu:2096');
                 clearTimeout(heartbeat);
-                wss.onopen = async () => {
+                wss.onopen = () => {
                     const channel = $('div.basic-channel-instance[aria-label="selected"]');
                     if (channel.length !== 0) {
-                        await dispatch_event({
+                        dispatch_event({
                             op: 0,
                             type: 'transition_channel',
                             payload: {
@@ -681,14 +698,14 @@ let gateway = (function () {
 
 const fetch_avatar = (function () {
     let cached = {};
-    return async function (id) {
+    return function (id, callback) {
         if (cached[id] === undefined) {
             cached[id] = String();
         }
         const has_author = !Object.keys(cached).includes(id);
         const is_default = cached[id] === '';
         if (!has_author && is_default) {
-            await $.ajax({
+            $.ajax({
                 url: 'php/fetch.php',
                 type: 'POST',
                 data: {
@@ -699,12 +716,13 @@ const fetch_avatar = (function () {
                 success: (response) => {
                     switch (response) { // TODO: Error handling.
                         default: {
-                            cached[id] = response;
+                            callback(cached[id] = response);
                         } break;
                     }
                 }
             });
+        } else {
+            callback(cached[id]);
         }
-        return cached[id];
     }
 })();

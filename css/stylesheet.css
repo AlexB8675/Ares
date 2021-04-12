@@ -835,7 +835,7 @@ a {
     margin: 0 0 0 10px;
     text-align: left;
     outline: none;
-    color: rgb(215, 221, 217);
+    color: rgb(215 215 221);
     border-radius: 10px;
     transition:
             background 250ms ease-in-out,
@@ -964,7 +964,7 @@ a {
     flex: 0 0 auto;
     font-size: 13pt;
     margin: 0 0 0 16px;
-    color: rgb(249, 255, 249);
+    color: rgb(249 249 255);
     text-overflow: ellipsis;
 }
 
