@@ -14,7 +14,7 @@
         return $connection;
     }
 
-    function safe_query(mysqli $connection, string $query, ...$args): mysqli_stmt|false {
+    function safe_query(mysqli $connection, string $query, mixed... $args): mysqli_stmt|false {
         $statement = mysqli_prepare($connection, $query);
         $params = [...$args];
         $types = '';

@@ -204,9 +204,9 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     }
 
     void on_accept(beast::error_code error) noexcept {
-        print("handshake accepted\n");
+        print("0x%08llx: handshake accepted\n", (u64)this);
         if (!error) {
-            print("connection approved\n");
+            print("0x%08llx: connection approved\n", (u64)this);
             _heartbeat = time_since_epoch();
             _state->insert(this);
             _wss.async_read(
@@ -215,12 +215,12 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     self->on_read(error);
                 }));
         } else {
-            print("connection denied\n");
+            print("0x%08llx: connection denied\n", (u64)this);
         }
     }
 
     void on_handshake(beast::error_code error) noexcept {
-        print("handshake request from: 0x%08llx\n", (u64)this);
+        print("0x%08llx: handshake request\n", (u64)this);
         if (!error) {
             beast::get_lowest_layer(_wss).expires_never();
             _wss.set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
@@ -229,7 +229,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                     self->on_accept(error);
                 }));
         } else {
-            print("handshake error, connection denied\n");
+            print("0x%08llx: handshake error, connection denied\n", (u64)this);
         }
     }
 
@@ -251,7 +251,7 @@ public:
           _channel() {}
 
     ~websocket_session_t() noexcept {
-        print("connection terminated: 0x%08llx\n", (u64)this);
+        print("0x%08llx: connection terminated\n", (u64)this);
         _state->erase(this);
     }
 
@@ -336,7 +336,7 @@ class listener_t : public std::enable_shared_from_this<listener_t> {
     ssl::context& _ssl;
 
     void accept(ip::tcp::socket&& socket) noexcept {
-        print("connection request\n");
+        print("%s: connection requested\n", socket.remote_endpoint().address().to_string().c_str());
         std::make_shared<websocket_session_t>(std::move(socket), _ssl, _state)->run();
         _acceptor.async_accept(
             asio::make_strand(_context),

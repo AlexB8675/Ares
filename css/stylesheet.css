@@ -290,7 +290,7 @@ a {
     text-align: center;
     border-radius: 8px;
     padding: 8px 12px;
-    left: 84px;
+    left: 100px;
     z-index: 2;
 }
 
@@ -357,12 +357,13 @@ a {
     display: flex;
     flex: 0 1 auto;
     width: 240px;
-    text-overflow: ellipsis;
     align-self: center;
     overflow: hidden;
     margin: 0 auto;
-    font-size: 14pt;
+    font-size: 16px;
+    line-height: 20px;
     white-space: nowrap;
+    text-overflow: ellipsis;
     color: white;
 }
 
@@ -622,7 +623,11 @@ a {
     margin: 0 0 0 4px;
     text-align: left;
     color: white;
-    font-size: 12pt;
+    font-size: 16px;
+    line-height: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .basic-master-container {

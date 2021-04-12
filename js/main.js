@@ -15,6 +15,7 @@ $(function () {
     });
     fetch('email', (email) => {
         $('.account-details #email').text(email);
+        gateway(); // Initializes websocket connection after the last fetch is done.
     });
     $('#user-settings')
         .on('click', function () {
@@ -159,15 +160,14 @@ $(function () {
                 'z-index': -1
             });
         });
-    gateway(); // Initializes websocket connection.
 });
 
 function make_server(name, guild) {
     $('.basic-server-list')
         .append(
-            `<div class="basic-server-instance" aria-label>
-                <div class="pill"></div>
-            </div>`)
+            `<div class="basic-server-instance" aria-label>` +
+                `<div class="pill"></div>` +
+            `</div>`)
         .children('.basic-server-instance')
         .last()
         .on({
@@ -230,10 +230,10 @@ function make_server(name, guild) {
                                 $('.basic-master-header').html('');
                                 $('.basic-sidebar-scroller').html('');
                                 $('.basic-master-container')
-                                    .html(`
-                                        <div class="basic-default-container">
-                                            <img draggable="false" src="assets/icons/logo.png" alt>
-                                        </div>`);
+                                    .html(
+                                        `<div class="basic-default-container">` +
+                                            `<img draggable="false" src="assets/icons/logo.png" alt>` +
+                                        `</div>`);
                             } else {
                                 next.trigger('click');
                             }
@@ -274,11 +274,11 @@ function make_server(name, guild) {
                             switch (response) {
                                 default: { // TODO: Error handling.
                                     for (const channel of JSON.parse(response)) {
-                                        channels += `
-                                            <div class="basic-channel-instance" aria-label>
-                                                <img draggable="false" src="assets/icons/hash.png" alt>
-                                                <div class="basic-text" id="${channel['id']}">${channel['name']}</div>
-                                            </div>`;
+                                        channels +=
+                                            `<div class="basic-channel-instance" aria-label>` +
+                                                `<img draggable="false" src="assets/icons/hash.png" alt>` +
+                                                `<div class="basic-text" id="${channel['id']}">${channel['name']}</div>` +
+                                            `</div>`;
                                         $('.basic-sidebar-channels')
                                             .children()
                                             .html(channels)
@@ -290,8 +290,8 @@ function make_server(name, guild) {
                                                     const channel = current.children('.basic-text').attr('id');
                                                     $('.basic-loader').show();
                                                     $('.basic-master-header')
-                                                        .html(`<img draggable="false" src="assets/icons/hash.png" alt>
-                                                               <div class="basic-text">${name}</div>`);
+                                                        .html(`<img draggable="false" src="assets/icons/hash.png" alt>` +
+                                                              `<div class="basic-text">${name}</div>`);
                                                     dispatch_event({
                                                         op: 0,
                                                         type: 'transition_channel',
@@ -310,17 +310,17 @@ function make_server(name, guild) {
                                                         })
                                                         .attr('aria-label', 'selected');
                                                     $('.basic-master-container')
-                                                        .html(`
-                                                            <div class="basic-message-scroller">
-                                                                <div>
-                                                                    <div class="basic-message-wrapper"></div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="basic-message-sender">
-                                                                <div class="basic-textbox-wrapper">
-                                                                    <div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>
-                                                                </div>
-                                                            </div>`);
+                                                        .html(
+                                                            `<div class="basic-message-scroller">` +
+                                                                `<div>` +
+                                                                    `<div class="basic-message-wrapper"></div>` +
+                                                                `</div>` +
+                                                            `</div>` +
+                                                            `<div class="basic-message-sender">` +
+                                                                `<div class="basic-textbox-wrapper">` +
+                                                                    `<div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>` +
+                                                                `</div>` +
+                                                            `</div>`);
                                                     $('.basic-message-textbox')
                                                         .on('keydown', function (event) {
                                                             if (event.key === 'Enter' && !event.shiftKey) {
@@ -413,12 +413,12 @@ function fetch_messages(channel) {
                 default: {
                     for (const message of JSON.parse(response)) {
                         await insert_message({
-                            id: message['author'],
-                            author: message['username'],
-                            guild: message['guild'],
+                            id:      message['author'],
+                            author:  message['username'],
+                            guild:   message['guild'],
                             channel: message['channel'],
                             message: {
-                                id: message['id'],
+                                id:      message['id'],
                                 content: message['content']
                             }
                         }, message['avatar']);
@@ -520,35 +520,33 @@ async function insert_message(payload, avatar) {
     if (!grouped) {
         const insert = (avatar) => {
             const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
-            html = `
-                <div class="basic-message-group basic-group-start">
-                    <div class="basic-chat-message">
-                        <div class="basic-message-avatar">
-                            <img src="${path}" alt/>
-                        </div>
-                        <div class="basic-message-text">
-                            <div class="basic-message-username">${author}</div>
-                            <div class="basic-message-content">${content}</div>
-                        </div>
-                    </div>
-                </div>`;
+            html =
+                `<div class="basic-message-group basic-group-start">` +
+                    `<div class="basic-chat-message">` +
+                        `<div class="basic-message-avatar">` +
+                            `<img src="${path}" alt/>` +
+                        `</div>` +
+                        `<div class="basic-message-text">` +
+                            `<div class="basic-message-username">${author}</div>` +
+                            `<div class="basic-message-content">${content}</div>` +
+                        `</div>` +
+                    `</div>` +
+                `</div>`;
         }
         if (avatar === undefined) {
             fetch_avatar(payload['id'], (avatar) => {
-                const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
-                insert(path);
+                insert(avatar);
             });
         } else {
-            const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
-            insert(path);
+            insert(avatar);
         }
     } else {
-        html = `
-            <div class="basic-message-group">
-                <div class="basic-chat-message">
-                    <div class="basic-message-content">${content}</div> 
-                </div>
-            </div>`;
+        html =
+            `<div class="basic-message-group">` +
+                `<div class="basic-chat-message">` +
+                    `<div class="basic-message-content">${content}</div>` +
+                `</div>` +
+            `</div>`;
     }
     $('div.basic-message-wrapper').append(html);
 }
