@@ -2,6 +2,7 @@
     include_once 'common.php';
     function fetch_avatar(mysqli $connection, int $user): string {
         $query  = "select avatar from User where id = ?";
+        $user   = $user === 0 ? $_SESSION['id'] : $user;
         $result = safe_query($connection, $query, $user)->get_result();
         if ($result->num_rows === 0) {
             die('unknown_user');

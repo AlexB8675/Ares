@@ -4,13 +4,11 @@ $(function () {
     fetch('username', (username) => {
         $('.basic-username div').html(username);
     });
-    fetch('id', (id) => {
-        fetch_avatar(id, (avatar) => {
-            if (avatar !== '') {
-                $('.basic-user-icon img').attr('src', avatar);
-                $('.account-avatar img').attr('src', avatar);
-            }
-        });
+    fetch_avatar(0, (avatar) => {
+        if (avatar !== '') {
+            $('.basic-user-icon img').attr('src', avatar);
+            $('.account-avatar img').attr('src', avatar);
+        }
     });
     fetch('username', (username) => {
         $('.account-details #username').text(username);
@@ -150,9 +148,7 @@ $(function () {
             $('<input type="file">')
                 .trigger('click')
                 .on('change', function (event) {
-                    fetch('id', (id) => {
-                        insert_avatar(id, event.target.files[0]);
-                    });
+                    insert_avatar(id, event.target.files[0]);
                 });
         });
     $('.basic-app-container')
@@ -563,7 +559,7 @@ function dispatch_event(payload) {
     }
 }
 
-function insert_avatar(id, file) {
+function insert_avatar(file) {
     let data = new FormData();
     data.append('kind', 'avatar');
     data.append('avatar', file);
@@ -577,13 +573,10 @@ function insert_avatar(id, file) {
         success: (response) => {
             switch (response) {
                 default: {
-                    fetch('id', (id) => {
-                        fetch_avatar(id, (avatar) => {
-                            $('.basic-user-icon img').attr('src', avatar);
-                            $('.account-avatar img').attr('src', avatar);
-                        });
+                    fetch_avatar(0, (avatar) => {
+                        $('.basic-user-icon img').attr('src', avatar);
+                        $('.account-avatar img').attr('src', avatar);
                     });
-
                 } break;
 
                 case 'unsupported_format': {
@@ -612,7 +605,7 @@ const fetch = (function () {
                         } break;
 
                         case 'unknown_session': {
-                            console.log('[Error] not logged in.');
+                            console.error('[Error] not logged in.');
                             window.location.replace('login');
                         } break;
                     }
@@ -700,11 +693,11 @@ const fetch_avatar = (function () {
     let cached = {};
     return function (id, callback) {
         if (cached[id] === undefined) {
-            cached[id] = String();
+            cached[id] = '';
         }
-        const has_author = !Object.keys(cached).includes(id);
-        const is_default = cached[id] === '';
-        if (!has_author && is_default) {
+        const missed  = !Object.keys(cached).includes(id);
+        const initial = cached[id] === '';
+        if (missed || initial) {
             $.ajax({
                 url: 'php/fetch.php',
                 type: 'POST',
