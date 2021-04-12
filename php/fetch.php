@@ -5,13 +5,13 @@
         $user   = $user === 0 ? $_SESSION['id'] : $user;
         $result = safe_query($connection, $query, $user)->get_result();
         if ($result->num_rows === 0) {
-            die('unknown_user');
+            die('{ "message": "forbidden", "code": 403 }');
         }
-        $result = $result->fetch_object();
-        if (is_null($result->avatar)) {
+        $data = $result->fetch_object();
+        if (is_null($data->avatar)) {
             return '';
         }
-        return $result->avatar;
+        return json_encode($data);
     }
 
     function fetch_guilds(mysqli $connection, int $user): string {
@@ -39,16 +39,15 @@
         return json_encode($data);
     }
 
-    start_session();
+    check_authorization();
     $connection = connect_database();
-    $kind       = $_POST['kind'];
+    $kind       = empty($_POST) ? $_GET['kind'] : $_POST['kind'];
     print match ($kind) {
-        'username' => $_SESSION['username'],
-        'email'    => $_SESSION['email'],
-        'id'       => $_SESSION['id'],
+        'username' => json_encode(['username' => $_SESSION['username']]),
+        'email'    => json_encode(['email' => $_SESSION['email']]),
+        'id'       => json_encode(['id' => $_SESSION['id']]),
         'avatar'   => fetch_avatar($connection, intval($_POST['id'])),
         'guild'    => fetch_guilds($connection, $_SESSION['id']),
-        'channels' => fetch_channels($connection, intval($_POST['id'])),
-        default     => die('unknown_kind')
+        'channels' => fetch_channels($connection, intval($_GET['id'])),
+        default     => die('{ "message": "bad_request", "code": 400 }')
     };
-    mysqli_close($connection);

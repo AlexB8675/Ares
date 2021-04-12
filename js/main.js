@@ -1,9 +1,6 @@
 // Initialization
 $(function () {
     fetch_servers();
-    fetch('username', (username) => {
-        $('.basic-username div').html(username);
-    });
     fetch_avatar(0, (avatar) => {
         if (avatar !== '') {
             $('.basic-user-icon img').attr('src', avatar);
@@ -12,6 +9,7 @@ $(function () {
     });
     fetch('username', (username) => {
         $('.account-details #username').text(username);
+        $('.basic-username div').html(username);
     });
     fetch('email', (email) => {
         $('.account-details #email').text(email);
@@ -66,39 +64,45 @@ $(function () {
         .on('click', function () {
             const id = $(this).siblings('.join-server-input').text();
             if (id !== '') {
-                $.ajax({
-                    url: 'php/insert.php',
-                    type: 'POST',
-                    data: {
-                        kind: 'join',
-                        id: id
-                    },
-                    cache: false,
-                    success: (response) => {
-                        switch (response) {
-                            case 'not_found': {
-                                $('#join-error')
-                                    .css({
-                                        'width': '100%',
-                                    })
-                                    .text('This ID does not exist');
-                            } break;
+                fetch_token((token) => {
+                    $.ajax({
+                        url: 'php/insert',
+                        type: 'POST',
+                        headers: {
+                            'Authorization': `User ${token}`
+                        },
+                        data: {
+                            kind: 'join',
+                            id: id
+                        },
+                        dataType: 'json',
+                        cache: false,
+                        success: (response) => {
+                            if ('code' in response) {
+                                switch (response['message']) {
+                                    case 'unauthorized': {
+                                        $('#join-error')
+                                            .css({
+                                                'width': '100%',
+                                            })
+                                            .text('This ID does not exist');
+                                    } break;
 
-                            case 'already_joined': {
-                                $('#join-error')
-                                    .css({
-                                        'width': '100%',
-                                    })
-                                    .text('You already are in this server');
-                            } break;
-
-                            default: {
-                                make_server(response, id);
+                                    case 'forbidden': {
+                                        $('#join-error')
+                                            .css({
+                                                'width': '100%',
+                                            })
+                                            .text('You already are in this server');
+                                    } break;
+                                }
+                            } else {
+                                make_server(response['name'], id);
                                 $('#join-error').text('');
                                 close_add_server();
-                            } break;
+                            }
                         }
-                    }
+                    });
                 });
             }
         });
@@ -129,8 +133,8 @@ $(function () {
     $('#button-logout')
         .on('click', function () {
             $.ajax({
-                url: 'php/logout.php',
-                type: 'POST',
+                url: 'php/logout',
+                type: 'GET',
                 data: {},
                 cache: false,
                 success: (_) => {
@@ -149,7 +153,7 @@ $(function () {
             $('<input type="file">')
                 .trigger('click')
                 .on('change', function (event) {
-                    insert_avatar(id, event.target.files[0]);
+                    insert_avatar(event.target.files[0]);
                 });
         });
     $('.basic-app-container')
@@ -262,22 +266,32 @@ function make_server(name, guild) {
                             'height': '36px'
                         });
                     let channels = '';
-                    $.ajax({
-                        url: 'php/fetch.php',
-                        type: 'POST',
-                        data: {
-                            kind: 'channels',
-                            id: guild
-                        },
-                        cache: false,
-                        success: (response) => {
-                            switch (response) {
-                                default: { // TODO: Error handling.
-                                    for (const channel of JSON.parse(response)) {
+                    fetch_token((token) => {
+                        $.ajax({
+                            url: 'php/fetch',
+                            type: 'GET',
+                            headers: {
+                                'Authorization': `User ${token}`
+                            },
+                            data: {
+                                kind: 'channels',
+                                id: guild
+                            },
+                            dataType: 'json',
+                            cache: true,
+                            success: (response) => {
+                                if ('code' in response) {
+                                    switch (response) {
+                                        case 'unauthorized': {
+                                            window.location.replace('login');
+                                        } break;
+                                    }
+                                } else {
+                                    for (const channel of response) {
                                         channels +=
                                             `<div class="basic-channel-instance" aria-label>` +
-                                                `<img draggable="false" src="assets/icons/hash.png" alt>` +
-                                                `<div class="basic-text" id="${channel['id']}">${channel['name']}</div>` +
+                                            `<img draggable="false" src="assets/icons/hash.png" alt>` +
+                                            `<div class="basic-text" id="${channel['id']}">${channel['name']}</div>` +
                                             `</div>`;
                                         $('.basic-sidebar-channels')
                                             .children()
@@ -291,7 +305,7 @@ function make_server(name, guild) {
                                                     $('.basic-loader').show();
                                                     $('.basic-master-header')
                                                         .html(`<img draggable="false" src="assets/icons/hash.png" alt>` +
-                                                              `<div class="basic-text">${name}</div>`);
+                                                            `<div class="basic-text">${name}</div>`);
                                                     dispatch_event({
                                                         op: 0,
                                                         type: 'transition_channel',
@@ -312,14 +326,14 @@ function make_server(name, guild) {
                                                     $('.basic-master-container')
                                                         .html(
                                                             `<div class="basic-message-scroller">` +
-                                                                `<div>` +
-                                                                    `<div class="basic-message-wrapper"></div>` +
-                                                                `</div>` +
+                                                            `<div>` +
+                                                            `<div class="basic-message-wrapper"></div>` +
+                                                            `</div>` +
                                                             `</div>` +
                                                             `<div class="basic-message-sender">` +
-                                                                `<div class="basic-textbox-wrapper">` +
-                                                                    `<div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>` +
-                                                                `</div>` +
+                                                            `<div class="basic-textbox-wrapper">` +
+                                                            `<div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>` +
+                                                            `</div>` +
                                                             `</div>`);
                                                     $('.basic-message-textbox')
                                                         .on('keydown', function (event) {
@@ -344,15 +358,20 @@ function make_server(name, guild) {
                                                                                 }
                                                                             };
                                                                             dispatch_event(data);
-                                                                            $.ajax({
-                                                                                url: 'php/insert.php',
-                                                                                type: 'POST',
-                                                                                data: {
-                                                                                    kind: 'message',
-                                                                                    message: JSON.stringify(data['payload'])
-                                                                                },
-                                                                                cache: false,
-                                                                                success: (_) => {} // TODO: Error Handling (?).
+                                                                            fetch_token((token) => {
+                                                                                $.ajax({
+                                                                                    url: 'php/insert',
+                                                                                    type: 'POST',
+                                                                                    headers: {
+                                                                                        'Authorization': `User ${token}`
+                                                                                    },
+                                                                                    data: {
+                                                                                        kind: 'message',
+                                                                                        message: JSON.stringify(data['payload'])
+                                                                                    },
+                                                                                    cache: false,
+                                                                                    success: (_) => {}
+                                                                                });
                                                                             });
                                                                             $(this).html('');
                                                                         });
@@ -371,9 +390,9 @@ function make_server(name, guild) {
                                             .trigger('click');
                                         $('.basic-sidebar-header .basic-text').text(name);
                                     }
-                                } break;
+                                }
                             }
-                        }
+                        });
                     });
                 }
             }
@@ -381,52 +400,72 @@ function make_server(name, guild) {
 }
 
 function fetch_servers() {
-    $.ajax({
-        url: 'php/fetch.php',
-        type: 'POST',
-        data: {
-            kind: 'guild'
-        },
-        cache: false,
-        success: (response) => {
-            switch (response) {
-                default: {
-                    for (const server of JSON.parse(response)) {
+    fetch_token((token) => {
+        $.ajax({
+            url: 'php/fetch',
+            type: 'POST',
+            headers: {
+                'Authorization': `User ${token}`
+            },
+            data: {
+                kind: 'guild'
+            },
+            dataType: 'json',
+            cache: false,
+            success: (response) => {
+                if ('code' in response) {
+                    switch (response['message']) {
+                        case 'unauthorized': {
+                            window.location.replace('login');
+                        } break;
+                    }
+                } else {
+                    for (const server of response) {
                         make_server(server['name'], server['id']);
                     }
-                } break;
+                }
             }
-        }
+        });
     });
 }
 
 function fetch_messages(channel) {
-    $.ajax({
-        url: 'php/messages.php',
-        type: 'POST',
-        data: {
-            channel: channel
-        },
-        cache: false,
-        success: async (response) => {
-            switch (response) {
-                default: {
-                    for (const message of JSON.parse(response)) {
+    fetch_token((token) => {
+        $.ajax({
+            url: 'php/messages',
+            type: 'GET',
+            headers: {
+                'Authorization': `User ${token}`
+            },
+            data: {
+                channel: channel
+            },
+            dataType: 'json',
+            cache: true,
+            success: async (response) => {
+                if ('code' in response) {
+                    switch (response['message']) {
+                        case 'unauthorized': {
+                            window.location.replace('login');
+                        } break;
+                    }
+                } else {
+                    for (const message of response) {
                         await insert_message({
-                            id:      message['author'],
-                            author:  message['username'],
-                            guild:   message['guild'],
+                            id: message['author'],
+                            author: message['username'],
+                            guild: message['guild'],
                             channel: message['channel'],
                             message: {
-                                id:      message['id'],
+                                id: message['id'],
                                 content: message['content']
                             }
                         }, message['avatar']);
                     }
                     $('.basic-loader').fadeOut(500);
-                } break;
+                }
             }
-        }
+        });
     });
 }
 
@@ -472,42 +511,58 @@ function close_add_server() {
 }
 
 function insert_server(id, name) {
-    $.ajax({
-        url: 'php/insert.php',
-        type: 'POST',
-        data: { // TODO: Handle Guild Avatars.
-            kind: 'guild',
-            name: name,
-            id: id,
-        },
-        cache: false,
-        success: (response) => {
-            switch (response) {
-                default: {
+    fetch_token((token) => {
+        $.ajax({
+            url: 'php/insert',
+            type: 'POST',
+            headers: {
+                'Authorization': `User ${token}`
+            },
+            data: { // TODO: Handle Guild Avatars.
+                kind: 'guild',
+                name: name,
+                id: id,
+            },
+            dataType: 'json',
+            cache: false,
+            success: (response) => {
+                if ('code' in response) {
+                    switch (response['message']) {
+                        case 'unauthorized': {
+                            window.location.replace('login');
+                        } break;
+                    }
+                } else {
                     close_add_server($('.add-server-container'));
                     make_server(name, id);
-                } break;
+                }
             }
-        }
+        });
     });
 }
 
 function leave_server(id) {
-    $.ajax({
-        url: 'php/delete.php',
-        type: 'POST',
-        data: {
-            kind: 'guild',
-            id: id,
-        },
-        cache: false,
-        success: (response) => {
-            switch (response) {
-                case 'query_error': {
-                    console.log(response);
-                } break;
+    fetch_token((token) => {
+        $.ajax({
+            url: 'php/delete',
+            type: 'POST',
+            headers: {
+                'Authorization': `User ${token}`
+            },
+            data: {
+                kind: 'guild',
+                id: id,
+            },
+            dataType: 'json',
+            cache: false,
+            success: (response) => {
+                switch (response['message']) {
+                    case 'unauthorized': {
+                        window.location.replace('login');
+                    } break;
+                }
             }
-        }
+        });
     });
 }
 
@@ -551,12 +606,12 @@ async function insert_message(payload, avatar) {
     $('div.basic-message-wrapper').append(html);
 }
 
-function dispatch_event(payload) {
-    gateway().send(JSON.stringify(payload));
-    console.log('[Info] dispatch_event:', payload);
-    switch (payload['type']) {
+function dispatch_event(data) {
+    gateway().send(JSON.stringify(data));
+    console.log('[Info] dispatch_event:', data);
+    switch (data['type']) {
         case 'message_create': {
-            insert_message(payload['payload']).catch(console.error);
+            insert_message(data['payload']).catch(console.error);
         } break;
     }
 }
@@ -565,27 +620,33 @@ function insert_avatar(file) {
     let data = new FormData();
     data.append('kind', 'avatar');
     data.append('avatar', file);
-    $.ajax({
-        url: 'php/insert.php',
-        type: 'POST',
-        data: data,
-        processData: false,
-        contentType: false,
-        cache: false,
-        success: (response) => {
-            switch (response) {
-                default: {
+    fetch_token((token) => {
+        $.ajax({
+            url: 'php/insert',
+            type: 'POST',
+            headers: {
+                'Authorization': `User ${token}`
+            },
+            data: data,
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            cache: false,
+            success: (response) => {
+                if ('code' in response) {
+                    switch (response['message']) {
+                        case 'unsupported_format': {
+                            alert('There was an error uploading your image');
+                        } break;
+                    }
+                } else {
                     fetch_avatar(0, (avatar) => {
                         $('.basic-user-icon img').attr('src', avatar);
                         $('.account-avatar img').attr('src', avatar);
                     });
-                } break;
-
-                case 'unsupported_format': {
-                    alert('There was an error uploading your image');
-                } break;
+                }
             }
-        }
+        });
     });
 }
 
@@ -593,25 +654,30 @@ const fetch = (function () {
     let cached = {};
     return function (kind, callback) {
         if (!Object.keys(cached).includes(kind)) {
-            $.ajax({
-                url: 'php/fetch.php',
-                type: 'POST',
-                data: {
-                    kind: kind
-                },
-                cache: false,
-                success: (response) => {
-                    switch (response) {
-                        default: {
-                            callback(cached[kind] = response);
-                        } break;
-
-                        case 'unknown_session': {
-                            console.error('[Error] not logged in.');
-                            window.location.replace('login');
-                        } break;
+            fetch_token((token) => {
+                $.ajax({
+                    url: 'php/fetch',
+                    type: 'POST',
+                    headers: {
+                        'Authorization': `User ${token}`
+                    },
+                    data: {
+                        kind: kind
+                    },
+                    dataType: 'json',
+                    cache: false,
+                    success: (response) => {
+                        if ('code' in response) {
+                            switch (response['message']) {
+                                case 'unauthorized': {
+                                    window.location.replace('login');
+                                } break;
+                            }
+                        } else {
+                            callback(cached[kind] = response[kind]);
+                        }
                     }
-                }
+                });
             });
         } else {
             callback(cached[kind]);
@@ -619,10 +685,10 @@ const fetch = (function () {
     };
 })();
 
-let gateway = (function () {
-    let wss = null;
+const gateway = (function () {
+    let wss       = null;
+    let tries     = 0;
     let heartbeat = null;
-    let tries = 0;
     const open =
         (_) => {
             tries = 0;
@@ -694,27 +760,64 @@ const fetch_avatar = (function () {
         if (cached[id] === undefined) {
             cached[id] = '';
         }
-        const missed  = !Object.keys(cached).includes(id);
-        const initial = cached[id] === '';
-        if (missed || initial) {
-            $.ajax({
-                url: 'php/fetch.php',
-                type: 'POST',
-                data: {
-                    kind: 'avatar',
-                    id: id,
-                },
-                cache: false,
-                success: (response) => {
-                    switch (response) { // TODO: Error handling.
-                        default: {
-                            callback(cached[id] = response);
-                        } break;
+        if (cached[id] === '') {
+            fetch_token((token) => {
+                $.ajax({
+                    url: 'php/fetch',
+                    type: 'POST',
+                    headers: {
+                        'Authorization': `User ${token}`
+                    },
+                    data: {
+                        kind: 'avatar',
+                        id: id,
+                    },
+                    dataType: 'json',
+                    cache: false,
+                    success: (response) => {
+                        if ('code' in response) {
+                            switch (response['message']) {
+                                case 'unauthorized': {
+                                    window.location.replace('login');
+                                } break;
+                            }
+                        } else {
+                            callback(cached[id] = response['avatar']);
+                        }
                     }
-                }
+                });
             });
         } else {
             callback(cached[id]);
         }
     }
+})();
+
+const fetch_token = (function () {
+    let cached = '';
+    return function (callback) {
+        if (cached === '') {
+            $.ajax({
+                url: 'php/token',
+                type: 'GET',
+                data: {},
+                dataType: 'json',
+                async: false,
+                cache: true,
+                success: (response) => {
+                    if ('code' in response) {
+                        switch (response['message']) {
+                            case 'unauthorized': {
+                                window.location.replace('login');
+                            } break;
+                        }
+                    } else {
+                        callback(cached = response['token']);
+                    }
+                }
+            });
+        } else {
+            callback(cached);
+        }
+    };
 })();

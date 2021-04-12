@@ -649,7 +649,6 @@ a {
 }
 
 .basic-default-container > img {
-    /* transform: rotate(10deg); */
     position: relative;
     display: flex;
     width: 256px;

@@ -1,7 +1,8 @@
 <?php
     include_once 'common.php';
+    check_authorization();
     $connection = connect_database();
-    $channel    = $_POST['channel'];
+    $channel    = $_GET['channel'];
 
     $query = "
         select cast(id as char(20)),
@@ -10,7 +11,7 @@
         from Channel
         where id = ?";
     if (safe_query($connection, $query, $channel)->get_result()->num_rows === 0) {
-        die('channel_error');
+        die('{ "message": "unknown_channel", "code": 400 }');
     }
     $query = "
         select cast(Message.id as char(20)) as id,

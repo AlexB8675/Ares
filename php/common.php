@@ -6,10 +6,10 @@
         $password   = '';
         $connection = mysqli_connect($hostname, $username, $password);
         if ($connection->connect_error) {
-            die("connection_error: $connection->connect_error");
+            die("{ \"message\": \"connection_error: $connection->connect_error\", \"code\": 500 }");
         }
         if (!mysqli_select_db($connection, $database)) {
-            die('unknown_database');
+            die('{ "message": "unknown_database", "code": 500 }');
         }
         return $connection;
     }
@@ -20,13 +20,13 @@
         $types = '';
 
         if (substr_count($query, '?') != count($params)) {
-            die('argument_count_mismatch');
+            die('{ "message": "argument_mismatch", "code": 500 }');
         }
         foreach ($params as $arg) {
             $type   = gettype($arg);
             $types .= match ($type) {
                 'string', 'double', 'integer' => $type[0],
-                default                       => die('type_error')
+                default                       => die('{ "message": "type_error", "code": 500 }')
             };
         }
         if (strlen($types) > 0) {
@@ -40,6 +40,17 @@
 
     function start_session() {
         if (!session_start() || count($_SESSION) === 0) {
-            die('unknown_session');
+            die('{ "message": "unauthorized", "code": 401 }');
         }
+    }
+
+    function check_authorization() {
+        $header = apache_request_headers();
+        if (isset($header['Authorization'])) {
+            start_session();
+            if ($_SESSION['token'] == substr($header['Authorization'], 5)) {
+                return;
+            }
+        }
+        die('{ "message": "unauthorized", "code": 401 }');
     }

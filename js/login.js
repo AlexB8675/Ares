@@ -72,11 +72,8 @@ function register() {
             },
             cache: false,
             success: (response) => {
-                if (response.length === 0) {
-                    result.hide();
-                    window.location.replace('login');
-                } else {
-                    switch (response) {
+                if ('code' in response) {
+                    switch (response['message']) {
                         case 'duplicate_username': {
                             result
                                 .text('the username already exists')
@@ -90,11 +87,10 @@ function register() {
                                 .css('color', 'rgb(215, 29, 72)')
                                 .show();
                         } break;
-
-                        default: {
-                            console.log(response);
-                        } break;
                     }
+                } else {
+                    result.hide();
+                    window.location.replace('login');
                 }
             }
         });
@@ -124,24 +120,21 @@ function login() {
                 username: username,
                 password: password,
             },
+            dataType: 'json',
             cache: false,
             success: (response) => {
-                if (response.length === 0) {
-                    result.hide();
-                    window.location.replace('app');
-                } else {
-                    switch (response) {
-                        case 'not_found': {
+                if ('code' in response) {
+                    switch (response['message']) {
+                        case 'unauthorized': {
                             result
                                 .text('unknown username or password')
                                 .css('color', 'rgb(215, 29, 72)')
                                 .show();
                         } break;
-
-                        default: {
-                            console.log(response);
-                        } break;
                     }
+                } else {
+                    result.hide();
+                    window.location.replace('app');
                 }
             }
         });

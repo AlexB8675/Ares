@@ -4,6 +4,8 @@ doc/*
 !doc/proposal.pdf
 !doc/proposal.tex
 js/jquery-3.5.1.js
+php/vendor
+php/vendor/*
 wss/.idea
 wss/.idea/*
 wss/cmake-build-debug
