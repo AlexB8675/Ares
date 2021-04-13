@@ -26,7 +26,11 @@
 #include <regex>
 #include <set>
 
-#define debug_output 1
+#if 1
+    #define print(fmt, ...) std::printf("%s" fmt, timestamp().c_str(), __VA_ARGS__)
+#else
+    #define print(fmt, ...) (void)0
+#endif
 
 namespace beast     = boost::beast;
 namespace asio      = boost::asio;
@@ -59,14 +63,6 @@ static ssl::context make_ssl_context() noexcept {
     context.use_certificate_chain_file("../cert.pem");
     context.use_private_key_file("../cert.key", ssl::context::file_format::pem);
     return context;
-}
-
-template <typename... Args>
-static void print(std::string_view format, Args&&... args) noexcept {
-#if debug_output == 1
-    std::cout << timestamp();
-    std::printf(format.data(), std::forward<Args>(args)...);
-#endif
 }
 
 class websocket_session_t;
@@ -320,9 +316,9 @@ void shared_state_t::dump() noexcept {
     std::lock_guard<std::mutex> guard(_lock);
     for (const auto& [channel, session] : _sessions) {
         if (!session.empty()) {
-            print("%ull - %ull:\n", channel, session.size());
+            print("%llu - %llu:\n", channel, session.size());
             for (auto each : session) {
-                print("  - %s\n", (u64)each);
+                print("  - 0x%08llx\n", (u64)each);
             }
         }
     }

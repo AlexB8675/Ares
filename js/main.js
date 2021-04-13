@@ -1,7 +1,7 @@
 // Initialization
 $(function () {
     fetch_servers();
-    fetch_avatar('0', (avatar) => {
+    fetch_avatar('0', false, (avatar) => {
         if (avatar !== null) {
             $('.basic-user-icon img').attr('src', avatar);
             $('.account-avatar img').attr('src', avatar);
@@ -142,6 +142,7 @@ $(function () {
                     window.location.replace('index');
                 }
             });
+            storage().clear();
         });
     $('[contenteditable]')
         .on('paste', function (event) {
@@ -574,7 +575,7 @@ function insert_message(payload, avatar) {
                 `</div>`);
         };
         if (avatar === undefined) {
-            fetch_avatar(payload['id'], insert);
+            fetch_avatar(payload['id'], false, insert);
         } else {
             insert(avatar);
         }
@@ -621,9 +622,9 @@ function insert_avatar(file) {
                     } break;
                 }
             } else {
-                fetch_avatar('0', (avatar) => {
-                    $('.basic-user-icon img').attr('src', `${avatar}?${next_id()}`);
-                    $('.account-avatar img').attr('src', `${avatar}?${next_id()}`);
+                fetch_avatar('0', true, (avatar) => {
+                    $('.basic-user-icon img').attr('src', avatar);
+                    $('.account-avatar img').attr('src', avatar);
                 });
             }
         }
@@ -732,11 +733,11 @@ const gateway = (function () {
 
 const fetch_avatar = (function () {
     let cached = {};
-    return function (id, callback) {
+    return function (id, invalidate, callback) {
         if (cached[id] === undefined) {
             cached[id] = null;
         }
-        if (cached[id] === null) {
+        if (invalidate || cached[id] === null) {
             $.ajax({
                 url: 'php/fetch',
                 type: 'GET',
