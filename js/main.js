@@ -267,126 +267,105 @@ function make_server(name, guild) {
                         .css({
                             'height': '36px'
                         });
-                    let channels = '';
-                    $.ajax({
-                        url: 'php/fetch',
-                        type: 'GET',
-                        headers: {
-                            'Authorization': `User ${fetch_token()}`
-                        },
-                        data: {
-                            kind: 'channels',
-                            id: guild
-                        },
-                        dataType: 'json',
-                        cache: true,
-                        success: (response) => {
-                            if ('code' in response) {
-                                switch (response) {
-                                    case 'unauthorized': {
-                                        window.location.replace('login');
-                                    } break;
-                                }
-                            } else {
-                                for (const channel of response) {
-                                    channels +=
-                                        `<div class="basic-channel-instance" aria-label>` +
-                                        `<img draggable="false" src="assets/icons/hash.png" alt>` +
-                                        `<div class="basic-text" id="${channel['id']}">${channel['name']}</div>` +
-                                        `</div>`;
-                                    $('.basic-sidebar-channels')
-                                        .children()
-                                        .html(channels)
-                                        .children()
-                                        .on('click', function () {
-                                            const current = $(this);
-                                            if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
-                                                const name    = current.children('.basic-text').text();
-                                                const channel = current.children('.basic-text').attr('id');
-                                                $('.basic-loader').show();
-                                                $('.basic-master-header')
-                                                    .html(`<img draggable="false" src="assets/icons/hash.png" alt>` +
-                                                        `<div class="basic-text">${name}</div>`);
-                                                dispatch_event({
-                                                    op: 0,
-                                                    type: 'transition_channel',
-                                                    payload: {
-                                                        channel: channel
-                                                    }
-                                                });
-                                                fetch_messages(channel);
-                                                $('.basic-channel-instance')
-                                                    .css({'background': 'transparent'})
-                                                    .attr('aria-label', '');
-                                                current
-                                                    .css({
-                                                        'color': 'rgb(209, 210, 221)',
-                                                        'background': 'rgb(52, 55, 60)'
-                                                    })
-                                                    .attr('aria-label', 'selected');
-                                                $('.basic-master-container')
-                                                    .html(
-                                                        `<div class="basic-message-scroller">` +
-                                                            `<div>` +
-                                                                `<div class="basic-message-wrapper"></div>` +
-                                                            `</div>` +
-                                                        `</div>` +
-                                                        `<div class="basic-message-sender">` +
-                                                            `<div class="basic-textbox-wrapper">` +
-                                                                `<div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>` +
-                                                            `</div>` +
-                                                        `</div>`);
-                                                $('.basic-message-textbox')
-                                                    .on('keydown', function (event) {
-                                                        if (event.key === 'Enter' && !event.shiftKey) {
-                                                            event.preventDefault();
-                                                            const content = $(this).text().trim();
-                                                            if (content !== '') {
-                                                                $(this).html('');
-                                                                const data = {
-                                                                    op: 0,
-                                                                    type: 'message_create',
-                                                                    payload: {
-                                                                        id: `${$('.basic-username').attr('aria-label')}`,
-                                                                        author: `${$('.account-details #username').text()}`,
-                                                                        guild: `${guild}`,
-                                                                        channel: `${channel}`,
-                                                                        message: {
-                                                                            id: `${next_id()}`,
-                                                                            content: content
-                                                                        }
-                                                                    }
-                                                                };
-                                                                dispatch_event(data);
-                                                                $.ajax({
-                                                                    url: 'php/insert',
-                                                                    type: 'POST',
-                                                                    headers: {
-                                                                        'Authorization': `User ${fetch_token()}`
-                                                                    },
-                                                                    data: {
-                                                                        kind: 'message',
-                                                                        message: JSON.stringify(data['payload'])
-                                                                    },
-                                                                    cache: false,
-                                                                    success: (_) => {}
-                                                                });
+                    fetch_channels(guild, (response) => {
+                        let channels = '';
+                        for (const channel of response) {
+                            channels +=
+                                `<div class="basic-channel-instance" aria-label>` +
+                                    `<img draggable="false" src="assets/icons/hash.png" alt>` +
+                                    `<div class="basic-text" id="${channel['id']}">${channel['name']}</div>` +
+                                `</div>`;
+                        }
+                        $('.basic-sidebar-channels')
+                            .children()
+                            .html(channels)
+                            .children()
+                            .on('click', function () {
+                                const current = $(this);
+                                if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
+                                    const name    = current.children('.basic-text').text();
+                                    const channel = current.children('.basic-text').attr('id');
+                                    $('.basic-loader').show();
+                                    $('.basic-master-header')
+                                        .html(`<img draggable="false" src="assets/icons/hash.png" alt>` +
+                                              `<div class="basic-text">${name}</div>`);
+                                    dispatch_event({
+                                        op: 0,
+                                        type: 'transition_channel',
+                                        payload: {
+                                            channel: channel
+                                        }
+                                    });
+                                    fetch_messages(channel);
+                                    $('.basic-channel-instance')
+                                        .css({'background': 'transparent'})
+                                        .attr('aria-label', '');
+                                    current
+                                        .css({
+                                            'color': 'rgb(209, 210, 221)',
+                                            'background': 'rgb(52, 55, 60)'
+                                        })
+                                        .attr('aria-label', 'selected');
+                                    $('.basic-master-container')
+                                        .html(
+                                            `<div class="basic-message-scroller">` +
+                                                `<div>` +
+                                                    `<div class="basic-message-wrapper"></div>` +
+                                                `</div>` +
+                                            `</div>` +
+                                                `<div class="basic-message-sender">` +
+                                                    `<div class="basic-textbox-wrapper">` +
+                                                    `<div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>` +
+                                                `</div>` +
+                                            `</div>`);
+                                    $('.basic-message-textbox')
+                                        .on('keydown', function (event) {
+                                            if (event.key === 'Enter' && !event.shiftKey) {
+                                                event.preventDefault();
+                                                const content = $(this).text().trim();
+                                                if (content !== '') {
+                                                    $(this).html('');
+                                                    const data = {
+                                                        op: 0,
+                                                        type: 'message_create',
+                                                        payload: {
+                                                            id: `${$('.basic-username').attr('aria-label')}`,
+                                                            author: `${$('.account-details #username').text()}`,
+                                                            guild: `${guild}`,
+                                                            channel: `${channel}`,
+                                                            message: {
+                                                                id: `${next_id()}`,
+                                                                content: content
                                                             }
                                                         }
-                                                    })
-                                                    .on('paste', function (event) {
-                                                        event.preventDefault();
-                                                        const clipboard = event.originalEvent.clipboardData;
-                                                        document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
+                                                    };
+                                                    $.ajax({
+                                                        url: 'php/insert',
+                                                        type: 'POST',
+                                                        headers: {
+                                                            'Authorization': `User ${fetch_token()}`
+                                                        },
+                                                        data: {
+                                                            kind: 'message',
+                                                            message: JSON.stringify(data['payload'])
+                                                        },
+                                                        cache: false,
+                                                        success: (_) => {}
                                                     });
+                                                    dispatch_event(data);
+                                                }
                                             }
                                         })
-                                        .first()
-                                        .trigger('click');
-                                    $('.basic-sidebar-header .basic-text').text(name);
+                                        .on('paste', function (event) {
+                                            event.preventDefault();
+                                            const clipboard = event.originalEvent.clipboardData;
+                                            document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
+                                        });
                                 }
-                            }
-                        }
+                            })
+                            .first()
+                            .trigger('click');
+                        $('.basic-sidebar-header .basic-text').text(name);
                     });
                 }
             }
@@ -458,6 +437,41 @@ function fetch_messages(channel) {
         }
     });
 }
+
+
+const fetch_channels = (function () {
+    let cached = {};
+    return function (id, callback) {
+        if (!(id in cached)) {
+            $.ajax({
+                url: 'php/fetch',
+                type: 'GET',
+                headers: {
+                    'Authorization': `User ${fetch_token()}`
+                },
+                data: {
+                    kind: 'channels',
+                    id: id
+                },
+                dataType: 'json',
+                cache: true,
+                success: (response) => {
+                    if ('code' in response) {
+                        switch (response) {
+                            case 'unauthorized': {
+                                window.location.replace('login');
+                            } break;
+                        }
+                    } else {
+                        callback(cached[id] = response);
+                    }
+                }
+            });
+        } else {
+            callback(cached[id]);
+        }
+    };
+})();
 
 function toggle_settings() {
     $('.settings-container').toggleClass('basic-visible');
@@ -634,7 +648,7 @@ function insert_avatar(file) {
 const fetch = (function () {
     let cached = {};
     return function (kind, callback) {
-        if (!Object.keys(cached).includes(kind)) {
+        if (!(kind in cached)) {
             $.ajax({
                 url: 'php/fetch',
                 type: 'GET',
