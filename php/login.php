@@ -3,8 +3,8 @@
     include_once 'common.php';
     use Firebase\JWT\JWT;
     $connection = connect_database();
-    $username = $_POST['username'];
-    $password = hash('sha512', $_POST['password']);
+    $username = $_GET['username'];
+    $password = hash('sha512', $_GET['password']);
     $exists = '
         select * 
         from User
@@ -29,5 +29,5 @@
         'email'    => $found->email,
         'id'       => $found->id
     ];
-    print '{}';
+    print json_encode(['token' => $_SESSION['token']]);
     mysqli_close($connection);

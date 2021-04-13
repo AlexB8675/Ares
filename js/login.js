@@ -115,13 +115,13 @@ function login() {
     } else {
         $.ajax({
             url: 'php/login.php',
-            type: 'POST',
+            type: 'GET',
             data: {
                 username: username,
                 password: password,
             },
             dataType: 'json',
-            cache: false,
+            cache: true,
             success: (response) => {
                 if ('code' in response) {
                     switch (response['message']) {
@@ -134,6 +134,7 @@ function login() {
                     }
                 } else {
                     result.hide();
+                    storage().setItem('token', response['token']);
                     window.location.replace('app');
                 }
             }

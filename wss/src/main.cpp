@@ -141,9 +141,8 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                 document.Accept(writer);
                 print("0x%08llx: received payload: %s\n", (u64)this, buffer.GetString());
                 _buffer.consume(_buffer.size());
-                const int op = document["op"].Get<int>();
                 const std::string type = document["type"].Get<const char*>();
-                switch (op) {
+                switch (document["op"].Get<int>()) {
                     case -1: { // FixMe: debug_event (only for debugging purposes, to be removed).
                         if (type == "dump_sessions") {
                             _state->dump();

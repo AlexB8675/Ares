@@ -10,6 +10,10 @@ function timestamp_from_id(id) {
     return new Date(Number((id >> (BigInt(node_bits + seq_bits))) + BigInt(epoch)));
 }
 
+function storage() {
+    return window.localStorage;
+}
+
 let next_id = (function () {
     const max_node = (2 ** node_bits) - 1;
     const max_seq  = (2 ** seq_bits) - 1;

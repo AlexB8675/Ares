@@ -1,8 +1,8 @@
 // Initialization
 $(function () {
     fetch_servers();
-    fetch_avatar(0, (avatar) => {
-        if (avatar !== '') {
+    fetch_avatar('0', (avatar) => {
+        if (avatar !== null) {
             $('.basic-user-icon img').attr('src', avatar);
             $('.account-avatar img').attr('src', avatar);
         }
@@ -15,6 +15,9 @@ $(function () {
         $('.account-details #email').text(email);
         gateway(); // Initializes websocket connection after the last fetch is done.
     });
+    fetch('id', (id) => {
+        $('.basic-username').attr('aria-label', id);
+    })
     $('#user-settings')
         .on('click', function () {
             toggle_settings();
@@ -64,45 +67,43 @@ $(function () {
         .on('click', function () {
             const id = $(this).siblings('.join-server-input').text();
             if (id !== '') {
-                fetch_token((token) => {
-                    $.ajax({
-                        url: 'php/insert',
-                        type: 'POST',
-                        headers: {
-                            'Authorization': `User ${token}`
-                        },
-                        data: {
-                            kind: 'join',
-                            id: id
-                        },
-                        dataType: 'json',
-                        cache: false,
-                        success: (response) => {
-                            if ('code' in response) {
-                                switch (response['message']) {
-                                    case 'unauthorized': {
-                                        $('#join-error')
-                                            .css({
-                                                'width': '100%',
-                                            })
-                                            .text('This ID does not exist');
-                                    } break;
+                $.ajax({
+                    url: 'php/insert',
+                    type: 'POST',
+                    headers: {
+                        'Authorization': `User ${fetch_token()}`
+                    },
+                    data: {
+                        kind: 'join',
+                        id: id
+                    },
+                    dataType: 'json',
+                    cache: false,
+                    success: (response) => {
+                        if ('code' in response) {
+                            switch (response['message']) {
+                                case 'unauthorized': {
+                                    $('#join-error')
+                                        .css({
+                                            'width': '100%',
+                                        })
+                                        .text('This ID does not exist');
+                                } break;
 
-                                    case 'forbidden': {
-                                        $('#join-error')
-                                            .css({
-                                                'width': '100%',
-                                            })
-                                            .text('You already are in this server');
-                                    } break;
-                                }
-                            } else {
-                                make_server(response['name'], id);
-                                $('#join-error').text('');
-                                close_add_server();
+                                case 'forbidden': {
+                                    $('#join-error')
+                                        .css({
+                                            'width': '100%',
+                                        })
+                                        .text('You already are in this server');
+                                } break;
                             }
+                        } else {
+                            make_server(response['name'], id);
+                            $('#join-error').text('');
+                            close_add_server();
                         }
-                    });
+                    }
                 });
             }
         });
@@ -266,133 +267,125 @@ function make_server(name, guild) {
                             'height': '36px'
                         });
                     let channels = '';
-                    fetch_token((token) => {
-                        $.ajax({
-                            url: 'php/fetch',
-                            type: 'GET',
-                            headers: {
-                                'Authorization': `User ${token}`
-                            },
-                            data: {
-                                kind: 'channels',
-                                id: guild
-                            },
-                            dataType: 'json',
-                            cache: true,
-                            success: (response) => {
-                                if ('code' in response) {
-                                    switch (response) {
-                                        case 'unauthorized': {
-                                            window.location.replace('login');
-                                        } break;
-                                    }
-                                } else {
-                                    for (const channel of response) {
-                                        channels +=
-                                            `<div class="basic-channel-instance" aria-label>` +
-                                            `<img draggable="false" src="assets/icons/hash.png" alt>` +
-                                            `<div class="basic-text" id="${channel['id']}">${channel['name']}</div>` +
-                                            `</div>`;
-                                        $('.basic-sidebar-channels')
-                                            .children()
-                                            .html(channels)
-                                            .children()
-                                            .on('click', function () {
-                                                const current = $(this);
-                                                if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
-                                                    const name    = current.children('.basic-text').text();
-                                                    const channel = current.children('.basic-text').attr('id');
-                                                    $('.basic-loader').show();
-                                                    $('.basic-master-header')
-                                                        .html(`<img draggable="false" src="assets/icons/hash.png" alt>` +
-                                                            `<div class="basic-text">${name}</div>`);
-                                                    dispatch_event({
-                                                        op: 0,
-                                                        type: 'transition_channel',
-                                                        payload: {
-                                                            channel: channel
-                                                        }
-                                                    });
-                                                    fetch_messages(channel);
-                                                    $('.basic-channel-instance')
-                                                        .css({'background': 'transparent'})
-                                                        .attr('aria-label', '');
-                                                    current
-                                                        .css({
-                                                            'color': 'rgb(209, 210, 221)',
-                                                            'background': 'rgb(52, 55, 60)'
-                                                        })
-                                                        .attr('aria-label', 'selected');
-                                                    $('.basic-master-container')
-                                                        .html(
-                                                            `<div class="basic-message-scroller">` +
+                    $.ajax({
+                        url: 'php/fetch',
+                        type: 'GET',
+                        headers: {
+                            'Authorization': `User ${fetch_token()}`
+                        },
+                        data: {
+                            kind: 'channels',
+                            id: guild
+                        },
+                        dataType: 'json',
+                        cache: true,
+                        success: (response) => {
+                            if ('code' in response) {
+                                switch (response) {
+                                    case 'unauthorized': {
+                                        window.location.replace('login');
+                                    } break;
+                                }
+                            } else {
+                                for (const channel of response) {
+                                    channels +=
+                                        `<div class="basic-channel-instance" aria-label>` +
+                                        `<img draggable="false" src="assets/icons/hash.png" alt>` +
+                                        `<div class="basic-text" id="${channel['id']}">${channel['name']}</div>` +
+                                        `</div>`;
+                                    $('.basic-sidebar-channels')
+                                        .children()
+                                        .html(channels)
+                                        .children()
+                                        .on('click', function () {
+                                            const current = $(this);
+                                            if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
+                                                const name    = current.children('.basic-text').text();
+                                                const channel = current.children('.basic-text').attr('id');
+                                                $('.basic-loader').show();
+                                                $('.basic-master-header')
+                                                    .html(`<img draggable="false" src="assets/icons/hash.png" alt>` +
+                                                        `<div class="basic-text">${name}</div>`);
+                                                dispatch_event({
+                                                    op: 0,
+                                                    type: 'transition_channel',
+                                                    payload: {
+                                                        channel: channel
+                                                    }
+                                                });
+                                                fetch_messages(channel);
+                                                $('.basic-channel-instance')
+                                                    .css({'background': 'transparent'})
+                                                    .attr('aria-label', '');
+                                                current
+                                                    .css({
+                                                        'color': 'rgb(209, 210, 221)',
+                                                        'background': 'rgb(52, 55, 60)'
+                                                    })
+                                                    .attr('aria-label', 'selected');
+                                                $('.basic-master-container')
+                                                    .html(
+                                                        `<div class="basic-message-scroller">` +
                                                             `<div>` +
-                                                            `<div class="basic-message-wrapper"></div>` +
+                                                                `<div class="basic-message-wrapper"></div>` +
                                                             `</div>` +
-                                                            `</div>` +
-                                                            `<div class="basic-message-sender">` +
+                                                        `</div>` +
+                                                        `<div class="basic-message-sender">` +
                                                             `<div class="basic-textbox-wrapper">` +
-                                                            `<div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>` +
+                                                                `<div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>` +
                                                             `</div>` +
-                                                            `</div>`);
-                                                    $('.basic-message-textbox')
-                                                        .on('keydown', function (event) {
-                                                            if (event.key === 'Enter' && !event.shiftKey) {
-                                                                event.preventDefault();
-                                                                const content = $(this).text().trim();
-                                                                if (content !== '') {
-                                                                    fetch('id', (id) => {
-                                                                        fetch('username', (username) => {
-                                                                            const data = {
-                                                                                op: 0,
-                                                                                type: 'message_create',
-                                                                                payload: {
-                                                                                    id: id,
-                                                                                    author: username,
-                                                                                    guild: guild,
-                                                                                    channel: channel,
-                                                                                    message: {
-                                                                                        id: next_id(),
-                                                                                        content: content
-                                                                                    }
-                                                                                }
-                                                                            };
-                                                                            dispatch_event(data);
-                                                                            fetch_token((token) => {
-                                                                                $.ajax({
-                                                                                    url: 'php/insert',
-                                                                                    type: 'POST',
-                                                                                    headers: {
-                                                                                        'Authorization': `User ${token}`
-                                                                                    },
-                                                                                    data: {
-                                                                                        kind: 'message',
-                                                                                        message: JSON.stringify(data['payload'])
-                                                                                    },
-                                                                                    cache: false,
-                                                                                    success: (_) => {}
-                                                                                });
-                                                                            });
-                                                                            $(this).html('');
-                                                                        });
-                                                                    });
-                                                                }
-                                                            }
-                                                        })
-                                                        .on('paste', function (event) {
+                                                        `</div>`);
+                                                $('.basic-message-textbox')
+                                                    .on('keydown', function (event) {
+                                                        if (event.key === 'Enter' && !event.shiftKey) {
                                                             event.preventDefault();
-                                                            const clipboard = event.originalEvent.clipboardData;
-                                                            document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
-                                                        });
-                                                }
-                                            })
-                                            .first()
-                                            .trigger('click');
-                                        $('.basic-sidebar-header .basic-text').text(name);
-                                    }
+                                                            const content = $(this).text().trim();
+                                                            if (content !== '') {
+                                                                $(this).html('');
+                                                                const data = {
+                                                                    op: 0,
+                                                                    type: 'message_create',
+                                                                    payload: {
+                                                                        id: `${$('.basic-username').attr('aria-label')}`,
+                                                                        author: `${$('.account-details #username').text()}`,
+                                                                        guild: `${guild}`,
+                                                                        channel: `${channel}`,
+                                                                        message: {
+                                                                            id: `${next_id()}`,
+                                                                            content: content
+                                                                        }
+                                                                    }
+                                                                };
+                                                                dispatch_event(data);
+                                                                $.ajax({
+                                                                    url: 'php/insert',
+                                                                    type: 'POST',
+                                                                    headers: {
+                                                                        'Authorization': `User ${fetch_token()}`
+                                                                    },
+                                                                    data: {
+                                                                        kind: 'message',
+                                                                        message: JSON.stringify(data['payload'])
+                                                                    },
+                                                                    cache: false,
+                                                                    success: (_) => {}
+                                                                });
+                                                            }
+                                                        }
+                                                    })
+                                                    .on('paste', function (event) {
+                                                        event.preventDefault();
+                                                        const clipboard = event.originalEvent.clipboardData;
+                                                        document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
+                                                    });
+                                            }
+                                        })
+                                        .first()
+                                        .trigger('click');
+                                    $('.basic-sidebar-header .basic-text').text(name);
                                 }
                             }
-                        });
+                        }
                     });
                 }
             }
@@ -400,72 +393,68 @@ function make_server(name, guild) {
 }
 
 function fetch_servers() {
-    fetch_token((token) => {
-        $.ajax({
-            url: 'php/fetch',
-            type: 'POST',
-            headers: {
-                'Authorization': `User ${token}`
-            },
-            data: {
-                kind: 'guild'
-            },
-            dataType: 'json',
-            cache: false,
-            success: (response) => {
-                if ('code' in response) {
-                    switch (response['message']) {
-                        case 'unauthorized': {
-                            window.location.replace('login');
-                        } break;
-                    }
-                } else {
-                    for (const server of response) {
-                        make_server(server['name'], server['id']);
-                    }
+    $.ajax({
+        url: 'php/fetch',
+        type: 'GET',
+        headers: {
+            'Authorization': `User ${fetch_token()}`
+        },
+        data: {
+            kind: 'guild'
+        },
+        dataType: 'json',
+        cache: true,
+        success: (response) => {
+            if ('code' in response) {
+                switch (response['message']) {
+                    case 'unauthorized': {
+                        window.location.replace('login');
+                    } break;
+                }
+            } else {
+                for (const server of response) {
+                    make_server(server['name'], server['id']);
                 }
             }
-        });
+        }
     });
 }
 
 function fetch_messages(channel) {
-    fetch_token((token) => {
-        $.ajax({
-            url: 'php/messages',
-            type: 'GET',
-            headers: {
-                'Authorization': `User ${token}`
-            },
-            data: {
-                channel: channel
-            },
-            dataType: 'json',
-            cache: true,
-            success: async (response) => {
-                if ('code' in response) {
-                    switch (response['message']) {
-                        case 'unauthorized': {
-                            window.location.replace('login');
-                        } break;
-                    }
-                } else {
-                    for (const message of response) {
-                        await insert_message({
-                            id: message['author'],
-                            author: message['username'],
-                            guild: message['guild'],
-                            channel: message['channel'],
-                            message: {
-                                id: message['id'],
-                                content: message['content']
-                            }
-                        }, message['avatar']);
-                    }
-                    $('.basic-loader').fadeOut(500);
+    $.ajax({
+        url: 'php/messages',
+        type: 'GET',
+        headers: {
+            'Authorization': `User ${fetch_token()}`
+        },
+        data: {
+            channel: channel
+        },
+        dataType: 'json',
+        cache: true,
+        success: (response) => {
+            if ('code' in response) {
+                switch (response['message']) {
+                    case 'unauthorized': {
+                        window.location.replace('login');
+                    } break;
                 }
+            } else {
+                for (const message of response) {
+                    insert_message({
+                        id: message['author'],
+                        author: message['username'],
+                        guild: message['guild'],
+                        channel: message['channel'],
+                        message: {
+                            id: message['id'],
+                            content: message['content']
+                        }
+                    }, message['avatar']);
+                }
+                $('.basic-loader').fadeOut(500);
             }
-        });
+        }
     });
 }
 
@@ -511,62 +500,58 @@ function close_add_server() {
 }
 
 function insert_server(id, name) {
-    fetch_token((token) => {
-        $.ajax({
-            url: 'php/insert',
-            type: 'POST',
-            headers: {
-                'Authorization': `User ${token}`
-            },
-            data: { // TODO: Handle Guild Avatars.
-                kind: 'guild',
-                name: name,
-                id: id,
-            },
-            dataType: 'json',
-            cache: false,
-            success: (response) => {
-                if ('code' in response) {
-                    switch (response['message']) {
-                        case 'unauthorized': {
-                            window.location.replace('login');
-                        } break;
-                    }
-                } else {
-                    close_add_server($('.add-server-container'));
-                    make_server(name, id);
-                }
-            }
-        });
-    });
-}
-
-function leave_server(id) {
-    fetch_token((token) => {
-        $.ajax({
-            url: 'php/delete',
-            type: 'POST',
-            headers: {
-                'Authorization': `User ${token}`
-            },
-            data: {
-                kind: 'guild',
-                id: id,
-            },
-            dataType: 'json',
-            cache: false,
-            success: (response) => {
+    $.ajax({
+        url: 'php/insert',
+        type: 'POST',
+        headers: {
+            'Authorization': `User ${fetch_token()}`
+        },
+        data: { // TODO: Handle Guild Avatars.
+            kind: 'guild',
+            name: name,
+            id: id,
+        },
+        dataType: 'json',
+        cache: false,
+        success: (response) => {
+            if ('code' in response) {
                 switch (response['message']) {
                     case 'unauthorized': {
                         window.location.replace('login');
                     } break;
                 }
+            } else {
+                close_add_server($('.add-server-container'));
+                make_server(name, id);
             }
-        });
+        }
     });
 }
 
-async function insert_message(payload, avatar) {
+function leave_server(id) {
+    $.ajax({
+        url: 'php/delete',
+        type: 'POST',
+        headers: {
+            'Authorization': `User ${fetch_token()}`
+        },
+        data: {
+            kind: 'guild',
+            id: id,
+        },
+        dataType: 'json',
+        cache: false,
+        success: (response) => {
+            switch (response['message']) {
+                case 'unauthorized': {
+                    window.location.replace('login');
+                } break;
+            }
+        }
+    });
+}
+
+function insert_message(payload, avatar) {
     const author  = payload['author'];
     const content = $("<div>").text(payload['message']['content']).html();
     const grouped = $('.basic-message-username').last().text() === author;
@@ -574,8 +559,8 @@ async function insert_message(payload, avatar) {
     let html;
     if (!grouped) {
         const insert = (avatar) => {
-            const path = avatar === '' || avatar === null ? 'assets/icons/blank.png' : avatar;
-            html =
+            const path = avatar === null ? 'assets/icons/blank.png' : avatar;
+            $('div.basic-message-wrapper').append(
                 `<div class="basic-message-group basic-group-start">` +
                     `<div class="basic-chat-message">` +
                         `<div class="basic-message-avatar">` +
@@ -586,24 +571,21 @@ async function insert_message(payload, avatar) {
                             `<div class="basic-message-content">${content}</div>` +
                         `</div>` +
                     `</div>` +
-                `</div>`;
-        }
+                `</div>`);
+        };
         if (avatar === undefined) {
-            fetch_avatar(payload['id'], (avatar) => {
-                insert(avatar);
-            });
+            fetch_avatar(payload['id'], insert);
         } else {
             insert(avatar);
         }
     } else {
-        html =
+        $('div.basic-message-wrapper').append(
             `<div class="basic-message-group">` +
                 `<div class="basic-chat-message">` +
                     `<div class="basic-message-content">${content}</div>` +
                 `</div>` +
-            `</div>`;
+            `</div>`);
     }
-    $('div.basic-message-wrapper').append(html);
 }
 
 function dispatch_event(data) {
@@ -611,7 +593,7 @@ function dispatch_event(data) {
     console.log('[Info] dispatch_event:', data);
     switch (data['type']) {
         case 'message_create': {
-            insert_message(data['payload']).catch(console.error);
+            insert_message(data['payload']);
         } break;
     }
 }
@@ -620,33 +602,31 @@ function insert_avatar(file) {
     let data = new FormData();
     data.append('kind', 'avatar');
     data.append('avatar', file);
-    fetch_token((token) => {
-        $.ajax({
-            url: 'php/insert',
-            type: 'POST',
-            headers: {
-                'Authorization': `User ${token}`
-            },
-            data: data,
-            dataType: 'json',
-            processData: false,
-            contentType: false,
-            cache: false,
-            success: (response) => {
-                if ('code' in response) {
-                    switch (response['message']) {
-                        case 'unsupported_format': {
-                            alert('There was an error uploading your image');
-                        } break;
-                    }
-                } else {
-                    fetch_avatar(0, (avatar) => {
-                        $('.basic-user-icon img').attr('src', avatar);
-                        $('.account-avatar img').attr('src', avatar);
-                    });
+    $.ajax({
+        url: 'php/insert',
+        type: 'POST',
+        headers: {
+            'Authorization': `User ${fetch_token()}`
+        },
+        data: data,
+        dataType: 'json',
+        processData: false,
+        contentType: false,
+        cache: false,
+        success: (response) => {
+            if ('code' in response) {
+                switch (response['message']) {
+                    case 'unsupported_format': {
+                        alert('There was an error uploading your image');
+                    } break;
                 }
+            } else {
+                fetch_avatar('0', (avatar) => {
+                    $('.basic-user-icon img').attr('src', `${avatar}?${next_id()}`);
+                    $('.account-avatar img').attr('src', `${avatar}?${next_id()}`);
+                });
             }
-        });
+        }
     });
 }
 
@@ -654,30 +634,28 @@ const fetch = (function () {
     let cached = {};
     return function (kind, callback) {
         if (!Object.keys(cached).includes(kind)) {
-            fetch_token((token) => {
-                $.ajax({
-                    url: 'php/fetch',
-                    type: 'POST',
-                    headers: {
-                        'Authorization': `User ${token}`
-                    },
-                    data: {
-                        kind: kind
-                    },
-                    dataType: 'json',
-                    cache: false,
-                    success: (response) => {
-                        if ('code' in response) {
-                            switch (response['message']) {
-                                case 'unauthorized': {
-                                    window.location.replace('login');
-                                } break;
-                            }
-                        } else {
-                            callback(cached[kind] = response[kind]);
+            $.ajax({
+                url: 'php/fetch',
+                type: 'GET',
+                headers: {
+                    'Authorization': `User ${fetch_token()}`
+                },
+                data: {
+                    kind: kind
+                },
+                dataType: 'json',
+                cache: true,
+                success: (response) => {
+                    if ('code' in response) {
+                        switch (response['message']) {
+                            case 'unauthorized': {
+                                window.location.replace('login');
+                            } break;
                         }
+                    } else {
+                        callback(cached[kind] = response[kind]);
                     }
-                });
+                }
             });
         } else {
             callback(cached[kind]);
@@ -692,6 +670,7 @@ const gateway = (function () {
     const open =
         (_) => {
             tries = 0;
+            $('.basic-loader').fadeOut(500);
             console.log('[Info]: connection successful');
             heartbeat = setTimeout(function keep_alive() {
                 dispatch_event({
@@ -707,7 +686,7 @@ const gateway = (function () {
             switch (data['type']) {
                 case 'message_create': {
                     console.log('[Info]: received message: ', data);
-                    insert_message(data['payload']).catch(console.error);
+                    insert_message(data['payload']);
                 } break;
 
                 case 'heartbeat': {
@@ -743,10 +722,7 @@ const gateway = (function () {
     return function () {
         if (wss === null) {
             wss = new WebSocket('wss://gateway.alex8675.eu:2096');
-            wss.onopen = () => {
-                $('.basic-loader').fadeOut(500);
-                open();
-            };
+            wss.onopen = open;
             wss.onmessage = message;
             wss.onclose = close;
         }
@@ -758,51 +734,20 @@ const fetch_avatar = (function () {
     let cached = {};
     return function (id, callback) {
         if (cached[id] === undefined) {
-            cached[id] = '';
+            cached[id] = null;
         }
-        if (cached[id] === '') {
-            fetch_token((token) => {
-                $.ajax({
-                    url: 'php/fetch',
-                    type: 'POST',
-                    headers: {
-                        'Authorization': `User ${token}`
-                    },
-                    data: {
-                        kind: 'avatar',
-                        id: id,
-                    },
-                    dataType: 'json',
-                    cache: false,
-                    success: (response) => {
-                        if ('code' in response) {
-                            switch (response['message']) {
-                                case 'unauthorized': {
-                                    window.location.replace('login');
-                                } break;
-                            }
-                        } else {
-                            callback(cached[id] = response['avatar']);
-                        }
-                    }
-                });
-            });
-        } else {
-            callback(cached[id]);
-        }
-    }
-})();
-
-const fetch_token = (function () {
-    let cached = '';
-    return function (callback) {
-        if (cached === '') {
+        if (cached[id] === null) {
             $.ajax({
-                url: 'php/token',
+                url: 'php/fetch',
                 type: 'GET',
-                data: {},
+                headers: {
+                    'Authorization': `User ${fetch_token()}`
+                },
+                data: {
+                    kind: 'avatar',
+                    id: `${id}`,
+                },
                 dataType: 'json',
-                async: false,
                 cache: true,
                 success: (response) => {
                     if ('code' in response) {
@@ -812,12 +757,16 @@ const fetch_token = (function () {
                             } break;
                         }
                     } else {
-                        callback(cached = response['token']);
+                        callback(cached[id] = response['avatar']);
                     }
                 }
             });
         } else {
-            callback(cached);
+            callback(cached[id]);
         }
-    };
+    }
 })();
+
+function fetch_token() {
+    return storage().getItem('token');
+}
