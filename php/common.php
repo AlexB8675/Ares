@@ -16,8 +16,8 @@
 
     function safe_query(mysqli $connection, string $query, mixed... $args): mysqli_stmt|false {
         $statement = mysqli_prepare($connection, $query);
-        $params = [...$args];
-        $types = '';
+        $params    = [...$args];
+        $types     = '';
 
         if (substr_count($query, '?') != count($params)) {
             die('{ "message": "argument_mismatch", "code": 500 }');

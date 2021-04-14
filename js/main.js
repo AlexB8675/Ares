@@ -438,7 +438,6 @@ function fetch_messages(channel) {
     });
 }
 
-
 const fetch_channels = (function () {
     let cached = {};
     return function (id, callback) {
@@ -688,12 +687,12 @@ const gateway = (function () {
             $('.basic-loader').fadeOut(500);
             console.log('[Info]: connection successful');
             heartbeat = setTimeout(function keep_alive() {
+                heartbeat = setTimeout(keep_alive, 30000);
                 dispatch_event({
                     op: 1,
                     type: 'heartbeat'
                 });
-                heartbeat = setTimeout(keep_alive, 60000);
-            }, 60000);
+            }, 30000);
         };
     const message =
         (payload) => {
@@ -712,11 +711,14 @@ const gateway = (function () {
     const close =
         () => {
             if (tries++ > 5) {
+                wss = null;
                 console.error('[Error]: cannot connect to the websocket server');
+                $('.basic-loader').show();
+                setTimeout(gateway, 30000);
             } else {
+                clearTimeout(heartbeat);
                 console.log('[Info]: connection terminated');
                 wss = new WebSocket('wss://gateway.alex8675.eu:2096');
-                clearTimeout(heartbeat);
                 wss.onopen = () => {
                     const channel = $('div.basic-channel-instance[aria-label="selected"]');
                     if (channel.length !== 0) {

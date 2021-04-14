@@ -7,7 +7,7 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS date_time)
 find_package(OpenSSL REQUIRED)
 
 add_subdirectory(ext/rapidjson)

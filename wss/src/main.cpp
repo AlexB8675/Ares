@@ -27,13 +27,14 @@
 #include <set>
 
 #if 1
-    #define print(fmt, ...) std::printf("%s" fmt, timestamp().c_str(), __VA_ARGS__)
+    #define print(fmt, ...) std::printf("%s" fmt, timestamp().c_str() __VA_OPT__(,) __VA_ARGS__)
 #else
     #define print(fmt, ...) (void)0
 #endif
 
 namespace beast     = boost::beast;
 namespace asio      = boost::asio;
+namespace sys       = boost::system;
 namespace websocket = beast::websocket;
 namespace http      = beast::http;
 namespace ssl       = asio::ssl;
@@ -52,9 +53,9 @@ static std::string timestamp() noexcept {
     return format.str();
 }
 
-static std::chrono::milliseconds time_since_epoch() noexcept {
+static u64 time_since_epoch() noexcept {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::high_resolution_clock::now().time_since_epoch());
+        std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 }
 
 static ssl::context make_ssl_context() noexcept {
@@ -85,8 +86,8 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     websocket::stream<beast::ssl_stream<beast::tcp_stream>> _wss;
     std::shared_ptr<shared_state_t> _state;
     std::queue<payload_data_t> _payloads;
-    std::chrono::milliseconds _heartbeat;
     beast::flat_buffer _buffer;
+    u64 _heartbeat;
     u64 _channel;
 
     void on_send(const payload_data_t& payload) noexcept {
@@ -114,14 +115,14 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     }
 
     void on_read(beast::error_code error) noexcept {
-        using namespace std::chrono_literals;
-        constexpr auto time_delta = 5000ms;
-        constexpr auto interval   = 60000ms;
+        print("something");
+        constexpr auto time_delta = 10000u;
+        constexpr auto interval   = 30000u;
         if (error == websocket::error::closed) {
             return;
         }
 
-        if (time_since_epoch() - _heartbeat > interval + time_delta) {
+        if ((time_since_epoch() - _heartbeat) > (interval + time_delta)) {
             print("0x%08llx: heartbeat failure\n", (u64)this);
             return;
         }
@@ -170,23 +171,17 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                                 "}";
                             _state->broadcast(std::stoull(channel), { response.begin(), response.end() }, this);
                         } else if (type == "transition_channel") {
-                            const u64 next = std::stoull(document["payload"]["channel"].Get<const char*>());
+                            const auto next = std::stoull(document["payload"]["channel"].Get<const char*>());
                             _state->transition(this, next);
                             _channel = next;
                         }
                     } break;
 
                     case 1: { // heartbeat_event.
-                        const auto current = time_since_epoch();
-                        const auto elapsed = current - _heartbeat - interval;
-                        if (-time_delta < elapsed && elapsed < time_delta) {
-                            constexpr std::string_view response = R"({ "op": 11, "type": "heartbeat" })";
-                            send({ response.begin(), response.end() });
-                            _heartbeat = current;
-                        } else {
-                            print("0x%08llx: heartbeat failure\n", (u64)this);
-                            return;
-                        }
+                        using namespace std::string_view_literals;
+                        constexpr auto response = R"({ "op": 11, "type": "heartbeat" })"sv;
+                        send({ response.begin(), response.end() });
+                        _heartbeat = time_since_epoch();
                     } break;
                 }
             }
@@ -331,13 +326,16 @@ class listener_t : public std::enable_shared_from_this<listener_t> {
     ssl::context& _ssl;
 
     void accept(ip::tcp::socket&& socket) noexcept {
-        print("%s: connection requested\n", socket.remote_endpoint().address().to_string().c_str());
-        std::make_shared<websocket_session_t>(std::move(socket), _ssl, _state)->run();
-        _acceptor.async_accept(
-            asio::make_strand(_context),
-            [self = shared_from_this()](beast::error_code, ip::tcp::socket socket) noexcept {
-                self->accept(std::move(socket));
-            });
+        sys::error_code ec;
+        if (const auto endpoint = socket.remote_endpoint(ec); !ec) {
+            print("%s: connection requested\n", endpoint.address().to_string().c_str());
+            std::make_shared<websocket_session_t>(std::move(socket), _ssl, _state)->run();
+            _acceptor.async_accept(
+                asio::make_strand(_context),
+                [self = shared_from_this()](beast::error_code, ip::tcp::socket socket) noexcept {
+                    self->accept(std::move(socket));
+                });
+        }
     }
 
 public:

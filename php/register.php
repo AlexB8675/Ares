@@ -21,5 +21,5 @@
 
     $query = 'insert into User (id, username, email, password) value (?, ?, ?, ?)';
     safe_query($connection, $query, $id, $username, $email, $password);
-    print '{}';
     mysqli_close($connection);
+    print '{}';

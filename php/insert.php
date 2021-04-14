@@ -61,6 +61,6 @@
         'guild'   => insert_guild($connection, intval($_POST['id']), $_SESSION['id'], $_POST['name']),
         'message' => insert_message($connection, $_POST['message']),
         'join'    => join_guild($connection, intval($_POST['id']), $_SESSION['id']),
-        default    => die('{ "message": "bad_request", "code": 400 }')
+        default   => die('{ "message": "bad_request", "code": 400 }')
     };
     mysqli_close($connection);
