@@ -115,7 +115,6 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
     }
 
     void on_read(beast::error_code error) noexcept {
-        print("something");
         constexpr auto time_delta = 10000u;
         constexpr auto interval   = 30000u;
         if (error == websocket::error::closed) {
