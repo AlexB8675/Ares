@@ -15,7 +15,7 @@
         die('{ "message": "unauthorized", "code": 401 }');
     }
     if (!session_start()) {
-        die('{ "message": "session_failure", "code": 500 }');
+        die('{ "message": "unauthorized", "code": 401 }');
     }
 
     $found = $found->fetch_object();

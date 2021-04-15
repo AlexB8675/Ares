@@ -116,7 +116,7 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
 
     void on_read(beast::error_code error) noexcept {
         constexpr auto time_delta = 10000u;
-        constexpr auto interval   = 30000u;
+        constexpr auto interval   = 60000u;
         if (error == websocket::error::closed) {
             return;
         }
@@ -152,7 +152,9 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                             const std::string guild   = document["payload"]["guild"].Get<const char*>();
                             const std::string channel = document["payload"]["channel"].Get<const char*>();
                             const std::string id      = document["payload"]["message"]["id"].Get<const char*>();
-                            const std::string content = std::regex_replace(document["payload"]["message"]["content"].Get<const char*>(), std::regex("\""), "\\\"");
+                            std::string content       = document["payload"]["message"]["content"].Get<const char*>();
+                            content = std::regex_replace(content, std::regex(R"(")"), R"(\")");
+                            content = std::regex_replace(content, std::regex(R"(\n\r)"), R"(\\n)");
                             const auto response =
                                 "{\n"
                                 "    \"op\": 1,\n"

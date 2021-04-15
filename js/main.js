@@ -1,7 +1,7 @@
 // Initialization
 $(function () {
     fetch_servers();
-    fetch_avatar('0', false, (avatar) => {
+    fetch_avatar('0', false, true,(avatar) => {
         if (avatar !== null) {
             $('.basic-user-icon img').attr('src', avatar);
             $('.account-avatar img').attr('src', avatar);
@@ -285,7 +285,8 @@ function make_server(name, guild) {
                                 if ($('div.basic-channel-instance[aria-label="selected"]')[0] !== current[0]) {
                                     const name    = current.children('.basic-text').text();
                                     const channel = current.children('.basic-text').attr('id');
-                                    $('.basic-loader').show();
+                                    const loader  = $('.basic-loader');
+                                    loader.show();
                                     $('.basic-master-header')
                                         .html(`<img draggable="false" src="assets/icons/hash.png" alt>` +
                                               `<div class="basic-text">${name}</div>`);
@@ -296,7 +297,7 @@ function make_server(name, guild) {
                                             channel: channel
                                         }
                                     });
-                                    fetch_messages(channel);
+                                    fetch_messages(channel, undefined, 'up', false);
                                     $('.basic-channel-instance')
                                         .css({'background': 'transparent'})
                                         .attr('aria-label', '');
@@ -318,6 +319,10 @@ function make_server(name, guild) {
                                                     `<div class="basic-message-textbox" placeholder="Message #${name}" role="textbox" contenteditable></div>` +
                                                 `</div>` +
                                             `</div>`);
+                                    $('.basic-message-scroller')
+                                        .on('scroll', function () {
+                                            scroll_update(channel, $(this));
+                                        });
                                     $('.basic-message-textbox')
                                         .on('keydown', function (event) {
                                             if (event.key === 'Enter' && !event.shiftKey) {
@@ -361,6 +366,7 @@ function make_server(name, guild) {
                                             const clipboard = event.originalEvent.clipboardData;
                                             document.execCommand('inserttext',  false,  clipboard.getData('text/plain'));
                                         });
+                                    loader.fadeOut(500);
                                 }
                             })
                             .first()
@@ -371,6 +377,30 @@ function make_server(name, guild) {
             }
         });
 }
+
+const scroll_update = (function () {
+    let old_scroll = 4000;
+    return function (channel, element) {
+        if ($('.basic-message-group').first().attr('aria-label') !== 'beginning') {
+            const messages   = $('.basic-message-wrapper');
+            const difference = messages.outerHeight() - element.height() + element.scrollTop();
+            if (old_scroll >= difference) {
+                old_scroll    = difference;
+                const last    = $('.basic-chat-message').first().attr('id');
+                const current = messages.html();
+                element.off('scroll');
+                fetch_messages(channel, last, 'down', true, () => {
+                    messages.append(current);
+                    element
+                        .delay(1000)
+                        .on('scroll', () => {
+                            scroll_update(channel, element);
+                        });
+                });
+            }
+        }
+    };
+})();
 
 function fetch_servers() {
     $.ajax({
@@ -400,7 +430,7 @@ function fetch_servers() {
     });
 }
 
-function fetch_messages(channel) {
+function fetch_messages(channel, last, direction, remove, callback) {
     $.ajax({
         url: 'php/messages',
         type: 'GET',
@@ -408,7 +438,9 @@ function fetch_messages(channel) {
             'Authorization': `User ${fetch_token()}`
         },
         data: {
-            channel: channel
+            channel: channel,
+            last: last,
+            direction: direction
         },
         dataType: 'json',
         cache: true,
@@ -420,6 +452,9 @@ function fetch_messages(channel) {
                     } break;
                 }
             } else {
+                if (remove) {
+                    $('.basic-message-wrapper').html('');
+                }
                 for (const message of response) {
                     insert_message({
                         id: message['author'],
@@ -432,7 +467,14 @@ function fetch_messages(channel) {
                         }
                     }, message['avatar']);
                 }
-                $('.basic-loader').fadeOut(500);
+                if (response.length !== 50) {
+                    $('.basic-message-group')
+                        .first()
+                        .attr({ 'aria-label': 'beginning' });
+                }
+                if (callback !== undefined) {
+                    callback();
+                }
             }
         }
     });
@@ -566,19 +608,20 @@ function leave_server(id) {
 }
 
 function insert_message(payload, avatar) {
-    const author  = payload['author'];
-    const content = $("<div>").text(payload['message']['content']).html();
-    const grouped = $('.basic-message-username').last().text() === author;
+    const author    = payload['author'];
+    const unescaped = payload['message']['content'].replaceAll(/\\n\\r/g, '\n');
+    const content   = $('<div>').text(unescaped).html();
+    const grouped   = $('.basic-message-username').last().text() === author;
+    const messages  = $('.basic-message-wrapper');
 
-    let html;
     if (!grouped) {
         const insert = (avatar) => {
             const path = avatar === null ? 'assets/icons/blank.png' : avatar;
-            $('div.basic-message-wrapper').append(
+            messages.append(
                 `<div class="basic-message-group basic-group-start">` +
-                    `<div class="basic-chat-message">` +
+                    `<div class="basic-chat-message" id="${payload['message']['id']}">` +
                         `<div class="basic-message-avatar">` +
-                            `<img src="${path}" alt/>` +
+                            `<img src="${path}" alt>` +
                         `</div>` +
                         `<div class="basic-message-text">` +
                             `<div class="basic-message-username">${author}</div>` +
@@ -588,14 +631,14 @@ function insert_message(payload, avatar) {
                 `</div>`);
         };
         if (avatar === undefined) {
-            fetch_avatar(payload['id'], false, insert);
+            fetch_avatar(payload['id'], false, false, insert);
         } else {
             insert(avatar);
         }
     } else {
-        $('div.basic-message-wrapper').append(
+        messages.append(
             `<div class="basic-message-group">` +
-                `<div class="basic-chat-message">` +
+                `<div class="basic-chat-message" id="${payload['message']['id']}">` +
                     `<div class="basic-message-content">${content}</div>` +
                 `</div>` +
             `</div>`);
@@ -607,7 +650,7 @@ function dispatch_event(data) {
     console.log('[Info] dispatch_event:', data);
     switch (data['type']) {
         case 'message_create': {
-            insert_message(data['payload']);
+            insert_message(data['payload'], undefined);
         } break;
     }
 }
@@ -635,7 +678,7 @@ function insert_avatar(file) {
                     } break;
                 }
             } else {
-                fetch_avatar('0', true, (avatar) => {
+                fetch_avatar('0', true, true, (avatar) => {
                     $('.basic-user-icon img').attr('src', avatar);
                     $('.account-avatar img').attr('src', avatar);
                 });
@@ -683,24 +726,35 @@ const gateway = (function () {
     let heartbeat = null;
     const open =
         (_) => {
+            const channel = $('div.basic-channel-instance[aria-label="selected"]');
+            if (channel.length !== 0) {
+                const id   = channel.children('.basic-text').attr('id');
+                const last = $('.basic-chat-message').last().attr('id');
+                dispatch_event({
+                    op: 0,
+                    type: 'transition_channel',
+                    payload: {
+                        channel: id
+                    }
+                });
+                fetch_messages(id, last, 'down', false);
+            }
             tries = 0;
-            $('.basic-loader').fadeOut(500);
-            console.log('[Info]: connection successful');
-            heartbeat = setTimeout(function keep_alive() {
-                heartbeat = setTimeout(keep_alive, 30000);
+            heartbeat = setInterval(function keep_alive() {
                 dispatch_event({
                     op: 1,
                     type: 'heartbeat'
                 });
-            }, 30000);
+            }, 60000);
+            console.log('[Info]: connection successful');
+            $('.basic-loader').fadeOut(500);
         };
     const message =
         (payload) => {
             const data = JSON.parse(payload.data);
             switch (data['type']) {
                 case 'message_create': {
-                    console.log('[Info]: received message: ', data);
-                    insert_message(data['payload']);
+                    insert_message(data['payload'], undefined);
                 } break;
 
                 case 'heartbeat': {
@@ -716,32 +770,20 @@ const gateway = (function () {
                 $('.basic-loader').show();
                 setTimeout(gateway, 30000);
             } else {
-                clearTimeout(heartbeat);
+                clearInterval(heartbeat);
                 console.log('[Info]: connection terminated');
                 wss = new WebSocket('wss://gateway.alex8675.eu:2096');
-                wss.onopen = () => {
-                    const channel = $('div.basic-channel-instance[aria-label="selected"]');
-                    if (channel.length !== 0) {
-                        dispatch_event({
-                            op: 0,
-                            type: 'transition_channel',
-                            payload: {
-                                channel: channel.children('.basic-text').attr('id')
-                            }
-                        });
-                    }
-                    open();
-                };
+                wss.onopen    = open;
                 wss.onmessage = message;
-                wss.onclose = close;
+                wss.onclose   = close;
             }
         };
     return function () {
         if (wss === null) {
             wss = new WebSocket('wss://gateway.alex8675.eu:2096');
-            wss.onopen = open;
+            wss.onopen    = open;
             wss.onmessage = message;
-            wss.onclose = close;
+            wss.onclose   = close;
         }
         return wss;
     }
@@ -749,7 +791,7 @@ const gateway = (function () {
 
 const fetch_avatar = (function () {
     let cached = {};
-    return function (id, invalidate, callback) {
+    return function (id, invalidate, async, callback) {
         if (cached[id] === undefined) {
             cached[id] = null;
         }
@@ -764,6 +806,7 @@ const fetch_avatar = (function () {
                     kind: 'avatar',
                     id: `${id}`,
                 },
+                async: async,
                 dataType: 'json',
                 cache: true,
                 success: (response) => {

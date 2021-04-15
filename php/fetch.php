@@ -40,11 +40,11 @@
     $connection = connect_database();
     $kind       = $_GET['kind'];
     print match ($kind) {
-        'username' => json_encode(['username' => $_SESSION['username']]),
-        'email'    => json_encode(['email' => $_SESSION['email']]),
-        'id'       => json_encode(['id' => strval($_SESSION['id'])]),
+        'username' => json_encode([$kind => $_SESSION['username']]),
+        'email'    => json_encode([$kind => $_SESSION['email']]),
+        'id'       => json_encode([$kind => strval($_SESSION['id'])]),
         'avatar'   => fetch_avatar($connection, intval($_GET['id'])),
         'guild'    => fetch_guilds($connection, $_SESSION['id']),
         'channels' => fetch_channels($connection, intval($_GET['id'])),
-        default     => die('{ "message": "bad_request", "code": 400 }')
+        default    => die('{ "message": "bad_request", "code": 400 }')
     };
