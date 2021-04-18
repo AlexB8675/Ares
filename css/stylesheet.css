@@ -760,7 +760,7 @@ a {
     min-height: 22px;
     font-size: 12pt;
     overflow: hidden;
-    white-space: pre;
+    white-space: pre-wrap;
     overflow-wrap: break-word;
     justify-content: center;
     align-content: center;
@@ -797,7 +797,7 @@ a {
     font-size: 18px;
     display: block;
     text-align: left;
-    white-space: pre;
+    white-space: pre-wrap;
     word-break: break-word;
     overflow: visible;
     outline: none;
@@ -1033,35 +1033,21 @@ a {
     transition: height 300ms;
 }
 
-.add-server-wrapper > .close {
+.add-server-wrapper .close-wrapper {
     position: absolute;
-    right: 20px;
+    right: 12px;
     top: 12px;
-    opacity: 1.0;
-    transition:
-            opacity 250ms,
-            top     250ms;
+    width: 20px;
+    height: 20px;
 }
 
-.add-server-wrapper > .close:hover {
+.add-server-wrapper .close-wrapper:hover {
     cursor: pointer;
 }
 
-.add-server-wrapper > .close::before,
-.add-server-wrapper > .close::after {
-    position: absolute;
-    content: '';
+.add-server-wrapper .close-wrapper img {
+    width: 20px;
     height: 20px;
-    width: 2px;
-    background: rgb(108, 108, 110);
-}
-
-.add-server-wrapper > .close::before {
-    transform: rotate(-45deg);
-}
-
-.add-server-wrapper > .close::after {
-    transform: rotate(45deg);
 }
 
 .add-server-main {

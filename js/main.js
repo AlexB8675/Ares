@@ -58,14 +58,14 @@ $(function () {
         });
     $('.create-server-button')
         .on('click', function () {
-            const name = $(this).siblings('.create-server-input').text();
+            const name = $(this).siblings('.create-server-input').text().trim();
             if (name !== '') {
                 insert_server(next_id(), name);
             }
         });
     $('.join-server-button')
         .on('click', function () {
-            const id = $(this).siblings('.join-server-input').text();
+            const id = $(this).siblings('.join-server-input').text().trim();
             if (id !== '') {
                 $.ajax({
                     url: 'php/insert',
@@ -107,7 +107,7 @@ $(function () {
                 });
             }
         });
-    $('.add-server-wrapper .close')
+    $('.add-server-wrapper .close-wrapper')
         .on('click', function () {
             close_add_server();
         });
@@ -612,7 +612,7 @@ function leave_server(id) {
 
 function insert_message(payload, avatar) {
     const author   = payload['author'];
-    const content  = $('<div>').text(payload['message']['content']).html();
+    const content  = payload['message']['content'];
     const grouped  = $('.basic-message-username').last().text() === author;
     const messages = $('.basic-message-wrapper');
 
@@ -627,7 +627,7 @@ function insert_message(payload, avatar) {
                         `</div>` +
                         `<div class="basic-message-text">` +
                             `<div class="basic-message-username">${author}</div>` +
-                            `<div class="basic-message-content">${content}</div>` +
+                            `<div class="basic-message-content"></div>` +
                         `</div>` +
                     `</div>` +
                 `</div>`);
@@ -641,10 +641,11 @@ function insert_message(payload, avatar) {
         messages.append(
             `<div class="basic-message-group">` +
                 `<div class="basic-chat-message" id="${payload['message']['id']}">` +
-                    `<div class="basic-message-content">${content}</div>` +
+                    `<div class="basic-message-content"></div>` +
                 `</div>` +
             `</div>`);
     }
+    $('.basic-message-content').last().html(content);
 }
 
 function dispatch_event(data) {
