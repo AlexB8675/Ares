@@ -118,8 +118,8 @@ a {
 }
 
 .basic-group-start {
-    padding: 0.250rem 64px !important;
-    margin: 15px 0 0 0;
+    padding: .25rem 64px .25rem 36px !important;
+    margin: 15px 0 0;
 }
 
 .basic-form-button {
@@ -693,7 +693,7 @@ a {
     flex: 0 0 auto;
     line-height: 22px;
     min-height: 22px;
-    padding: 0.250rem 64px 0.250rem 120px;
+    padding: 0.250rem 64px 0.250rem 92px;
 }
 
 .basic-message-group:hover {
@@ -760,7 +760,7 @@ a {
     min-height: 22px;
     font-size: 12pt;
     overflow: hidden;
-    white-space: pre-wrap;
+    white-space: pre;
     overflow-wrap: break-word;
     justify-content: center;
     align-content: center;
@@ -778,7 +778,7 @@ a {
 
 .basic-textbox-wrapper {
     position: relative;
-    width: calc(100% - 100px);
+    width: calc(100% - 86px);
     max-height: 259px;
     margin: 0 auto 31px;
     padding: 14px 0;
@@ -797,7 +797,7 @@ a {
     font-size: 18px;
     display: block;
     text-align: left;
-    white-space: break-spaces;
+    white-space: pre;
     word-break: break-word;
     overflow: visible;
     outline: none;

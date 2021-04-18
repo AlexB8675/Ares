@@ -153,8 +153,9 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                             const std::string channel = document["payload"]["channel"].Get<const char*>();
                             const std::string id      = document["payload"]["message"]["id"].Get<const char*>();
                             std::string content       = document["payload"]["message"]["content"].Get<const char*>();
+                            content = std::regex_replace(content, std::regex(R"(\\)"), R"(\\\\)");
                             content = std::regex_replace(content, std::regex(R"(")"), R"(\")");
-                            content = std::regex_replace(content, std::regex(R"(\n\r)"), R"(\\n)");
+                            content = std::regex_replace(content, std::regex(R"(\r)"), R"(\n)");
                             const auto response =
                                 "{\n"
                                 "    \"op\": 1,\n"
@@ -331,12 +332,12 @@ class listener_t : public std::enable_shared_from_this<listener_t> {
         if (const auto endpoint = socket.remote_endpoint(ec); !ec) {
             print("%s: connection requested\n", endpoint.address().to_string().c_str());
             std::make_shared<websocket_session_t>(std::move(socket), _ssl, _state)->run();
-            _acceptor.async_accept(
-                asio::make_strand(_context),
-                [self = shared_from_this()](beast::error_code, ip::tcp::socket socket) noexcept {
-                    self->accept(std::move(socket));
-                });
         }
+        _acceptor.async_accept(
+            asio::make_strand(_context),
+            [self = shared_from_this()](beast::error_code, ip::tcp::socket socket) noexcept {
+                self->accept(std::move(socket));
+            });
     }
 
 public:

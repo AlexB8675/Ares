@@ -16,7 +16,7 @@ $(function () {
         gateway(); // Initializes websocket connection after the last fetch is done.
     });
     fetch('id', (id) => {
-        $('.basic-username').attr('aria-label', id);
+        $('.basic-username').attr('id', id);
     })
     $('#user-settings')
         .on('click', function () {
@@ -321,20 +321,20 @@ function make_server(name, guild) {
                                             `</div>`);
                                     $('.basic-message-scroller')
                                         .on('scroll', function () {
-                                            scroll_update(channel, $(this));
+                                            scroll_update(channel, this);
                                         });
                                     $('.basic-message-textbox')
                                         .on('keydown', function (event) {
                                             if (event.key === 'Enter' && !event.shiftKey) {
                                                 event.preventDefault();
-                                                const content = $(this).text().trim();
+                                                const content = $('<div>').text($(this).text().trim()).html();
                                                 if (content !== '') {
                                                     $(this).html('');
                                                     const data = {
                                                         op: 0,
                                                         type: 'message_create',
                                                         payload: {
-                                                            id: `${$('.basic-username').attr('aria-label')}`,
+                                                            id: `${$('.basic-username').attr('id')}`,
                                                             author: `${$('.account-details #username').text()}`,
                                                             guild: `${guild}`,
                                                             channel: `${channel}`,
@@ -381,24 +381,27 @@ function make_server(name, guild) {
 const scroll_update = (function () {
     let old_scroll = 4000;
     return function (channel, element) {
-        if ($('.basic-message-group').first().attr('aria-label') !== 'beginning') {
-            const messages   = $('.basic-message-wrapper');
-            const difference = messages.outerHeight() - element.height() + element.scrollTop();
-            if (old_scroll >= difference) {
-                old_scroll    = difference;
-                const last    = $('.basic-chat-message').first().attr('id');
-                const current = messages.html();
-                element.off('scroll');
-                fetch_messages(channel, last, 'down', true, () => {
-                    messages.append(current);
-                    element
-                        .delay(1000)
-                        .on('scroll', () => {
-                            scroll_update(channel, element);
-                        });
-                });
+        clearTimeout($.data(element, 'scroll_handler'));
+        $.data(element, 'scroll_handler', setTimeout(() => {
+            if ($('.basic-message-group').first().attr('aria-label') !== 'beginning') {
+                const messages   = $('.basic-message-wrapper');
+                const difference = messages.outerHeight() - $(element).height() + $(element).scrollTop();
+                if (old_scroll >= difference) {
+                    old_scroll    = difference;
+                    const last    = $('.basic-chat-message').first().attr('id');
+                    const current = messages.html();
+                    $(element).off('scroll');
+                    fetch_messages(channel, last, 'down', true, () => {
+                        messages.append(current);
+                        $(element)
+                            .delay(1000)
+                            .on('scroll', () => {
+                                scroll_update(channel, element);
+                            });
+                    });
+                }
             }
-        }
+        }, 200));
     };
 })();
 
@@ -467,13 +470,13 @@ function fetch_messages(channel, last, direction, remove, callback) {
                         }
                     }, message['avatar']);
                 }
-                if (response.length !== 50) {
+                if (callback !== undefined) {
+                    callback();
+                }
+                if (response.length < 50) {
                     $('.basic-message-group')
                         .first()
                         .attr({ 'aria-label': 'beginning' });
-                }
-                if (callback !== undefined) {
-                    callback();
                 }
             }
         }
@@ -608,11 +611,10 @@ function leave_server(id) {
 }
 
 function insert_message(payload, avatar) {
-    const author    = payload['author'];
-    const unescaped = payload['message']['content'].replaceAll(/\\n\\r/g, '\n');
-    const content   = $('<div>').text(unescaped).html();
-    const grouped   = $('.basic-message-username').last().text() === author;
-    const messages  = $('.basic-message-wrapper');
+    const author   = payload['author'];
+    const content  = $('<div>').text(payload['message']['content']).html();
+    const grouped  = $('.basic-message-username').last().text() === author;
+    const messages = $('.basic-message-wrapper');
 
     if (!grouped) {
         const insert = (avatar) => {
@@ -647,7 +649,7 @@ function insert_message(payload, avatar) {
 
 function dispatch_event(data) {
     gateway().send(JSON.stringify(data));
-    console.log('[Info] dispatch_event:', data);
+    console.log('[Info]: dispatch_event:', data);
     switch (data['type']) {
         case 'message_create': {
             insert_message(data['payload'], undefined);
@@ -751,9 +753,10 @@ const gateway = (function () {
         };
     const message =
         (payload) => {
-            const data = JSON.parse(payload.data);
+            const data = JSON.parse(payload.data.replaceAll('\\\\', '\\'));
             switch (data['type']) {
                 case 'message_create': {
+                    console.log('[Info]: message_create: ', data);
                     insert_message(data['payload'], undefined);
                 } break;
 
