@@ -62,7 +62,7 @@ function register() {
             .show();
     } else {
         $.ajax({
-            url: 'php/register.php',
+            url: 'php/register',
             type: 'POST',
             data: {
                 id: next_id(),
@@ -70,6 +70,7 @@ function register() {
                 email: email,
                 password: password,
             },
+            dataType: 'json',
             cache: false,
             success: (response) => {
                 if ('code' in response) {
@@ -114,7 +115,7 @@ function login() {
             .show();
     } else {
         $.ajax({
-            url: 'php/login.php',
+            url: 'php/login',
             type: 'GET',
             data: {
                 username: username,

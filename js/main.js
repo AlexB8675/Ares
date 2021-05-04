@@ -13,11 +13,11 @@ $(function () {
     });
     fetch('email', (email) => {
         $('.account-details #email').text(email);
-        gateway(); // Initializes websocket connection after the last fetch is done.
     });
     fetch('id', (id) => {
         $('.basic-username').attr('id', id);
-    })
+        gateway(); // Initializes websocket connection after the last fetch is done.
+    });
     $('#user-settings')
         .on('click', function () {
             toggle_settings();
@@ -28,6 +28,17 @@ $(function () {
                 .css({
                     'background': 'rgba(0, 0, 0, 0.6)',
                     'z-index': '2'
+                })
+                .delay(300)
+                .queue(function () {
+                    $(this)
+                        .one('mousedown', function (event) {
+                            console.log('click');
+                            if (event.target === this) {
+                                close_add_server();
+                            }
+                        })
+                        .dequeue();
                 });
             $('.add-server-wrapper')
                 .css({
@@ -111,12 +122,6 @@ $(function () {
         .on('click', function () {
             close_add_server();
         });
-    $('.add-server-container')
-        .on('mousedown', function (event) {
-            if (event.target === this) {
-                close_add_server();
-            }
-        });
     $('.settings-close-button')
         .on('click', function () {
             toggle_settings();
@@ -198,7 +203,7 @@ function make_server(name, guild) {
                 event.preventDefault();
                 const menu = $('.server-context-menu');
                 let height = event.pageY;
-                if (event.pageY + menu.outerHeight() > $(window).height()) {
+                if (height + menu.outerHeight() > $(window).height()) {
                     height -= menu.outerHeight();
                 }
                 menu.css({
@@ -384,15 +389,12 @@ const scroll_update = (function () {
         clearTimeout($.data(element, 'scroll_handler'));
         $.data(element, 'scroll_handler', setTimeout(() => {
             if ($('.basic-message-group').first().attr('aria-label') !== 'beginning') {
-                const messages   = $('.basic-message-wrapper');
-                const difference = messages.outerHeight() - $(element).height() + $(element).scrollTop();
+                const difference = $('.basic-message-wrapper').outerHeight() - $(element).height() + $(element).scrollTop();
                 if (old_scroll >= difference) {
-                    old_scroll    = difference;
-                    const last    = $('.basic-chat-message').first().attr('id');
-                    const current = messages.html();
+                    old_scroll = difference;
+                    const last = $('.basic-chat-message').first().attr('id');
                     $(element).off('scroll');
                     fetch_messages(channel, last, 'down', true, () => {
-                        messages.append(current);
                         $(element)
                             .delay(1000)
                             .on('scroll', () => {
@@ -433,7 +435,7 @@ function fetch_servers() {
     });
 }
 
-function fetch_messages(channel, last, direction, remove, callback) {
+function fetch_messages(channel, last, direction, insert, callback) {
     $.ajax({
         url: 'php/messages',
         type: 'GET',
@@ -455,8 +457,9 @@ function fetch_messages(channel, last, direction, remove, callback) {
                     } break;
                 }
             } else {
-                if (remove) {
-                    $('.basic-message-wrapper').html('');
+                let point = undefined;
+                if (insert) {
+                    point = $('.basic-message-group').first();
                 }
                 for (const message of response) {
                     insert_message({
@@ -468,7 +471,7 @@ function fetch_messages(channel, last, direction, remove, callback) {
                             id: message['id'],
                             content: message['content']
                         }
-                    }, message['avatar']);
+                    }, message['avatar'], point);
                 }
                 if (callback !== undefined) {
                     callback();
@@ -580,7 +583,7 @@ function insert_server(id, name) {
                     } break;
                 }
             } else {
-                close_add_server($('.add-server-container'));
+                close_add_server();
                 make_server(name, id);
             }
         }
@@ -610,50 +613,64 @@ function leave_server(id) {
     });
 }
 
-function insert_message(payload, avatar) {
-    const author   = payload['author'];
-    const content  = payload['message']['content'];
-    const grouped  = $('.basic-message-username').last().text() === author;
-    const messages = $('.basic-message-wrapper');
+const insert_message = (function () {
+    let last = '';
+    return function (payload, avatar, where) {
+        const username = $('.basic-message-username');
+        const author   = payload['author'];
+        const content  = payload['message']['content'];
+        const grouped  = last === author;
+        const messages = $('.basic-message-wrapper');
 
-    if (!grouped) {
-        const insert = (avatar) => {
-            const path = avatar === null ? 'assets/icons/blank.png' : avatar;
-            messages.append(
-                `<div class="basic-message-group basic-group-start">` +
-                    `<div class="basic-chat-message" id="${payload['message']['id']}">` +
-                        `<div class="basic-message-avatar">` +
-                            `<img src="${path}" alt>` +
+        if (!grouped) {
+            const insert = (avatar) => {
+                const path = avatar === null ? 'assets/icons/blank.png' : avatar;
+                const message =
+                    `<div class="basic-message-group basic-group-start">` +
+                        `<div class="basic-chat-message" id="${payload['message']['id']}">` +
+                            `<div class="basic-message-avatar">` +
+                                `<img src="${path}" alt>` +
+                            `</div>` +
+                            `<div class="basic-message-text">` +
+                                `<div class="basic-message-username">${author}</div>` +
+                                `<div class="basic-message-content">${content}</div>` +
+                            `</div>` +
                         `</div>` +
-                        `<div class="basic-message-text">` +
-                            `<div class="basic-message-username">${author}</div>` +
-                            `<div class="basic-message-content"></div>` +
-                        `</div>` +
-                    `</div>` +
-                `</div>`);
-        };
-        if (avatar === undefined) {
-            fetch_avatar(payload['id'], false, false, insert);
+                    `</div>`;
+                if (where === undefined) {
+                    messages.append(message);
+                } else {
+                    where.before(message);
+                }
+            };
+            if (avatar === undefined) {
+                fetch_avatar(payload['id'], false, false, insert);
+            } else {
+                insert(avatar);
+            }
         } else {
-            insert(avatar);
+            const message =
+                `<div class="basic-message-group">` +
+                    `<div class="basic-chat-message" id="${payload['message']['id']}">` +
+                        `<div class="basic-message-content">${content}</div>` +
+                    `</div>` +
+                `</div>`;
+            if (where === undefined) {
+                messages.append(message);
+            } else {
+                where.before(message);
+            }
         }
-    } else {
-        messages.append(
-            `<div class="basic-message-group">` +
-                `<div class="basic-chat-message" id="${payload['message']['id']}">` +
-                    `<div class="basic-message-content"></div>` +
-                `</div>` +
-            `</div>`);
+        last = author;
     }
-    $('.basic-message-content').last().html(content);
-}
+})();
 
 function dispatch_event(data) {
     gateway().send(JSON.stringify(data));
     console.log('[Info]: dispatch_event:', data);
     switch (data['type']) {
         case 'message_create': {
-            insert_message(data['payload'], undefined);
+            insert_message(data['payload'], undefined, undefined);
         } break;
     }
 }
@@ -758,7 +775,7 @@ const gateway = (function () {
             switch (data['type']) {
                 case 'message_create': {
                     console.log('[Info]: message_create: ', data);
-                    insert_message(data['payload'], undefined);
+                    insert_message(data['payload'], undefined, undefined);
                 } break;
 
                 case 'heartbeat': {
@@ -832,5 +849,5 @@ const fetch_avatar = (function () {
 })();
 
 function fetch_token() {
-    return storage().getItem('token');
+    return storage()['token'];
 }

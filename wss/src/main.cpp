@@ -155,7 +155,6 @@ class websocket_session_t : public std::enable_shared_from_this<websocket_sessio
                             std::string content       = document["payload"]["message"]["content"].Get<const char*>();
                             content = std::regex_replace(content, std::regex(R"(\\)"), R"(\\\\)");
                             content = std::regex_replace(content, std::regex(R"(")"), R"(\")");
-                            content = std::regex_replace(content, std::regex(R"(\r)"), R"(\n)");
                             const auto response =
                                 "{\n"
                                 "    \"op\": 1,\n"
